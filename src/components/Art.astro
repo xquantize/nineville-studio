@@ -18,6 +18,7 @@ import { works, formatWorkMeta } from '../data/works';
                 width="400"
                 height="500"
                 loading="lazy"
+                decoding="async"
               />
             </div>
             <div class="work-card__body">
@@ -50,11 +51,12 @@ import { works, formatWorkMeta } from '../data/works';
   .work-card__image-wrap {
     overflow: hidden;
     border-radius: 4px 4px 0 0;
+    aspect-ratio: 4 / 5;
   }
 
   .work-card__image-wrap img {
     width: 100%;
-    aspect-ratio: 4 / 5;
+    height: 100%;
     object-fit: cover;
     transition: transform 600ms var(--ease-out);
   }

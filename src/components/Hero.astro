@@ -24,19 +24,22 @@
     box-sizing: border-box;
   }
 
-  /* Soft fade into content veil — no hard line at hero bottom */
+  /* Soft fade into content — tuned to blue / gold / purple in the hero painting */
   .hero::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 6rem;
+    height: 11rem;
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgba(244, 237, 220, 0.2) 70%,
-      rgba(244, 237, 220, 0.36) 100%
+      rgba(48, 68, 98, 0.05) 20%,
+      rgba(62, 82, 112, 0.12) 40%,
+      rgba(168, 138, 82, 0.14) 62%,
+      rgba(108, 88, 128, 0.1) 78%,
+      rgba(244, 237, 220, 0.3) 100%
     );
     pointer-events: none;
   }

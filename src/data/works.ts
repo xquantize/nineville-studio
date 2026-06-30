@@ -1,4 +1,5 @@
 // To add a new piece: copy any entry, change the id, drop a new image in /public/images/works/, update title + description.
+// Export spec: 1200×1500 px (4:5), WebP ~80 quality, straight-on crop with even margins. See README.
 
 export interface Work {
   id: string;

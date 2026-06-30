@@ -47,7 +47,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: var(--nav-height);
-  background: #1e1912;
+  background: #1a1e28;
   overflow-x: clip;
 }
 
