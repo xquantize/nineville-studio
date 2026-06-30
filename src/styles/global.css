@@ -36,6 +36,7 @@
   --content-max: 1180px;
   --content-padding: clamp(1.25rem, 4vw, 3rem);
   --nav-height: 56px;
+  --hero-fade: clamp(7rem, 18vh, 14rem);
 
   /* Easing & motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -70,13 +71,24 @@ footer {
   z-index: 1;
 }
 
-/* Content sections — dark frost, starts flush after hero (no overlap) */
+/* Content sections — frost eases in over a tall gradient (no hard seam) */
 .content-veil {
   position: relative;
   color: var(--text-on-veil);
-  background: var(--panel-bg);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--veil-dark), 0) 0%,
+    rgba(26, 30, 44, 0.22) calc(var(--hero-fade) * 0.35),
+    rgba(var(--veil-dark), 0.48) calc(var(--hero-fade) * 0.7),
+    var(--panel-bg) var(--hero-fade),
+    var(--panel-bg) 100%
+  );
   backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
   -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
+}
+
+.content-veil > .panel:first-child {
+  padding-top: calc(var(--space-8) + var(--hero-fade) * 0.15);
 }
 
 .content-veil .section-kicker {

@@ -84,6 +84,21 @@
     transition: opacity var(--duration-normal) var(--ease-out);
     animation: hero-enter 1s var(--ease-out) both;
     animation-delay: 0.8s;
+    z-index: 1;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--hero-fade);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(22, 26, 36, 0.12) 45%,
+      rgba(22, 26, 36, 0.38) 100%
+    );
+    pointer-events: none;
   }
 
   .hero__scroll:hover {
