@@ -106,10 +106,6 @@ img {
   max-width: 100%;
 }
 
-#bio {
-  scroll-margin-top: var(--nav-height);
-}
-
 /* Panel pattern — spacing only; background lives on .content-veil */
 .panel {
   background: transparent;
