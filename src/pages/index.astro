@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoadingIntro from '../components/LoadingIntro.astro';
+import FixedBackground from '../components/FixedBackground.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Bio from '../components/Bio.astro';
+import Mediums from '../components/Mediums.astro';
+import Art from '../components/Art.astro';
+import Commission from '../components/Commission.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout>
+  <LoadingIntro />
+  <FixedBackground />
+  <Nav />
+  <main>
+    <Hero />
+    <div class="content-veil">
+      <Bio />
+      <Mediums />
+      <Art />
+      <Commission />
+      <Footer />
+    </div>
+  </main>
+</Layout>

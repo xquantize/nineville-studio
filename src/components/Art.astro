@@ -1,0 +1,117 @@
+---
+import { works, formatWorkMeta } from '../data/works';
+---
+
+<section id="art" class="panel">
+  <div class="panel-inner">
+    <p class="section-kicker" data-reveal>Selected works</p>
+    <h2 class="section-heading" data-reveal>Art</h2>
+
+    <div class="art__grid">
+      {
+        works.map((work) => (
+          <article class="work-card" data-reveal data-reveal-stagger>
+            <div class="work-card__image-wrap">
+              <img
+                src={work.image}
+                alt={work.alt}
+                width="400"
+                height="500"
+                loading="lazy"
+              />
+            </div>
+            <div class="work-card__body">
+              <h3 class="work-card__title">{work.title}</h3>
+              <p class="work-card__desc">{work.description}</p>
+              <p class="work-card__meta">{formatWorkMeta(work)}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .art__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .work-card {
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+
+  .work-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .work-card__image-wrap {
+    overflow: hidden;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .work-card__image-wrap img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    transition: transform 600ms var(--ease-out);
+  }
+
+  .work-card:hover .work-card__image-wrap img {
+    transform: scale(1.02);
+  }
+
+  .work-card__body {
+    background: var(--card-bg);
+    padding: var(--space-2);
+    border-radius: 0 0 4px 4px;
+  }
+
+  .work-card__title {
+    margin: 0 0 0.35rem;
+    font-size: 17px;
+  }
+
+  .work-card__desc {
+    margin: 0 0 0.5rem;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--sand-700);
+  }
+
+  .work-card__meta {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sand-500);
+  }
+
+  @media (min-width: 640px) {
+    .art__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .art__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .work-card:hover {
+      transform: none;
+    }
+
+    .work-card__image-wrap img {
+      transition: none;
+    }
+
+    .work-card:hover .work-card__image-wrap img {
+      transform: none;
+    }
+  }
+</style>

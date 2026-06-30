@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+  <!-- TODO: Replace with actual painting photo -->
+  <rect width="400" height="500" fill="#D4BC8E"/>
+  <circle cx="200" cy="250" r="100" fill="#B89A6A" opacity="0.5"/>
+</svg>

@@ -1,0 +1,92 @@
+<div class="loading-intro" aria-hidden="true">
+  <div class="loading-intro__content">
+    <p class="loading-intro__brand">Nineville Studio</p>
+    <p class="loading-intro__artist">art by Laura Neundörfer</p>
+  </div>
+</div>
+
+<script>
+  const intro = document.querySelector('.loading-intro') as HTMLElement | null;
+  if (intro && !document.documentElement.classList.contains('skip-intro')) {
+    sessionStorage.setItem('seen-intro', '1');
+
+    window.setTimeout(() => {
+      intro.classList.add('fade-out');
+      intro.style.pointerEvents = 'none';
+    }, 900);
+
+    window.setTimeout(() => {
+      intro.classList.add('hidden');
+    }, 1500);
+  }
+</script>
+
+<style>
+  html.skip-intro .loading-intro {
+    display: none;
+  }
+
+  .loading-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sand-100);
+    opacity: 1;
+    transition: opacity 600ms var(--ease-out);
+  }
+
+  .loading-intro.fade-out {
+    opacity: 0;
+  }
+
+  .loading-intro.hidden {
+    display: none;
+  }
+
+  .loading-intro__content {
+    text-align: center;
+    animation: intro-enter 800ms var(--ease-out) both;
+  }
+
+  @keyframes intro-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .loading-intro__brand {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 6vw, 56px);
+    color: var(--sand-900);
+    letter-spacing: -0.01em;
+  }
+
+  .loading-intro__artist {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sand-700);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loading-intro {
+      display: none;
+    }
+
+    .loading-intro__content {
+      animation: none;
+    }
+  }
+</style>

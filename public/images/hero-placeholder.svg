@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2560 1440" width="2560" height="1440">
+  <!-- TODO: Replace with Laura's hero painting (recommend 2560×1440 webp or jpg, under 400KB) -->
+  <rect width="2560" height="1440" fill="#C8B080"/>
+  <rect y="520" width="2560" height="400" fill="#E5D2A8"/>
+  <rect y="980" width="2560" height="280" fill="#D4BC8E" opacity="0.6"/>
+</svg>

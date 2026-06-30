@@ -1,0 +1,125 @@
+---
+import { mediums } from '../data/mediums';
+---
+
+<section id="mediums" class="panel">
+  <div class="panel-inner">
+    <p class="section-kicker" data-reveal>What she works with</p>
+    <h2 class="section-heading" data-reveal>Mediums</h2>
+
+    <div class="mediums__grid">
+      {
+        mediums.map((medium) => (
+          <article class="medium-card" data-reveal data-reveal-stagger>
+            <div class="medium-card__image">
+              <img src={medium.image} alt="" aria-hidden="true" width="400" height="400" />
+            </div>
+            <div class="medium-card__body">
+              <h3 class="medium-card__name">{medium.name}</h3>
+              <p class="medium-card__desc">{medium.description}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .mediums__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+
+  .medium-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--card-bg);
+    border: 0.5px solid rgba(216, 196, 156, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+    transition:
+      transform var(--duration-normal) var(--ease-out),
+      box-shadow var(--duration-normal) var(--ease-out),
+      border-color var(--duration-normal) var(--ease-out);
+  }
+
+  .medium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(43, 36, 25, 0.1);
+    border-color: var(--sand-500);
+  }
+
+  .medium-card__image {
+    flex-shrink: 0;
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+
+  .medium-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms var(--ease-out);
+  }
+
+  .medium-card:hover .medium-card__image img {
+    transform: scale(1.04);
+  }
+
+  .medium-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-3);
+    min-height: 5.5rem;
+  }
+
+  .medium-card__name {
+    margin: 0 0 var(--space-1);
+    font-size: 22px;
+  }
+
+  .medium-card__desc {
+    margin: 0;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--sand-700);
+  }
+
+  @media (min-width: 540px) {
+    .mediums__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .mediums__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+    }
+
+    .medium-card__body {
+      padding: var(--space-2) var(--space-2) var(--space-3);
+    }
+
+    .medium-card__name {
+      font-size: 20px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .medium-card:hover {
+      transform: none;
+    }
+
+    .medium-card:hover .medium-card__image img {
+      transform: none;
+    }
+  }
+</style>

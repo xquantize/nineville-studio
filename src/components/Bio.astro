@@ -1,0 +1,67 @@
+<section id="bio" class="panel">
+  <div class="panel-inner">
+    <h2 class="section-heading" data-reveal>Bio</h2>
+
+    <div class="bio__grid">
+      <div class="bio__portrait" data-reveal>
+        <img
+          src="/images/bio-portrait-placeholder.svg"
+          alt="Portrait of Laura Neundörfer"
+          width="600"
+          height="600"
+        />
+      </div>
+
+      <div class="bio__text" data-reveal>
+        <p>[PLACEHOLDER: Bio paragraph 1 — replace with Laura's words]</p>
+        <p>[PLACEHOLDER: Bio paragraph 2 — replace with Laura's words]</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .bio__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .bio__portrait {
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  .bio__portrait img {
+    width: 100%;
+    border-radius: 4px;
+    transition: transform 800ms var(--ease-out);
+  }
+
+  .bio__portrait:hover img {
+    transform: scale(1.02);
+  }
+
+  .bio__text p {
+    margin: 0 0 var(--space-3);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .bio__text p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 768px) {
+    .bio__grid {
+      grid-template-columns: 1fr 1.4fr;
+      align-items: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bio__portrait:hover img {
+      transform: none;
+    }
+  }
+</style>

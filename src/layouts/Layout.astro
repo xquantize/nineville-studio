@@ -1,0 +1,103 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Nineville Studio — art by Laura Neundörfer',
+  description = 'Contemporary abstract paintings by Laura Neundörfer. Nineville Studio.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      (function () {
+        if (sessionStorage.getItem('seen-intro') === '1') {
+          document.documentElement.classList.add('skip-intro');
+        }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.documentElement.classList.add('skip-intro');
+        }
+
+        /* Real viewport height — fixes mobile gap when URL bar shows/hides */
+        function setAppSize() {
+          document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+          document.documentElement.style.setProperty('--app-width', window.innerWidth + 'px');
+        }
+        setAppSize();
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        window.addEventListener('resize', setAppSize);
+        window.addEventListener('orientationchange', function () {
+          setTimeout(setAppSize, 150);
+        });
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;1,14..32,400&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      window.addEventListener('load', function () {
+        window.scrollTo(0, 0);
+      });
+    </script>
+    <script is:inline>
+      (function () {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        var reveals = document.querySelectorAll('[data-reveal]');
+        if (!reveals.length) return;
+
+        reveals.forEach(function (el) {
+          if (el.hasAttribute('data-reveal-stagger')) {
+            var parent = el.parentElement;
+            if (parent) {
+              var siblings = Array.prototype.filter.call(
+                parent.children,
+                function (child) {
+                  return child.hasAttribute('data-reveal');
+                }
+              );
+              var index = siblings.indexOf(el);
+              if (index > 0) {
+                el.style.setProperty('--reveal-delay', index * 90 + 'ms');
+              }
+            }
+          }
+        });
+
+        var observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -5% 0px' }
+        );
+
+        reveals.forEach(function (el) {
+          observer.observe(el);
+        });
+      })();
+    </script>
+  </body>
+</html>

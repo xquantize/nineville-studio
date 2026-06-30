@@ -1,0 +1,62 @@
+<div class="fixed-bg" aria-hidden="true">
+  <img
+    class="fixed-bg__img"
+    src="/images/hero_background.JPG"
+    alt=""
+    width="3024"
+    height="4032"
+  />
+</div>
+
+<style>
+  .fixed-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--app-height, 100svh) + env(safe-area-inset-bottom, 0px));
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .fixed-bg__img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Dimensions swapped pre-rotation to match real viewport */
+    width: var(--app-height, 100svh);
+    height: var(--app-width, 100vw);
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    filter: saturate(1.05);
+    transform: translate(-50%, -50%) rotate(90deg) scale(1.12);
+    transform-origin: center center;
+    animation: bg-settle 1.8s var(--ease-out) both;
+  }
+
+  @keyframes bg-settle {
+    from {
+      transform: translate(-50%, -50%) rotate(90deg) scale(1.16);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(90deg) scale(1.12);
+    }
+  }
+
+  .fixed-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(43, 36, 25, 0.08);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fixed-bg__img {
+      animation: none;
+    }
+  }
+</style>
