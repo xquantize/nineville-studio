@@ -8,10 +8,15 @@
   --sand-700: #6B5638;
   --sand-900: #2A2419;
 
-  /* Panel transparency (used over the fixed hero image) */
-  --panel-bg: rgba(244, 237, 220, 0.36);
-  --panel-bg-strong: rgba(244, 237, 220, 0.52);
-  --card-bg: rgba(251, 246, 234, 0.28);
+  /* Panel — dark frosted tint (matches blue/gold painting, not white cream) */
+  --veil-dark: 22, 26, 36;
+  --panel-bg: rgba(var(--veil-dark), 0.62);
+  --panel-bg-strong: rgba(var(--veil-dark), 0.78);
+  --card-bg: rgba(32, 36, 48, 0.5);
+  --panel-blur: 12px;
+  --text-on-veil: #e8e2d4;
+  --text-on-veil-muted: rgba(232, 226, 212, 0.72);
+  --text-on-veil-kicker: #b8a888;
 
   /* Type */
   --font-serif: 'Fraunces', Georgia, serif;
@@ -65,12 +70,22 @@ footer {
   z-index: 1;
 }
 
-/* Single continuous veil — avoids backdrop-filter seams between sections */
+/* Content sections — dark frost, starts flush after hero (no overlap) */
 .content-veil {
   position: relative;
+  color: var(--text-on-veil);
   background: var(--panel-bg);
-  backdrop-filter: blur(28px) saturate(1.05);
-  -webkit-backdrop-filter: blur(28px) saturate(1.05);
+  backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
+}
+
+.content-veil .section-kicker {
+  color: var(--text-on-veil-kicker);
+}
+
+.content-veil h2,
+.content-veil h3 {
+  color: var(--sand-50);
 }
 
 h1,

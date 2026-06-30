@@ -38,7 +38,9 @@ import { mediums } from '../data/mediums';
     flex-direction: column;
     height: 100%;
     background: var(--card-bg);
-    border: 0.5px solid rgba(216, 196, 156, 0.25);
+    backdrop-filter: blur(8px) saturate(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+    border: 0.5px solid rgba(184, 154, 106, 0.2);
     border-radius: 4px;
     overflow: hidden;
     transition:
@@ -88,7 +90,7 @@ import { mediums } from '../data/mediums';
     font-size: 13px;
     font-style: italic;
     line-height: 1.5;
-    color: var(--sand-700);
+    color: var(--text-on-veil-muted);
   }
 
   @media (min-width: 540px) {

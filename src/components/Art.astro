@@ -67,6 +67,8 @@ import { works, formatWorkMeta } from '../data/works';
 
   .work-card__body {
     background: var(--card-bg);
+    backdrop-filter: blur(8px) saturate(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
     padding: var(--space-2);
     border-radius: 0 0 4px 4px;
   }
@@ -80,7 +82,7 @@ import { works, formatWorkMeta } from '../data/works';
     margin: 0 0 0.5rem;
     font-size: 13px;
     line-height: 1.5;
-    color: var(--sand-700);
+    color: var(--text-on-veil-muted);
   }
 
   .work-card__meta {
@@ -88,7 +90,7 @@ import { works, formatWorkMeta } from '../data/works';
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--sand-500);
+    color: var(--text-on-veil-kicker);
   }
 
   @media (min-width: 640px) {

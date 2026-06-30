@@ -1,5 +1,5 @@
 <section class="hero" aria-label="Introduction">
-  <div class="hero__content">
+  <div class="hero__content panel-inner">
     <h1 class="hero__title">Nineville Studio</h1>
     <p class="hero__subtitle">art by Laura Neundörfer</p>
   </div>
@@ -15,37 +15,21 @@
 <style>
   .hero {
     position: relative;
+    width: 100%;
     min-height: var(--app-height, 100svh);
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    /* iOS home-indicator safe area */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    justify-content: center;
+    align-items: stretch;
+    padding: calc(var(--nav-height) + var(--space-4)) 0
+      calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
-  }
-
-  /* Soft fade into content — tuned to blue / gold / purple in the hero painting */
-  .hero::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 11rem;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgba(48, 68, 98, 0.05) 20%,
-      rgba(62, 82, 112, 0.12) 40%,
-      rgba(168, 138, 82, 0.14) 62%,
-      rgba(108, 88, 128, 0.1) 78%,
-      rgba(244, 237, 220, 0.3) 100%
-    );
-    pointer-events: none;
+    background: transparent;
   }
 
   .hero__content {
-    padding: var(--space-12) var(--content-padding) var(--space-8);
+    width: 100%;
+    text-align: left;
     animation: hero-enter 1.2s var(--ease-out) both;
     animation-delay: 0.3s;
   }
@@ -53,7 +37,7 @@
   @keyframes hero-enter {
     from {
       opacity: 0;
-      transform: translateY(24px);
+      transform: translateY(20px);
     }
     to {
       opacity: 1;
@@ -64,9 +48,12 @@
   .hero__title {
     margin: 0;
     font-size: clamp(40px, 8vw, 88px);
-    color: var(--sand-50);
-    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+    letter-spacing: -0.02em;
     line-height: 1.05;
+    color: var(--sand-50);
+    text-shadow:
+      0 2px 28px rgba(0, 0, 0, 0.4),
+      0 0 48px rgba(0, 0, 0, 0.15);
   }
 
   .hero__subtitle {
@@ -76,7 +63,7 @@
     font-style: italic;
     letter-spacing: 0.1em;
     color: var(--sand-50);
-    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.3);
   }
 
   .hero__scroll {
@@ -93,7 +80,7 @@
     min-width: 44px;
     min-height: 44px;
     justify-content: center;
-    opacity: 0.75;
+    opacity: 0.8;
     transition: opacity var(--duration-normal) var(--ease-out);
     animation: hero-enter 1s var(--ease-out) both;
     animation-delay: 0.8s;
