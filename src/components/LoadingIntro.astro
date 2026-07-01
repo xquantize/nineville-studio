@@ -1,7 +1,24 @@
 <div class="loading-intro" aria-hidden="true">
-  <div class="loading-intro__content">
+  <div class="loading-intro__inner">
+    <div class="loading-wave" aria-hidden="true">
+      <svg class="loading-wave__svg" viewBox="0 0 96 32" width="96" height="32">
+        <g class="loading-wave__group">
+          <path
+            class="loading-wave__line loading-wave__line--1"
+            d="M0 18 C12 8, 24 8, 36 18 S60 28, 72 18 S84 8, 96 18"
+          />
+          <path
+            class="loading-wave__line loading-wave__line--2"
+            d="M0 22 C12 12, 24 12, 36 22 S60 32, 72 22 S84 12, 96 22"
+          />
+          <path
+            class="loading-wave__line loading-wave__line--3"
+            d="M0 14 C12 4, 24 4, 36 14 S60 24, 72 14 S84 4, 96 14"
+          />
+        </g>
+      </svg>
+    </div>
     <p class="loading-intro__brand">Nineville Studio</p>
-    <p class="loading-intro__artist">art by Laura Neundörfer</p>
   </div>
 </div>
 
@@ -12,7 +29,8 @@
   if (intro && !document.documentElement.classList.contains('skip-intro')) {
     sessionStorage.setItem('seen-intro', '1');
 
-    const minDisplay = 750;
+    const minDisplay = 2400;
+    const fadeDuration = 900;
     const started = performance.now();
 
     function dismiss() {
@@ -25,7 +43,7 @@
 
       window.setTimeout(() => {
         intro.classList.add('hidden');
-      }, wait + 650);
+      }, wait + fadeDuration);
     }
 
     if (bgImg?.complete) {
@@ -33,7 +51,7 @@
     } else if (bgImg) {
       bgImg.addEventListener('load', dismiss, { once: true });
       bgImg.addEventListener('error', dismiss, { once: true });
-      window.setTimeout(dismiss, 2200);
+      window.setTimeout(dismiss, 3800);
     } else {
       dismiss();
     }
@@ -52,30 +70,41 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: linear-gradient(
+      165deg,
+      #141820 0%,
+      #1a2230 40%,
+      #1e2838 70%,
+      #1a1e28 100%
+    );
     opacity: 1;
-    transition: opacity 650ms var(--ease-out);
+    transition:
+      opacity 900ms var(--ease-out),
+      visibility 900ms;
     pointer-events: auto;
   }
 
   .loading-intro.fade-out {
     opacity: 0;
+    visibility: hidden;
   }
 
   .loading-intro.hidden {
     display: none;
   }
 
-  .loading-intro__content {
-    text-align: center;
-    animation: intro-enter 900ms var(--ease-out) both;
-    animation-delay: 0.15s;
+  .loading-intro__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    animation: intro-rise 900ms var(--ease-out) both;
   }
 
-  @keyframes intro-enter {
+  @keyframes intro-rise {
     from {
       opacity: 0;
-      transform: translateY(14px);
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
@@ -83,25 +112,75 @@
     }
   }
 
+  .loading-wave {
+    width: 96px;
+    height: 32px;
+    color: var(--sand-300);
+  }
+
+  .loading-wave__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .loading-wave__group {
+    animation: wave-flow 3.2s var(--ease-in-out) infinite;
+  }
+
+  @keyframes wave-flow {
+    0%,
+    100% {
+      transform: translateX(-3px);
+    }
+    50% {
+      transform: translateX(3px);
+    }
+  }
+
+  .loading-wave__line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .loading-wave__line--1 {
+    opacity: 1;
+    animation: wave-swell 2.2s var(--ease-in-out) infinite;
+  }
+
+  .loading-wave__line--2 {
+    opacity: 0.55;
+    animation: wave-swell 2.2s var(--ease-in-out) infinite;
+    animation-delay: -0.35s;
+  }
+
+  .loading-wave__line--3 {
+    opacity: 0.3;
+    animation: wave-swell 2.2s var(--ease-in-out) infinite;
+    animation-delay: -0.7s;
+  }
+
+  @keyframes wave-swell {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
   .loading-intro__brand {
     margin: 0;
     font-family: var(--font-serif);
-    font-size: clamp(32px, 7vw, 64px);
-    color: var(--sand-50);
-    letter-spacing: -0.02em;
-    text-shadow:
-      0 2px 28px rgba(0, 0, 0, 0.45),
-      0 0 48px rgba(0, 0, 0, 0.2);
-  }
-
-  .loading-intro__artist {
-    margin: var(--space-2) 0 0;
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-style: italic;
-    letter-spacing: 0.12em;
-    color: rgba(251, 246, 234, 0.92);
-    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.35);
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(234, 223, 196, 0.72);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -109,7 +188,12 @@
       display: none;
     }
 
-    .loading-intro__content {
+    .loading-intro__inner {
+      animation: none;
+    }
+
+    .loading-wave__group,
+    .loading-wave__line {
       animation: none;
     }
   }
