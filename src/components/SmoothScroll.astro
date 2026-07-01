@@ -4,15 +4,20 @@
   const img = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function panOffset(scrollY: number) {
-    if (!img?.complete) return 0;
+  let panMetrics = { maxPan: 0, docH: 0 };
+
+  function updatePanMetrics() {
+    if (!img?.complete) return;
 
     const viewH = window.innerHeight;
     const imgH = img.getBoundingClientRect().height;
-    const maxPan = Math.max(0, imgH - viewH);
-    const docH = document.documentElement.scrollHeight - viewH;
+    panMetrics.maxPan = Math.max(0, imgH - viewH);
+    panMetrics.docH = Math.max(0, document.documentElement.scrollHeight - viewH);
+  }
 
-    return docH > 0 ? (scrollY / docH) * maxPan : 0;
+  function panOffset(scrollY: number) {
+    if (!img?.complete || panMetrics.docH <= 0) return 0;
+    return (scrollY / panMetrics.docH) * panMetrics.maxPan;
   }
 
   function applyPan(scrollY: number) {
@@ -20,51 +25,51 @@
     img.style.transform = `translate3d(0, ${-panOffset(scrollY)}px, 0)`;
   }
 
-  function bindAnchors(lenis: Lenis) {
-    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
-      link.addEventListener('click', (event) => {
-        const href = link.getAttribute('href');
-        if (!href) return;
-
-        event.preventDefault();
-
-        if (href === '#') {
-          lenis.scrollTo(0, { duration: 1.4 });
-          return;
-        }
-
-        const target = document.querySelector(href);
-        if (target) {
-          lenis.scrollTo(target, { offset: 0, duration: 1.4 });
-        }
-      });
-    });
+  function emitScroll(scrollY: number) {
+    window.dispatchEvent(new CustomEvent('app-scroll', { detail: { scroll: scrollY } }));
   }
 
   function initWithLenis() {
+    updatePanMetrics();
+
     const lenis = new Lenis({
-      lerp: 0.08,
-      duration: 1.4,
+      autoRaf: true,
+      anchors: {
+        offset: -56,
+      },
+      lerp: 0.075,
+      duration: 1.35,
       smoothWheel: true,
-      wheelMultiplier: 0.9,
-      touchMultiplier: 1.4,
+      syncTouch: true,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.15,
       infinite: false,
     });
 
-    lenis.on('scroll', ({ scroll }) => applyPan(scroll));
-    bindAnchors(lenis);
+    window.__lenis = lenis;
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+    lenis.on('scroll', ({ scroll }) => {
+      applyPan(scroll);
+      emitScroll(scroll);
+    });
 
-    requestAnimationFrame(raf);
+    window.addEventListener('resize', () => {
+      updatePanMetrics();
+      applyPan(lenis.scroll);
+    });
+
     applyPan(0);
+    emitScroll(0);
   }
 
   function initNative() {
-    const onScroll = () => applyPan(window.scrollY);
+    const onScroll = () => {
+      updatePanMetrics();
+      const y = window.scrollY;
+      applyPan(y);
+      emitScroll(y);
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     onScroll();
@@ -81,6 +86,6 @@
   if (img?.complete) {
     start();
   } else {
-    img?.addEventListener('load', start);
+    img?.addEventListener('load', start, { once: true });
   }
 </script>

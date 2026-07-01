@@ -1,6 +1,7 @@
 // To add a new piece: copy any entry, change the id, add images in /public/images/works/, update title + descriptions.
 // `description` = short line on the grid card. `detailDescription` = longer copy in the lightbox (optional).
 // `images` = one or more photos of the same piece (first image is the grid thumbnail). Add detail shots, angles, in-situ, etc.
+// `dimensions` = optional, e.g. "80 × 100 cm". `status` = optional: available | sold | private collection
 // Export spec: 1200×1500 px (4:5), WebP ~80 quality, straight-on crop with even margins. See README.
 
 export interface WorkImage {
@@ -9,6 +10,8 @@ export interface WorkImage {
   /** Optional label shown in the lightbox, e.g. "Detail", "In studio" */
   caption?: string;
 }
+
+export type WorkStatus = 'available' | 'sold' | 'private collection';
 
 export interface Work {
   id: string;
@@ -19,6 +22,10 @@ export interface Work {
   detailDescription?: string;
   medium: 'plaster' | 'acrylic' | 'resin' | 'mixed';
   year: number;
+  /** Optional physical size, e.g. "80 × 100 cm" */
+  dimensions?: string;
+  /** Optional availability — shown in the lightbox */
+  status?: WorkStatus;
   images: WorkImage[];
 }
 
@@ -31,6 +38,12 @@ const mediumLabels: Record<Work['medium'], string> = {
 
 export function formatWorkMeta(work: Work): string {
   return `${mediumLabels[work.medium]} · ${work.year}`;
+}
+
+export function formatLightboxMeta(work: Work): string {
+  const parts = [formatWorkMeta(work)];
+  if (work.dimensions) parts.push(work.dimensions);
+  return parts.join(' · ');
 }
 
 export function getWorkCover(work: Work): WorkImage {
@@ -46,6 +59,8 @@ export const works: Work[] = [
       '[PLACEHOLDER: Longer description for the lightbox — process, materials, scale, what inspired the piece, etc.]',
     medium: 'plaster',
     year: 2025,
+    dimensions: '[PLACEHOLDER: 80 × 100 cm]',
+    status: 'available',
     images: [
       {
         src: '/images/works/work-01.svg',
@@ -70,6 +85,7 @@ export const works: Work[] = [
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'acrylic',
     year: 2025,
+    status: 'available',
     images: [
       {
         src: '/images/works/work-02.svg',
@@ -83,6 +99,8 @@ export const works: Work[] = [
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'resin',
     year: 2024,
+    dimensions: '[PLACEHOLDER: 60 × 80 cm]',
+    status: 'private collection',
     images: [
       {
         src: '/images/works/work-03.svg',
@@ -115,6 +133,7 @@ export const works: Work[] = [
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'plaster',
     year: 2023,
+    status: 'sold',
     images: [
       {
         src: '/images/works/work-05.svg',

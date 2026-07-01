@@ -122,6 +122,8 @@ img {
   -webkit-backdrop-filter: none;
   padding: var(--space-12) 0;
   border: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 
 .panel-inner {
@@ -147,7 +149,7 @@ img {
 /* Scroll reveal */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translate3d(0, 18px, 0);
   transition:
     opacity var(--duration-slow) var(--ease-out),
     transform var(--duration-slow) var(--ease-out);

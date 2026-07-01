@@ -64,7 +64,9 @@ Then add the entry in `src/data/works.ts` with `width: 1200`, `height: 1500`.
    - `detailDescription` — optional longer text (lightbox view)
    - `medium` — one of `plaster`, `acrylic`, `resin`, `mixed`
    - `year` — completion year
-   - `images` — array of photos for the same piece (first = grid thumbnail). Each: `src`, `alt`, optional `caption` (e.g. "Detail", "In studio")
+   - `images` — array of photos for the same piece (first = grid thumbnail). Each: `src`, `alt`, optional `caption`
+   - `dimensions` — optional, e.g. `"80 × 100 cm"` (lightbox)
+   - `status` — optional: `available`, `sold`, or `private collection` (lightbox)
 4. Save and refresh — the gallery updates automatically.
 
 ## What to do next

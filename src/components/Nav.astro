@@ -54,15 +54,18 @@
 
   const hero = document.querySelector('.hero');
 
-  const onScroll = () => {
-    const scrollY = window.scrollY;
+  const onScroll = (scrollY: number) => {
     const heroEnd = hero?.offsetHeight ?? 0;
     const onHero = scrollY < heroEnd - 60;
     nav?.classList.toggle('nav--on-hero', onHero);
     nav?.classList.toggle('nav--scrolled', !onHero && scrollY > 24);
   };
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
+
+  onScroll(window.scrollY);
+  window.addEventListener('app-scroll', ((event: CustomEvent<{ scroll: number }>) => {
+    onScroll(event.detail.scroll);
+  }) as EventListener);
+  window.addEventListener('scroll', () => onScroll(window.scrollY), { passive: true });
 
   const sections = ['bio', 'mediums', 'art', 'commission']
     .map((id) => document.getElementById(id))

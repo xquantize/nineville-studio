@@ -7,17 +7,36 @@
 
 <script>
   const intro = document.querySelector('.loading-intro') as HTMLElement | null;
+  const bgImg = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
+
   if (intro && !document.documentElement.classList.contains('skip-intro')) {
     sessionStorage.setItem('seen-intro', '1');
 
-    window.setTimeout(() => {
-      intro.classList.add('fade-out');
-      intro.style.pointerEvents = 'none';
-    }, 900);
+    const minDisplay = 750;
+    const started = performance.now();
 
-    window.setTimeout(() => {
-      intro.classList.add('hidden');
-    }, 1500);
+    function dismiss() {
+      const wait = Math.max(0, minDisplay - (performance.now() - started));
+
+      window.setTimeout(() => {
+        intro.classList.add('fade-out');
+        intro.style.pointerEvents = 'none';
+      }, wait);
+
+      window.setTimeout(() => {
+        intro.classList.add('hidden');
+      }, wait + 650);
+    }
+
+    if (bgImg?.complete) {
+      dismiss();
+    } else if (bgImg) {
+      bgImg.addEventListener('load', dismiss, { once: true });
+      bgImg.addEventListener('error', dismiss, { once: true });
+      window.setTimeout(dismiss, 2200);
+    } else {
+      dismiss();
+    }
   }
 </script>
 
@@ -33,9 +52,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--sand-100);
+    background: transparent;
     opacity: 1;
-    transition: opacity 600ms var(--ease-out);
+    transition: opacity 650ms var(--ease-out);
+    pointer-events: auto;
   }
 
   .loading-intro.fade-out {
@@ -48,13 +68,14 @@
 
   .loading-intro__content {
     text-align: center;
-    animation: intro-enter 800ms var(--ease-out) both;
+    animation: intro-enter 900ms var(--ease-out) both;
+    animation-delay: 0.15s;
   }
 
   @keyframes intro-enter {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(14px);
     }
     to {
       opacity: 1;
@@ -65,9 +86,12 @@
   .loading-intro__brand {
     margin: 0;
     font-family: var(--font-serif);
-    font-size: clamp(28px, 6vw, 56px);
-    color: var(--sand-900);
-    letter-spacing: -0.01em;
+    font-size: clamp(32px, 7vw, 64px);
+    color: var(--sand-50);
+    letter-spacing: -0.02em;
+    text-shadow:
+      0 2px 28px rgba(0, 0, 0, 0.45),
+      0 0 48px rgba(0, 0, 0, 0.2);
   }
 
   .loading-intro__artist {
@@ -75,9 +99,9 @@
     font-family: var(--font-sans);
     font-size: 13px;
     font-style: italic;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--sand-700);
+    letter-spacing: 0.12em;
+    color: rgba(251, 246, 234, 0.92);
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.35);
   }
 
   @media (prefers-reduced-motion: reduce) {

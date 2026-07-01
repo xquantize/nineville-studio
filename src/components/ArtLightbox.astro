@@ -1,11 +1,13 @@
 ---
-import { works, formatWorkMeta } from '../data/works';
+import { works, formatWorkMeta, formatLightboxMeta } from '../data/works';
 
 const worksForLightbox = works.map((work) => ({
   id: work.id,
   title: work.title,
   description: work.detailDescription ?? work.description,
   meta: formatWorkMeta(work),
+  details: formatLightboxMeta(work),
+  status: work.status ?? null,
   images: work.images,
 }));
 ---
@@ -52,6 +54,7 @@ const worksForLightbox = works.map((work) => ({
         <h3 id="art-lightbox-title" class="art-lightbox__title"></h3>
         <p id="art-lightbox-desc" class="art-lightbox__desc"></p>
         <p class="art-lightbox__meta"></p>
+        <p class="art-lightbox__status" hidden></p>
       </div>
     </div>
   </div>
@@ -64,6 +67,7 @@ const worksForLightbox = works.map((work) => ({
   const titleEl = lightbox?.querySelector('.art-lightbox__title');
   const descEl = lightbox?.querySelector('.art-lightbox__desc');
   const metaEl = lightbox?.querySelector('.art-lightbox__meta');
+  const statusEl = lightbox?.querySelector('.art-lightbox__status');
   const counterEl = lightbox?.querySelector('.art-lightbox__counter');
   const prevBtn = lightbox?.querySelector('[data-lightbox-prev]');
   const nextBtn = lightbox?.querySelector('[data-lightbox-next]');
@@ -71,12 +75,25 @@ const worksForLightbox = works.map((work) => ({
   const focusableSelector =
     'button:not([hidden]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+  const statusLabels = {
+    available: 'Available',
+    sold: 'Sold',
+    'private collection': 'Private collection',
+  };
+
   let workIndex = 0;
   let imageIndex = 0;
   let lastTrigger = null;
 
   function currentWork() {
     return worksForLightbox[workIndex];
+  }
+
+  function setLenisPaused(paused) {
+    const lenis = window.__lenis;
+    if (!lenis) return;
+    if (paused) lenis.stop();
+    else lenis.start();
   }
 
   function renderImage() {
@@ -88,7 +105,19 @@ const worksForLightbox = works.map((work) => ({
     imageEl.alt = photo.alt;
     titleEl.textContent = work.title;
     descEl.textContent = work.description;
-    metaEl.textContent = work.meta;
+    metaEl.textContent = work.details;
+
+    if (statusEl) {
+      if (work.status && statusLabels[work.status]) {
+        statusEl.textContent = statusLabels[work.status];
+        statusEl.dataset.status = work.status;
+        statusEl.hidden = false;
+      } else {
+        statusEl.textContent = '';
+        statusEl.removeAttribute('data-status');
+        statusEl.hidden = true;
+      }
+    }
 
     const hasMultiple = work.images.length > 1;
     if (prevBtn) prevBtn.hidden = !hasMultiple;
@@ -141,6 +170,7 @@ const worksForLightbox = works.map((work) => ({
     lastTrigger = trigger ?? null;
     renderImage();
     lightbox.hidden = false;
+    setLenisPaused(true);
     document.body.style.overflow = 'hidden';
     lightbox.querySelector('.art-lightbox__close')?.focus();
     document.addEventListener('keydown', onKeydown);
@@ -151,6 +181,7 @@ const worksForLightbox = works.map((work) => ({
     if (!lightbox || lightbox.hidden) return;
 
     lightbox.hidden = true;
+    setLenisPaused(false);
     document.body.style.overflow = '';
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('keydown', trapFocus);
@@ -325,6 +356,23 @@ const worksForLightbox = works.map((work) => ({
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-on-veil-kicker);
+  }
+
+  .art-lightbox__status {
+    margin: var(--space-1) 0 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sand-500);
+  }
+
+  .art-lightbox__status[data-status='sold'],
+  .art-lightbox__status[data-status='private collection'] {
+    color: var(--text-on-veil-muted);
+  }
+
+  .art-lightbox__status[hidden] {
+    display: none;
   }
 
   .art-lightbox__close {
