@@ -1,5 +1,6 @@
 ---
-import { works, formatWorkMeta } from '../data/works';
+import { works, formatWorkMeta, getWorkCover } from '../data/works';
+import ArtLightbox from './ArtLightbox.astro';
 ---
 
 <section id="art" class="panel">
@@ -9,29 +10,41 @@ import { works, formatWorkMeta } from '../data/works';
 
     <div class="art__grid">
       {
-        works.map((work) => (
-          <article class="work-card" data-reveal data-reveal-stagger>
-            <div class="work-card__image-wrap">
-              <img
-                src={work.image}
-                alt={work.alt}
-                width="400"
-                height="500"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div class="work-card__body">
-              <h3 class="work-card__title">{work.title}</h3>
-              <p class="work-card__desc">{work.description}</p>
-              <p class="work-card__meta">{formatWorkMeta(work)}</p>
-            </div>
-          </article>
-        ))
+        works.map((work, index) => {
+          const cover = getWorkCover(work);
+          return (
+            <button
+              type="button"
+              class="work-card"
+              data-reveal
+              data-reveal-stagger
+              data-work-open={index}
+              aria-label={`View ${work.title}`}
+            >
+              <div class="work-card__image-wrap">
+                <img
+                  src={cover.src}
+                  alt={cover.alt}
+                  width="400"
+                  height="500"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="work-card__body">
+                <h3 class="work-card__title">{work.title}</h3>
+                <p class="work-card__desc">{work.description}</p>
+                <p class="work-card__meta">{formatWorkMeta(work)}</p>
+              </div>
+            </button>
+          );
+        })
       }
     </div>
   </div>
 </section>
+
+<ArtLightbox />
 
 <style>
   .art__grid {
@@ -41,11 +54,26 @@ import { works, formatWorkMeta } from '../data/works';
   }
 
   .work-card {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
     transition: transform var(--duration-normal) var(--ease-out);
   }
 
   .work-card:hover {
     transform: translateY(-2px);
+  }
+
+  .work-card:focus-visible {
+    outline: 2px solid var(--sand-500);
+    outline-offset: 4px;
   }
 
   .work-card__image-wrap {
@@ -67,8 +95,6 @@ import { works, formatWorkMeta } from '../data/works';
 
   .work-card__body {
     background: var(--card-bg);
-    backdrop-filter: blur(8px) saturate(1.05);
-    -webkit-backdrop-filter: blur(8px) saturate(1.05);
     padding: var(--space-2);
     border-radius: 0 0 4px 4px;
   }

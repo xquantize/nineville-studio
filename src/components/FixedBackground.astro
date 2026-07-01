@@ -1,12 +1,12 @@
-<div class="fixed-bg" aria-hidden="true">
+<div class="scroll-bg" aria-hidden="true">
   <picture>
-    <source srcset="/images/hero_background.webp" type="image/webp" />
+    <source srcset="/images/background.webp" type="image/webp" />
     <img
-      class="fixed-bg__img"
-      src="/images/hero_background.JPG"
+      class="scroll-bg__img"
+      src="/images/background.png"
       alt=""
-      width="1920"
-      height="2560"
+      width="3024"
+      height="4032"
       fetchpriority="high"
       decoding="async"
     />
@@ -14,7 +14,7 @@
 </div>
 
 <style>
-  .fixed-bg {
+  .scroll-bg {
     position: fixed;
     inset: 0;
     z-index: 0;
@@ -22,38 +22,19 @@
     pointer-events: none;
   }
 
-  .fixed-bg picture,
-  .fixed-bg__img {
+  .scroll-bg__img {
     display: block;
-  }
-
-  .fixed-bg__img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: var(--app-height, 100svh);
-    height: var(--app-width, 100vw);
-    max-width: none;
-    max-height: none;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
     object-fit: cover;
-    object-position: center;
-    transform: translate(-50%, -50%) rotate(90deg) scale(1.12);
-    transform-origin: center center;
-    animation: bg-settle 1.8s var(--ease-out) both;
-  }
-
-  @keyframes bg-settle {
-    from {
-      transform: translate(-50%, -50%) rotate(90deg) scale(1.16);
-    }
-    to {
-      transform: translate(-50%, -50%) rotate(90deg) scale(1.12);
-    }
+    object-position: top center;
+    will-change: transform;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fixed-bg__img {
-      animation: none;
+    .scroll-bg__img {
+      will-change: auto;
     }
   }
 </style>

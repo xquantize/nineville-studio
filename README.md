@@ -60,11 +60,11 @@ Then add the entry in `src/data/works.ts` with `width: 1200`, `height: 1500`.
 3. Update:
    - `id` — unique slug (e.g. `w07`)
    - `title` — painting title
-   - `description` — one-line description
+   - `description` — one-line summary (grid card)
+   - `detailDescription` — optional longer text (lightbox view)
    - `medium` — one of `plaster`, `acrylic`, `resin`, `mixed`
    - `year` — completion year
-   - `image` — path under `public/` (e.g. `/images/works/my-piece.webp`)
-   - `alt` — accessible description of the work
+   - `images` — array of photos for the same piece (first = grid thumbnail). Each: `src`, `alt`, optional `caption` (e.g. "Detail", "In studio")
 4. Save and refresh — the gallery updates automatically.
 
 ## What to do next

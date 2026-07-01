@@ -10,9 +10,9 @@
 
   /* Panel — dark frosted tint (matches blue/gold painting, not white cream) */
   --veil-dark: 22, 26, 36;
-  --panel-bg: rgba(var(--veil-dark), 0.62);
-  --panel-bg-strong: rgba(var(--veil-dark), 0.78);
-  --card-bg: rgba(32, 36, 48, 0.5);
+  --panel-bg: rgba(var(--veil-dark), 0.48);
+  --panel-bg-strong: rgba(var(--veil-dark), 0.62);
+  --card-bg: rgba(32, 36, 48, 0.42);
   --panel-blur: 12px;
   --text-on-veil: #e8e2d4;
   --text-on-veil-muted: rgba(232, 226, 212, 0.72);
@@ -51,7 +51,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: var(--nav-height);
   background: #1a1e28;
   overflow-x: clip;
@@ -65,23 +64,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-main,
-footer {
+main {
   position: relative;
-  z-index: 1;
 }
 
-/* Content sections — frost eases in over a tall gradient (no hard seam) */
+/* Content sections — frosted tint over the painting */
 .content-veil {
   position: relative;
+  z-index: 1;
   color: var(--text-on-veil);
   background: linear-gradient(
     180deg,
     rgba(var(--veil-dark), 0) 0%,
-    rgba(26, 30, 44, 0.22) calc(var(--hero-fade) * 0.35),
-    rgba(var(--veil-dark), 0.48) calc(var(--hero-fade) * 0.7),
-    var(--panel-bg) var(--hero-fade),
-    var(--panel-bg) 100%
+    rgba(var(--veil-dark), 0.14) calc(var(--hero-fade) * 0.5),
+    rgba(var(--veil-dark), 0.32) var(--hero-fade),
+    rgba(var(--veil-dark), 0.45) 100%
   );
   backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
   -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.05);

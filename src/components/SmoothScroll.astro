@@ -1,0 +1,86 @@
+<script>
+  import Lenis from 'lenis';
+
+  const img = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function panOffset(scrollY: number) {
+    if (!img?.complete) return 0;
+
+    const viewH = window.innerHeight;
+    const imgH = img.getBoundingClientRect().height;
+    const maxPan = Math.max(0, imgH - viewH);
+    const docH = document.documentElement.scrollHeight - viewH;
+
+    return docH > 0 ? (scrollY / docH) * maxPan : 0;
+  }
+
+  function applyPan(scrollY: number) {
+    if (!img) return;
+    img.style.transform = `translate3d(0, ${-panOffset(scrollY)}px, 0)`;
+  }
+
+  function bindAnchors(lenis: Lenis) {
+    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        event.preventDefault();
+
+        if (href === '#') {
+          lenis.scrollTo(0, { duration: 1.4 });
+          return;
+        }
+
+        const target = document.querySelector(href);
+        if (target) {
+          lenis.scrollTo(target, { offset: 0, duration: 1.4 });
+        }
+      });
+    });
+  }
+
+  function initWithLenis() {
+    const lenis = new Lenis({
+      lerp: 0.08,
+      duration: 1.4,
+      smoothWheel: true,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.4,
+      infinite: false,
+    });
+
+    lenis.on('scroll', ({ scroll }) => applyPan(scroll));
+    bindAnchors(lenis);
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+    applyPan(0);
+  }
+
+  function initNative() {
+    const onScroll = () => applyPan(window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+  }
+
+  function start() {
+    if (reducedMotion) {
+      initNative();
+      return;
+    }
+    initWithLenis();
+  }
+
+  if (img?.complete) {
+    start();
+  } else {
+    img?.addEventListener('load', start);
+  }
+</script>

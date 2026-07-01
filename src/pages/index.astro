@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import LoadingIntro from '../components/LoadingIntro.astro';
 import FixedBackground from '../components/FixedBackground.astro';
+import SmoothScroll from '../components/SmoothScroll.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
 import Bio from '../components/Bio.astro';
@@ -13,9 +14,10 @@ import Footer from '../components/Footer.astro';
 
 <Layout>
   <LoadingIntro />
-  <FixedBackground />
   <Nav />
   <main>
+    <FixedBackground />
+    <SmoothScroll />
     <Hero />
     <div class="content-veil">
       <Bio />
