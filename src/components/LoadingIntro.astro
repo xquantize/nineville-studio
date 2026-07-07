@@ -33,31 +33,19 @@
     const fadeDuration = 1000;
     const started = performance.now();
 
-    // iOS Safari can defer painting the fade-out (and the content revealed
-    // behind it) until the first touch when a fixed background is present.
-    // Briefly promoting <main> to its own layer forces an immediate repaint.
-    const mainEl = document.querySelector('main') as HTMLElement | null;
-    function nudgeRepaint() {
-      if (!mainEl) return;
-      mainEl.style.transform = 'translateZ(0)';
-      void mainEl.offsetHeight;
-      requestAnimationFrame(() => {
-        mainEl.style.transform = '';
-      });
-    }
-
     function dismiss() {
       const wait = Math.max(0, minDisplay - (performance.now() - started));
 
       window.setTimeout(() => {
         intro.classList.add('fade-out');
         intro.style.pointerEvents = 'none';
-        nudgeRepaint();
+        // Trigger the hero entrance as the overlay begins to clear so it
+        // animates in on a visible, freshly-painted frame.
+        document.documentElement.classList.add('hero-ready');
       }, wait);
 
       window.setTimeout(() => {
         intro.classList.add('hidden');
-        nudgeRepaint();
       }, wait + fadeDuration);
     }
 

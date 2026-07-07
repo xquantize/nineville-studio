@@ -31,19 +31,23 @@
   .hero__content {
     width: 100%;
     text-align: left;
-    animation: hero-enter 1.4s var(--ease-gentle) both;
-    animation-delay: 0.3s;
+    /* Own compositor layer so it paints reliably on iOS even while the
+       loading overlay is on top of it. */
+    will-change: transform, opacity;
   }
 
-  @keyframes hero-enter {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
+  /* Hidden only while JS controls the intro; revealed via .hero-ready. */
+  html.js-hero .hero__content {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  html.js-hero.hero-ready .hero__content {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 1.3s var(--ease-gentle),
+      transform 1.3s var(--ease-gentle);
   }
 
   .hero__title {
@@ -83,9 +87,16 @@
     justify-content: center;
     opacity: 0.8;
     transition: opacity var(--duration-normal) var(--ease-out);
-    animation: hero-enter 1.2s var(--ease-gentle) both;
-    animation-delay: 0.7s;
     z-index: 1;
+  }
+
+  html.js-hero .hero__scroll {
+    opacity: 0;
+  }
+
+  html.js-hero.hero-ready .hero__scroll {
+    opacity: 0.8;
+    transition: opacity 1.2s var(--ease-gentle) 0.5s;
   }
 
   .hero::after {
@@ -143,9 +154,17 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero__content,
-    .hero__scroll {
-      animation: none;
+    html.js-hero .hero__content,
+    html.js-hero.hero-ready .hero__content {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    html.js-hero .hero__scroll,
+    html.js-hero.hero-ready .hero__scroll {
+      opacity: 0.8;
+      transition: none;
     }
 
     .hero__chevron {
