@@ -88,9 +88,7 @@
   }
 
   .bio__text {
-    text-align: justify;
-    text-justify: inter-word;
-    hyphens: auto;
+    text-align: left;
   }
 
   .bio__text p {
@@ -103,6 +101,7 @@
     margin-bottom: 0;
   }
 
+  /* Tablet+ — larger circle, justified text with a clean right edge */
   @media (min-width: 768px) {
     .bio__portrait {
       width: 12rem;
@@ -111,6 +110,9 @@
 
     .bio__text {
       padding-top: var(--space-2);
+      text-align: justify;
+      text-justify: inter-word;
+      hyphens: auto;
     }
 
     .bio__text-clear {
@@ -118,15 +120,18 @@
     }
   }
 
+  /* Phones — stack: portrait on top, all text below full-width */
   @media (max-width: 767px) {
     .bio__portrait {
-      width: 7rem;
-      margin-right: var(--space-2);
+      float: none;
+      width: 8.5rem;
+      margin: 0 0 var(--space-3);
     }
 
     .bio__text p {
       font-size: 15px;
-      line-height: 1.6;
+      line-height: 1.62;
+      margin-bottom: var(--space-2);
     }
   }
 </style>
