@@ -4,6 +4,9 @@
   const img = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // On touch devices the JS-lerped pan fights native momentum scroll and
+  // causes jank, so keep the background static there.
+  const panBackground = finePointer && !reducedMotion;
 
   const BASE_SCALE = 1.016;
 
@@ -51,6 +54,7 @@
   }
 
   function setTargetPan(scrollY: number) {
+    if (!panBackground) return;
     targetPan = panOffset(scrollY);
 
     if (Math.abs(targetPan - currentPan) >= 0.05) {

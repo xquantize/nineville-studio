@@ -68,6 +68,19 @@
     }
   }
 
+  /* On phones the background is static (no JS pan), so drop the GPU layer
+     hint and pause the blend-mode animation — both are costly to repaint. */
+  @media (max-width: 767px) {
+    .scroll-bg__img {
+      will-change: auto;
+    }
+
+    .scroll-bg__atmosphere {
+      animation: none;
+      opacity: 0.32;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .scroll-bg__img {
       transform: translate3d(0, 0, 0);

@@ -77,7 +77,13 @@ import MediaFrame from './MediaFrame.astro';
     border-radius: 4px 4px 0 0;
     aspect-ratio: 4 / 5;
     transform-style: preserve-3d;
-    will-change: transform;
+  }
+
+  /* Only promote to a GPU layer where the tilt effect actually runs. */
+  @media (hover: hover) and (pointer: fine) {
+    .work-card__image-wrap {
+      will-change: transform;
+    }
   }
 
   .work-card__status {

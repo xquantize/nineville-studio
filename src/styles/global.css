@@ -254,11 +254,13 @@ img {
     --hero-fade: clamp(4rem, 12vh, 7rem);
   }
 
-  /* Tighter veil gutter — sections read as grouped cards */
+  /* Tighter veil gutter — sections read as grouped cards.
+     Subtle blur for depth; kept light (6px) so mobile GPUs stay smooth
+     now that the background pan and atmosphere animation are disabled here. */
   .content-veil {
     padding: var(--space-2) var(--space-2) var(--space-4);
-    backdrop-filter: blur(8px) saturate(1.03);
-    -webkit-backdrop-filter: blur(8px) saturate(1.03);
+    backdrop-filter: blur(6px) saturate(1.03);
+    -webkit-backdrop-filter: blur(6px) saturate(1.03);
   }
 
   .content-veil::before {
@@ -274,7 +276,7 @@ img {
     padding: var(--space-4) var(--space-3);
     margin-bottom: var(--space-2);
     border-radius: 8px;
-    background: rgba(32, 36, 48, 0.38);
+    background: rgba(20, 24, 34, 0.55);
     border: 0.5px solid rgba(184, 154, 106, 0.14);
   }
 

@@ -94,12 +94,41 @@ const ogImageUrl = absoluteUrl(ogImage);
     <slot />
     <script is:inline>
       (function () {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var reveals = Array.prototype.slice.call(
+          document.querySelectorAll('[data-reveal], [data-reveal-fade]')
+        );
 
-        var reveals = document.querySelectorAll('[data-reveal], [data-reveal-fade]');
-        if (!reveals.length) return;
+        // Media frames fade in once their image decodes (runs on all devices).
+        document.querySelectorAll('[data-media-frame]').forEach(function (img) {
+          function markLoaded() {
+            img.classList.add('is-loaded');
+            if (img.parentElement) img.parentElement.classList.add('is-loaded');
+          }
+          if (img.complete && img.naturalWidth > 0) {
+            markLoaded();
+          } else {
+            img.addEventListener('load', markLoaded, { once: true });
+            img.addEventListener(
+              'error',
+              function () {
+                if (img.parentElement) img.parentElement.classList.add('is-error');
+              },
+              { once: true }
+            );
+          }
+        });
 
-        var observerOptions = { threshold: 0.01, rootMargin: '120px 0px -40px 0px' };
+        function revealAll() {
+          reveals.forEach(function (el) {
+            el.classList.add('is-visible');
+          });
+        }
+
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || !reveals.length || !('IntersectionObserver' in window)) {
+          revealAll();
+          return;
+        }
 
         var observer = new IntersectionObserver(
           function (entries) {
@@ -110,32 +139,32 @@ const ogImageUrl = absoluteUrl(ogImage);
               }
             });
           },
-          observerOptions
+          { threshold: 0.05, rootMargin: '0px 0px -8% 0px' }
         );
 
         reveals.forEach(function (el) {
           observer.observe(el);
         });
 
-        document.querySelectorAll('[data-media-frame]').forEach(function (img) {
-          function markLoaded() {
-            img.classList.add('is-loaded');
-            img.parentElement?.classList.add('is-loaded');
-          }
+        // Reveal anything already on screen right away. On mobile Safari a
+        // fixed-position background can delay the observer's first paint until
+        // the user scrolls, leaving content invisible on load — this forces it.
+        function revealInView() {
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          reveals.forEach(function (el) {
+            if (el.classList.contains('is-visible')) return;
+            var r = el.getBoundingClientRect();
+            if (r.top < vh * 0.98 && r.bottom > 0) {
+              el.classList.add('is-visible');
+              observer.unobserve(el);
+            }
+          });
+        }
 
-          if (img.complete && img.naturalWidth > 0) {
-            markLoaded();
-          } else {
-            img.addEventListener('load', markLoaded, { once: true });
-            img.addEventListener(
-              'error',
-              function () {
-                img.parentElement?.classList.add('is-error');
-              },
-              { once: true }
-            );
-          }
+        requestAnimationFrame(function () {
+          requestAnimationFrame(revealInView);
         });
+        window.addEventListener('load', revealInView);
       })();
     </script>
   </body>
