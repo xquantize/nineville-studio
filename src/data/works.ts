@@ -93,7 +93,7 @@ function piece(
 
 export const works: Work[] = [
   piece('w01', 'beautiful-coral', 'Beautiful Coral', 8),
-  piece('w02', 'surfboard', 'Surfboard', 5),
+  piece('w02', 'surfboard', 'Surfboard', 6),
   piece('w03', 'beige-coral', 'Beige Coral', 2),
   piece('w04', 'blue-coral', 'Blue Coral', 2),
   piece('w05', 'blue-flower', 'Blue Flower', 2),
