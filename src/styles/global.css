@@ -33,7 +33,7 @@
   --space-16: 8rem;
 
   /* Layout */
-  --content-max: 1320px;
+  --content-max: 1440px;
   --content-padding: clamp(1.5rem, 4vw, 4rem);
   --nav-height: 56px;
   --scroll-anchor-offset: calc(var(--nav-height) + env(safe-area-inset-top, 0px));
