@@ -126,6 +126,22 @@
     }
   }
 
+  @media (max-width: 767px) {
+    .hero__title {
+      font-size: clamp(36px, 11vw, 52px);
+      line-height: 1.08;
+    }
+
+    .hero__subtitle {
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .hero {
+      padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero__content,
     .hero__scroll {

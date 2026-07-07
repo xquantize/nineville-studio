@@ -14,6 +14,7 @@
   .commission {
     text-align: center;
     max-width: 560px;
+    margin: 0 auto;
   }
 
   .commission__heading {
@@ -55,5 +56,20 @@
   .commission__button:active {
     transform: translateY(0);
     box-shadow: none;
+  }
+
+  @media (max-width: 767px) {
+    .commission__heading {
+      font-size: 28px;
+    }
+
+    .commission__button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
+    }
   }
 </style>

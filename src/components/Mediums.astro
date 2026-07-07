@@ -28,8 +28,8 @@ import { mediums } from '../data/mediums';
 <style>
   .mediums__grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
     align-items: stretch;
   }
 
@@ -91,9 +91,34 @@ import { mediums } from '../data/mediums';
     color: var(--text-on-veil-muted);
   }
 
-  @media (min-width: 540px) {
+  @media (max-width: 767px) {
+    .medium-card__body {
+      padding: var(--space-1) var(--space-1) var(--space-2);
+      min-height: auto;
+    }
+
+    .medium-card__name {
+      font-size: 15px;
+      line-height: 1.25;
+      margin-bottom: 0;
+    }
+
+    .medium-card__desc {
+      display: none;
+    }
+
+    .medium-card:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .medium-card:hover .medium-card__image img {
+      transform: none;
+    }
+  }
+
+  @media (min-width: 768px) {
     .mediums__grid {
-      grid-template-columns: repeat(2, 1fr);
       gap: var(--space-4);
     }
   }

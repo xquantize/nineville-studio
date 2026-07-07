@@ -40,9 +40,9 @@
       lerp: 0.075,
       duration: 1.35,
       smoothWheel: true,
-      syncTouch: true,
+      syncTouch: window.matchMedia('(pointer: fine)').matches,
       wheelMultiplier: 0.85,
-      touchMultiplier: 1.15,
+      touchMultiplier: 1,
       infinite: false,
     });
 
@@ -56,6 +56,13 @@
     window.addEventListener('resize', () => {
       updatePanMetrics();
       applyPan(lenis.scroll);
+    });
+
+    window.addEventListener('orientationchange', () => {
+      window.setTimeout(() => {
+        updatePanMetrics();
+        applyPan(lenis.scroll);
+      }, 200);
     });
 
     applyPan(0);

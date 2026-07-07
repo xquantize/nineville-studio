@@ -13,6 +13,24 @@ npm run dev
 
 Open the local URL shown in the terminal (usually `http://localhost:4321`).
 
+### Test on your phone (same Wi‑Fi)
+
+```bash
+npm run dev -- --host
+```
+
+The terminal prints a **Network** URL (e.g. `http://192.168.x.x:4321`). Open that on your phone.
+
+### Test responsive layouts in the browser
+
+1. Run `npm run dev` (or `npm run build && npm run preview` for a production-like check).
+2. Open the site in **Chrome** or **Firefox**.
+3. Toggle device mode: `Ctrl+Shift+M` (Windows/Linux) or `Cmd+Shift+M` (Mac).
+4. Pick presets (**iPhone 14**, **Pixel 7**) or drag the width handle — the mobile layout kicks in below **768px**.
+5. Check: landing hero, hamburger menu, scroll through Bio → Art, tap a work (lightbox), rotate to landscape.
+
+Clear the loading intro between tests: DevTools → Application → Session Storage → delete `seen-intro`, then refresh.
+
 ## Build
 
 ```bash
