@@ -139,7 +139,7 @@ const ogImageUrl = absoluteUrl(ogImage);
               }
             });
           },
-          { threshold: 0.05, rootMargin: '0px 0px -8% 0px' }
+          { threshold: 0.01, rootMargin: '0px 0px 12% 0px' }
         );
 
         reveals.forEach(function (el) {
@@ -147,12 +147,17 @@ const ogImageUrl = absoluteUrl(ogImage);
         });
 
         // iOS Safari can withhold the first paint of content layered over a
-        // fixed background until the user interacts. Toggling body opacity
-        // forces an immediate compositor repaint.
-        function nudgeRepaint() {
-          document.body.style.opacity = '0.9999';
+        // fixed background until the user interacts. Briefly promoting <main>
+        // to its own layer forces the compositor to repaint its subtree.
+        // (The fixed background and nav are siblings of <main>, not children,
+        // so this transform can't break their positioning.)
+        var mainEl = document.querySelector('main');
+        function forceRepaint() {
+          if (!mainEl) return;
+          mainEl.style.transform = 'translateZ(0)';
+          void mainEl.offsetHeight;
           requestAnimationFrame(function () {
-            document.body.style.opacity = '';
+            mainEl.style.transform = '';
           });
         }
 
@@ -169,13 +174,18 @@ const ogImageUrl = absoluteUrl(ogImage);
               observer.unobserve(el);
             }
           });
-          nudgeRepaint();
+          forceRepaint();
         }
 
         requestAnimationFrame(function () {
           requestAnimationFrame(revealInView);
         });
         window.addEventListener('load', revealInView);
+        window.addEventListener('pageshow', revealInView);
+        // Repeat a few times to cover the intro fade-out and late layout.
+        [150, 500, 1000, 1800].forEach(function (t) {
+          window.setTimeout(revealInView, t);
+        });
       })();
     </script>
   </body>

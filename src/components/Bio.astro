@@ -128,6 +128,13 @@
       margin: 0 0 var(--space-3);
     }
 
+    /* Soften the lower-res mobile background showing through the circle.
+       Scale up slightly so the blur's soft edges stay outside the frame. */
+    .bio__portrait-window {
+      filter: blur(2.5px);
+      transform: scale(1.12);
+    }
+
     .bio__text p {
       font-size: 16px;
       line-height: 1.65;

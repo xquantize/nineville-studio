@@ -35,11 +35,14 @@
 
     // iOS Safari can defer painting the fade-out (and the content revealed
     // behind it) until the first touch when a fixed background is present.
-    // Toggling body opacity forces an immediate compositor repaint.
+    // Briefly promoting <main> to its own layer forces an immediate repaint.
+    const mainEl = document.querySelector('main') as HTMLElement | null;
     function nudgeRepaint() {
-      document.body.style.opacity = '0.9999';
+      if (!mainEl) return;
+      mainEl.style.transform = 'translateZ(0)';
+      void mainEl.offsetHeight;
       requestAnimationFrame(() => {
-        document.body.style.opacity = '';
+        mainEl.style.transform = '';
       });
     }
 
