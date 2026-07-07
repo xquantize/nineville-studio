@@ -40,17 +40,20 @@ npm run preview   # preview the production build locally
 
 ## Image guidelines
 
-### Hero (landing background)
+### Full-page background (scroll painting)
 
-- Source: best photo of the hero painting, portrait orientation is fine (the site rotates it).
-- Export: **WebP**, longest edge **1920px**, target **under 450 KB**.
-- File: `public/images/hero_background.webp` (JPEG kept as fallback).
+- Source: high-res photo or scan of the painting used behind the site.
+- Export: **WebP only** (no PNG in `public/` — keeps deploy size down).
+- Desktop: longest edge **2048px**, target **under 750 KB** → `public/images/background.webp`
+- Mobile: longest edge **1280px**, target **under 250 KB** → `public/images/background-mobile.webp`
 - Re-optimize after replacing the source:
 
 ```bash
 chmod +x scripts/optimize-images.sh
-./scripts/optimize-images.sh hero path/to/your-photo.jpg
+./scripts/optimize-images.sh background path/to/your-painting.png
 ```
+
+Keep the original PNG/JPEG outside the repo (or locally only). `public/images/background.png` is gitignored.
 
 ### Gallery works (consistent grid)
 

@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Full-size painting source — keep outside repo; run optimize-images.sh to regenerate WebP
+public/images/background.png

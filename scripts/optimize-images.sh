@@ -3,13 +3,11 @@
 # Requires ImageMagick (`convert`).
 #
 # Usage:
-#   ./scripts/optimize-images.sh hero path/to/photo.jpg
 #   ./scripts/optimize-images.sh background path/to/painting.png
 #   ./scripts/optimize-images.sh work path/to/painting.jpg [output-name]
 #
-# Hero: max 1920px, WebP ~78 quality → public/images/hero_background.webp
-# Background: max 2048px, WebP ~85 quality → public/images/background.webp
-# Work:  cropped to 4:5 at 1200×1500, WebP ~82 quality → public/images/works/
+# Background: desktop WebP max 2048px + mobile WebP max 1280px
+# Work: cropped to 4:5 at 1200×1500, WebP ~82 quality → public/images/works/
 
 set -euo pipefail
 
@@ -18,7 +16,7 @@ INPUT="${2:-}"
 OUTPUT_NAME="${3:-}"
 
 if [[ -z "$MODE" || -z "$INPUT" ]]; then
-  echo "Usage: $0 hero <file.jpg> | background <file.png> | work <file.jpg> [output-name]"
+  echo "Usage: $0 background <file.png> | work <file.jpg> [output-name]"
   exit 1
 fi
 
@@ -30,15 +28,13 @@ fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 case "$MODE" in
-  hero)
-    OUT="$ROOT/public/images/hero_background.webp"
-    convert "$INPUT" -auto-orient -resize "1920x1920>" -quality 78 -define webp:method=6 "$OUT"
-    echo "Wrote $OUT ($(du -h "$OUT" | cut -f1))"
-    ;;
   background)
-    OUT="$ROOT/public/images/background.webp"
-    convert "$INPUT" -auto-orient -resize "2048x2048>" -quality 85 -define webp:method=6 "$OUT"
-    echo "Wrote $OUT ($(du -h "$OUT" | cut -f1))"
+    DESKTOP="$ROOT/public/images/background.webp"
+    MOBILE="$ROOT/public/images/background-mobile.webp"
+    convert "$INPUT" -auto-orient -resize "2048x2048>" -quality 85 -define webp:method=6 "$DESKTOP"
+    convert "$INPUT" -auto-orient -resize "1280x1280>" -quality 80 -define webp:method=6 "$MOBILE"
+    echo "Wrote $DESKTOP ($(du -h "$DESKTOP" | cut -f1))"
+    echo "Wrote $MOBILE ($(du -h "$MOBILE" | cut -f1))"
     ;;
   work)
     BASENAME="${OUTPUT_NAME:-$(basename "$INPUT" | sed 's/\.[^.]*$//')}"
@@ -49,7 +45,7 @@ case "$MODE" in
     echo "Add to src/data/works.ts with image: '/images/works/${BASENAME}.webp'"
     ;;
   *)
-    echo "Unknown mode: $MODE (use hero or work)"
+    echo "Unknown mode: $MODE (use background or work)"
     exit 1
     ;;
 esac

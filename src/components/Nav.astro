@@ -20,19 +20,36 @@
       </svg>
     </button>
 
-    <div id="nav-menu" class="nav__links">
-      <a href="#bio" class="nav__link" data-section="bio">Bio</a>
-      <a href="#mediums" class="nav__link" data-section="mediums">Mediums</a>
-      <a href="#art" class="nav__link" data-section="art">Art</a>
-      <a href="#commission" class="nav__link" data-section="commission">Commission</a>
+    <div id="nav-menu" class="nav__panel">
+      <div class="nav__links">
+        <a href="#bio" class="nav__link" data-section="bio">Bio</a>
+        <a href="#mediums" class="nav__link" data-section="mediums">Mediums</a>
+        <a href="#art" class="nav__link" data-section="art">Art</a>
+        <a href="#commission" class="nav__link" data-section="commission">Commission</a>
+      </div>
     </div>
   </div>
+
+  <button type="button" class="nav__backdrop" aria-label="Close menu" tabindex="-1"></button>
 </nav>
 
 <script>
   const nav = document.querySelector('.nav');
   const toggle = document.querySelector('.nav__toggle');
+  const panel = document.querySelector('.nav__panel');
+  const backdrop = document.querySelector('.nav__backdrop');
   const links = document.querySelectorAll('.nav__link');
+  const mobileQuery = window.matchMedia('(max-width: 767px)');
+
+  function syncPanelA11y() {
+    if (!panel) return;
+    if (mobileQuery.matches) {
+      panel.setAttribute('aria-hidden', String(!nav?.classList.contains('nav--open')));
+    } else {
+      panel.removeAttribute('aria-hidden');
+      closeMenu();
+    }
+  }
 
   function setMenuOpen(isOpen: boolean) {
     const lenis = window.__lenis;
@@ -40,7 +57,7 @@
       if (isOpen) lenis.stop();
       else lenis.start();
     }
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    syncPanelA11y();
   }
 
   function closeMenu() {
@@ -50,11 +67,24 @@
     setMenuOpen(false);
   }
 
+  function openMenu() {
+    nav?.classList.add('nav--open');
+    toggle?.setAttribute('aria-expanded', 'true');
+    toggle?.setAttribute('aria-label', 'Close menu');
+    setMenuOpen(true);
+  }
+
   toggle?.addEventListener('click', () => {
-    const isOpen = nav?.classList.toggle('nav--open') ?? false;
-    toggle.setAttribute('aria-expanded', String(isOpen));
-    toggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-    setMenuOpen(isOpen);
+    if (nav?.classList.contains('nav--open')) closeMenu();
+    else openMenu();
+  });
+
+  backdrop?.addEventListener('click', closeMenu);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav?.classList.contains('nav--open')) {
+      closeMenu();
+    }
   });
 
   links.forEach((link) => {
@@ -97,6 +127,9 @@
 
     sections.forEach((section) => observer.observe(section));
   }
+
+  syncPanelA11y();
+  mobileQuery.addEventListener('change', syncPanelA11y);
 </script>
 
 <style>
@@ -134,8 +167,15 @@
     color: var(--sand-200);
   }
 
-  .nav--on-hero .nav__link::after {
-    background: var(--sand-200);
+  .nav--open {
+    background: rgba(var(--veil-dark), 0.94);
+    border-bottom-color: rgba(184, 154, 106, 0.22);
+  }
+
+  .nav--on-hero.nav--open .nav__brand,
+  .nav--on-hero.nav--open .nav__toggle {
+    color: var(--text-on-veil);
+    text-shadow: none;
   }
 
   .nav__brand,
@@ -219,48 +259,106 @@
     display: block;
   }
 
-  .nav__links {
+  .nav__backdrop {
     display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-6);
     position: fixed;
     inset: 0;
-    top: calc(var(--nav-height) + env(safe-area-inset-top, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: rgba(var(--veil-dark), 0.95);
-    z-index: 99;
+    z-index: 98;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(10, 12, 18, 0.35);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .nav--open .nav__links {
+  .nav--open .nav__backdrop {
+    display: block;
+  }
+
+  .nav__links {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.35rem 0;
+    background: rgba(var(--veil-dark), 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 0.5px solid rgba(184, 154, 106, 0.28);
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+    overflow: hidden;
   }
 
   .nav__link {
-    font-family: var(--font-serif);
-    font-size: 28px;
-    letter-spacing: -0.01em;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     text-decoration: none;
+    text-shadow: none;
+    padding: 0.9rem 1.15rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    color: var(--text-on-veil);
+    border-bottom: 0.5px solid rgba(184, 154, 106, 0.14);
     transition:
-      color var(--duration-fast) var(--ease-out),
-      opacity var(--duration-fast) var(--ease-out),
-      transform var(--duration-normal) var(--ease-out);
-    opacity: 0;
-    transform: translateY(12px);
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
   }
 
-  .nav--open .nav__link {
-    opacity: 1;
-    transform: translateY(0);
+  .nav__link:last-child {
+    border-bottom: none;
   }
 
-  .nav--open .nav__link:nth-child(1) { transition-delay: 60ms; }
-  .nav--open .nav__link:nth-child(2) { transition-delay: 110ms; }
-  .nav--open .nav__link:nth-child(3) { transition-delay: 160ms; }
-  .nav--open .nav__link:nth-child(4) { transition-delay: 210ms; }
+  .nav__link:hover,
+  .nav__link.is-active {
+    background: rgba(184, 154, 106, 0.1);
+    color: var(--sand-200);
+  }
+
+  .nav__link::after {
+    display: none;
+  }
 
   @media (max-width: 767px) {
+    .nav__panel {
+      position: fixed;
+      z-index: 99;
+      top: calc(var(--nav-height) + env(safe-area-inset-top, 0px));
+      right: var(--content-padding);
+      left: auto;
+      width: min(17.5rem, calc(100vw - var(--content-padding) * 2));
+      pointer-events: none;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top right;
+      transition:
+        opacity var(--duration-fast) var(--ease-out),
+        transform var(--duration-normal) var(--ease-out),
+        visibility var(--duration-fast) var(--ease-out);
+    }
+
+    .nav--open .nav__panel {
+      pointer-events: auto;
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .nav--on-hero .nav__link {
+      color: var(--text-on-veil);
+      text-shadow: none;
+    }
+
+    .nav--on-hero .nav__link:hover,
+    .nav--on-hero .nav__link.is-active {
+      color: var(--sand-200);
+    }
+
     .nav__brand {
       font-size: 14px;
       max-width: calc(100vw - 5rem);
@@ -271,35 +369,63 @@
   }
 
   @media (min-width: 768px) {
-    .nav__toggle {
-      display: none;
+    .nav--open {
+      background: rgba(var(--veil-dark), 0.88);
+    }
+
+    .nav--on-hero.nav--open {
+      background: rgba(var(--veil-dark), 0.42);
+    }
+
+    .nav--on-hero.nav--open .nav__brand,
+    .nav--on-hero.nav--open .nav__toggle {
+      color: var(--sand-50);
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .nav__toggle,
+    .nav__backdrop {
+      display: none !important;
+    }
+
+    .nav__panel {
+      position: static;
+      width: auto;
     }
 
     .nav__links {
-      display: flex;
-      position: static;
       flex-direction: row;
       align-items: center;
       gap: var(--space-4);
+      padding: 0;
       background: none;
-      inset: auto;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
     }
 
     .nav__link {
-      font-family: var(--font-sans);
       font-size: 13px;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
-      opacity: 1;
-      transform: none;
+      padding: 0;
+      min-height: auto;
+      display: block;
+      border-bottom: none;
+      background: none;
       transition: color var(--duration-fast) var(--ease-out);
-      transition-delay: 0ms;
+    }
+
+    .nav__link:hover,
+    .nav__link.is-active {
       background: none;
     }
 
     .nav__link::after {
-      content: '';
       display: block;
+      content: '';
       width: 0;
       height: 1px;
       margin-top: 2px;
@@ -318,13 +444,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .nav__links,
+    .nav__panel,
     .nav__link {
       transition: none;
-    }
-
-    .nav--open .nav__link {
-      transition-delay: 0ms;
     }
   }
 </style>
