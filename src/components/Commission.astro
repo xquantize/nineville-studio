@@ -1,10 +1,14 @@
+---
+import { site } from '../data/site';
+---
+
 <section id="commission" class="panel">
   <div class="panel-inner commission">
     <h2 class="commission__heading" data-reveal>Commissions</h2>
     <p class="commission__body" data-reveal>
       Commissions are currently open. Get in touch to discuss a piece for your space.
     </p>
-    <a class="commission__button" href="mailto:hello@nineville.studio" data-reveal>
+    <a class="commission__button" href={`mailto:${site.email}`} data-reveal>
       Email Laura
     </a>
   </div>

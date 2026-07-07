@@ -1,3 +1,7 @@
+---
+import SocialLinks from './SocialLinks.astro';
+---
+
 <footer class="footer">
   <div class="panel-inner footer__grid">
     <div class="footer__col">
@@ -6,18 +10,8 @@
     </div>
 
     <div class="footer__col">
-      <p class="footer__label">Contact</p>
-      <p>
-        <a href="mailto:hello@nineville.studio">
-          <span class="placeholder">[PLACEHOLDER: hello@nineville.studio]</span>
-        </a>
-      </p>
-      <p>
-        Instagram:
-        <a href="https://instagram.com/nineville.studio" target="_blank" rel="noopener noreferrer">
-          <span class="placeholder">[PLACEHOLDER: @nineville.studio]</span>
-        </a>
-      </p>
+      <p class="footer__label">Connect</p>
+      <SocialLinks />
     </div>
 
     <div class="footer__col footer__col--copy">
@@ -51,28 +45,15 @@
   }
 
   .footer__label {
-    margin: 0 0 var(--space-1);
+    margin: 0 0 var(--space-2);
     font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-on-veil-kicker);
   }
 
-  .footer__col p {
-    margin: 0 0 0.35rem;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .footer__col a {
-    text-decoration: none;
-  }
-
-  .footer__col a:hover {
-    color: var(--sand-200);
-  }
-
   .footer__copyright {
+    margin: 0;
     font-size: 12px;
     color: var(--text-on-veil-muted);
   }
