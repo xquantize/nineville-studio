@@ -6,6 +6,10 @@ export const site = {
   url: 'https://nineville.studio',
   locale: 'en_NZ',
   email: 'hello@nineville.studio',
+  /** External Sip & Paint booking or info page */
+  workshopUrl: 'https://nineville.studio/workshops',
+  /** Mailing list form action (e.g. Mailchimp POST URL) */
+  mailingListUrl: '',
   instagram: {
     handle: 'nineville.studio',
     url: 'https://instagram.com/nineville.studio',

@@ -1,0 +1,90 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="panel">
+  <div class="panel-inner workshops">
+    <p class="section-kicker" data-reveal>Learn &amp; create</p>
+    <h2 id="workshops" class="section-heading workshops__heading" data-reveal>Workshops</h2>
+
+    <h3 class="workshops__title" data-reveal>Sip and Paint</h3>
+
+    <p class="workshops__body" data-reveal>
+      Discover a unique painting experience where colour, texture and creativity come together.
+      Create your own tactile artwork while learning techniques that turn a blank canvas into
+      something truly personal.
+    </p>
+
+    <a
+      class="workshops__button"
+      href={site.workshopUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-reveal
+    >
+      Book a workshop
+    </a>
+  </div>
+</section>
+
+<style>
+  .workshops__heading {
+    margin-bottom: var(--space-4);
+  }
+
+  .workshops__title {
+    margin: 0 0 var(--space-3);
+    font-size: clamp(19px, 2.4vw, 24px);
+    color: var(--sand-50);
+  }
+
+  .workshops__body {
+    max-width: none;
+    margin: 0 0 var(--space-6);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .workshops__button {
+    display: inline-block;
+    background: var(--sand-900);
+    color: var(--sand-50);
+    padding: 14px 32px;
+    border-radius: 100px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background var(--duration-gentle) var(--ease-gentle),
+      box-shadow var(--duration-gentle) var(--ease-gentle);
+    min-height: 44px;
+    line-height: 1.2;
+  }
+
+  .workshops__button:hover {
+    background: var(--sand-700);
+    box-shadow: 0 6px 20px rgba(43, 36, 25, 0.12);
+  }
+
+  .workshops__button:active {
+    box-shadow: none;
+    transform: scale(0.98);
+  }
+
+  @media (max-width: 767px) {
+    .workshops__body {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .workshops__button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 320px;
+    }
+  }
+</style>

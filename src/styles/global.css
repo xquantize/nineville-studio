@@ -157,7 +157,8 @@ img {
 }
 
 .section-heading[id],
-.commission__heading[id] {
+.commission__heading[id],
+.workshops__heading[id] {
   scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--scroll-anchor-gap));
 }
 
@@ -300,6 +301,8 @@ img {
 @media (hover: none) and (pointer: coarse) {
   .work-card,
   .commission__button,
+  .workshops__button,
+  .footer__join,
   .nav__brand,
   .nav__toggle,
   .nav__link,
@@ -320,6 +323,12 @@ img {
   }
 
   .commission__button:active {
+    opacity: 0.92;
+    transform: scale(0.98);
+  }
+
+  .workshops__button:active,
+  .footer__join:active {
     opacity: 0.92;
     transform: scale(0.98);
   }

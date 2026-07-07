@@ -7,27 +7,24 @@ export interface Medium {
 
 export const mediums: Medium[] = [
   {
-    slug: 'plaster',
-    name: 'Plaster',
-    description: '[PLACEHOLDER: 1-sentence description of her plaster work]',
+    slug: 'modeling-paste',
+    name: 'Modeling Paste',
+    description:
+      'Modeling paste is the foundation of my textured artworks. It allows me to sculpt depth and movement directly onto the canvas, creating organic forms inspired by the ocean and nature.',
     image: '/images/mediums/plaster.svg',
   },
   {
     slug: 'acrylic',
-    name: 'Acrylic',
-    description: '[PLACEHOLDER: 1-sentence description]',
+    name: 'Acrylic Paint',
+    description:
+      'Acrylic paint brings each artwork to life with rich pigments and colour. Its versatility allows me to create soft gradients and layered effects that complement the textured surface beneath.',
     image: '/images/mediums/acrylic.svg',
   },
   {
     slug: 'resin',
     name: 'Resin',
-    description: '[PLACEHOLDER: 1-sentence description]',
+    description:
+      'Resin is the finishing element that gives my artworks their signature luminous appearance. Applied as a clear layer, resin creates a smooth, glass-like finish that enhances saturation and adds remarkable depth.',
     image: '/images/mediums/resin.svg',
-  },
-  {
-    slug: 'mixed',
-    name: 'Mixed',
-    description: '[PLACEHOLDER: 1-sentence description]',
-    image: '/images/mediums/mixed.svg',
   },
 ];

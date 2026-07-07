@@ -1,21 +1,48 @@
 ---
 import SocialLinks from './SocialLinks.astro';
+import { site } from '../data/site';
 ---
 
 <footer class="footer">
-  <div class="panel-inner footer__grid">
-    <div class="footer__col">
-      <p class="footer__brand">Nineville Studio</p>
-      <p class="footer__artist">art by Laura Neundörfer</p>
+  <div class="panel-inner footer__inner">
+    <div class="footer__mailing" data-reveal>
+      <p class="footer__label">Join the studio mailing list</p>
+      <form
+        class="footer__form"
+        action={site.mailingListUrl || undefined}
+        method={site.mailingListUrl ? 'post' : undefined}
+        target={site.mailingListUrl ? '_blank' : undefined}
+        data-mailing-form
+        data-fallback-email={site.email}
+      >
+        <input
+          class="footer__input"
+          type="email"
+          name={site.mailingListUrl ? 'EMAIL' : 'email'}
+          placeholder="Your email"
+          required
+          autocomplete="email"
+        />
+        <button class="footer__join" type="submit">
+          Join
+        </button>
+      </form>
     </div>
 
-    <div class="footer__col">
-      <p class="footer__label">Connect</p>
-      <SocialLinks />
-    </div>
+    <div class="footer__grid">
+      <div class="footer__col">
+        <p class="footer__brand">Nineville Studio</p>
+        <p class="footer__artist">art by Laura Neundörfer</p>
+      </div>
 
-    <div class="footer__col footer__col--copy">
-      <p class="footer__copyright">© Nineville Studio 2026</p>
+      <div class="footer__col">
+        <p class="footer__label">Connect</p>
+        <SocialLinks />
+      </div>
+
+      <div class="footer__col footer__col--copy">
+        <p class="footer__copyright">© Nineville Studio 2026</p>
+      </div>
     </div>
   </div>
 </footer>
@@ -23,6 +50,61 @@ import SocialLinks from './SocialLinks.astro';
 <style>
   .footer {
     padding: var(--space-6) 0 calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .footer__mailing {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-6);
+    border-bottom: 0.5px solid rgba(184, 154, 106, 0.2);
+  }
+
+  .footer__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    max-width: 28rem;
+  }
+
+  .footer__input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 0.5px solid rgba(184, 154, 106, 0.35);
+    border-radius: 100px;
+    background: rgba(32, 36, 48, 0.5);
+    color: var(--text-on-veil);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .footer__input::placeholder {
+    color: var(--text-on-veil-muted);
+  }
+
+  .footer__input:focus {
+    border-color: rgba(184, 154, 106, 0.65);
+  }
+
+  .footer__join {
+    flex-shrink: 0;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 100px;
+    background: var(--sand-900);
+    color: var(--sand-50);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background var(--duration-gentle) var(--ease-gentle);
+  }
+
+  .footer__join:hover {
+    background: var(--sand-700);
   }
 
   .footer__grid {
@@ -69,3 +151,19 @@ import SocialLinks from './SocialLinks.astro';
     }
   }
 </style>
+
+<script>
+  const mailingForm = document.querySelector<HTMLFormElement>('[data-mailing-form]');
+  if (mailingForm && !mailingForm.action) {
+    mailingForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const email = new FormData(mailingForm).get('email');
+      const to = mailingForm.dataset.fallbackEmail ?? '';
+      if (!email || !to) return;
+
+      const subject = encodeURIComponent('Mailing list signup');
+      const body = encodeURIComponent(`Please add me to the studio mailing list: ${email}`);
+      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    });
+  }
+</script>

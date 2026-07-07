@@ -6,7 +6,17 @@ import MediaFrame from './MediaFrame.astro';
 <section class="panel">
   <div class="panel-inner">
     <p class="section-kicker" data-reveal>What she works with</p>
-    <h2 id="mediums" class="section-heading" data-reveal>Mediums</h2>
+    <h2 id="mediums" class="section-heading" data-reveal>Methods and Mediums</h2>
+
+    <p class="mediums__intro" data-reveal>
+      My artistic process blends sculptural texture with modern painting techniques. Together, they
+      create artworks that continuously evolve throughout the day; textures cast changing shadows
+      while resin catches the light, making every piece feel alive from every angle.
+    </p>
+
+    <h3 class="mediums__subheading" data-reveal>
+      The Signature Blend: Texture, Resin and Acrylic
+    </h3>
 
     <div class="mediums__grid">
       {
@@ -32,6 +42,19 @@ import MediaFrame from './MediaFrame.astro';
 </section>
 
 <style>
+  .mediums__intro {
+    max-width: none;
+    margin: 0 0 var(--space-6);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .mediums__subheading {
+    margin: 0 0 var(--space-4);
+    font-size: clamp(19px, 2.4vw, 24px);
+    color: var(--sand-50);
+  }
+
   .mediums__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -91,6 +114,16 @@ import MediaFrame from './MediaFrame.astro';
   }
 
   @media (max-width: 767px) {
+    .mediums__intro {
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: var(--space-3);
+    }
+
+    .mediums__subheading {
+      margin-bottom: var(--space-3);
+    }
+
     .medium-card__body {
       padding: var(--space-1) var(--space-1) var(--space-2);
       min-height: auto;
@@ -119,7 +152,7 @@ import MediaFrame from './MediaFrame.astro';
 
   @media (min-width: 900px) {
     .mediums__grid {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--space-3);
     }
 

@@ -26,6 +26,7 @@
         <a href="#mediums" class="nav__link" data-section="mediums">Mediums</a>
         <a href="#art" class="nav__link" data-section="art">Art</a>
         <a href="#commission" class="nav__link" data-section="commission">Commission</a>
+        <a href="#workshops" class="nav__link" data-section="workshops">Workshops</a>
       </div>
     </div>
   </div>
@@ -95,15 +96,49 @@
   brand?.addEventListener('click', () => {
     closeMenu();
     links.forEach((link) => link.classList.remove('is-active'));
+    history.replaceState(null, '', window.location.pathname + window.location.search);
   });
 
   const hero = document.querySelector('.hero');
+
+  const sectionIds = ['bio', 'mediums', 'art', 'commission', 'workshops'];
+  const sections = sectionIds
+    .map((id) => document.getElementById(id))
+    .filter(Boolean) as HTMLElement[];
+
+  let activeId: string | null = null;
+
+  function setActiveSection(id: string | null) {
+    if (id === activeId) return;
+    activeId = id;
+
+    links.forEach((link) => {
+      link.classList.toggle('is-active', link.getAttribute('data-section') === id);
+    });
+
+    const newHash = id ? `#${id}` : '';
+    const url = newHash || window.location.pathname + window.location.search;
+    if (window.location.hash !== newHash) {
+      history.replaceState(null, '', url);
+    }
+  }
+
+  function currentSection(scrollY: number): string | null {
+    const marker = scrollY + window.innerHeight * 0.35;
+    let current: string | null = null;
+    for (const section of sections) {
+      if (section.offsetTop <= marker) current = section.id;
+    }
+    return current;
+  }
 
   const onScroll = (scrollY: number) => {
     const heroEnd = hero?.offsetHeight ?? 0;
     const onHero = scrollY < heroEnd - 60;
     nav?.classList.toggle('nav--on-hero', onHero);
     nav?.classList.toggle('nav--scrolled', !onHero && scrollY > 24);
+
+    setActiveSection(onHero ? null : currentSection(scrollY));
   };
 
   onScroll(window.scrollY);
@@ -111,28 +146,6 @@
     onScroll(event.detail.scroll);
   }) as EventListener);
   window.addEventListener('scroll', () => onScroll(window.scrollY), { passive: true });
-
-  const sections = ['bio', 'mediums', 'art', 'commission']
-    .map((id) => document.getElementById(id))
-    .filter(Boolean) as HTMLElement[];
-
-  if (sections.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            links.forEach((link) => {
-              link.classList.toggle('is-active', link.getAttribute('data-section') === id);
-            });
-          }
-        });
-      },
-      { rootMargin: '-40% 0px -50% 0px', threshold: 0 }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-  }
 
   syncPanelA11y();
   mobileQuery.addEventListener('change', syncPanelA11y);

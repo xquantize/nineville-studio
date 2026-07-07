@@ -1,5 +1,6 @@
 <section class="panel">
   <div class="panel-inner">
+    <p class="section-kicker" data-reveal>About Laura</p>
     <h2 id="bio" class="section-heading" data-reveal>Bio</h2>
 
     <div class="bio__content">
@@ -15,7 +16,24 @@
       </figure>
 
       <div class="bio__text" data-reveal>
-        <p>[PLACEHOLDER: Bio paragraph 1 — replace with Laura's words]</p>
+        <p>
+          I am a mixed-media artist creating textured artworks that bridge the gap between
+          structure and fluid mediums.
+        </p>
+        <p>
+          For the first part of my life, my world was defined by systems and structures in
+          Germany. It was a predictable rhythm that kept me safe, but left little space for
+          creativity. What began as a passion for surfing evolved into a whole new way of living:
+          I left the landlocked lifestyle behind, moved abroad to the coast and allowed myself to
+          be guided by creativity, freedom and flow.
+        </p>
+        <p class="bio__text-clear">
+          Today, my art is the tangible map of that journey. By pairing raw textures with fluid
+          resin, I capture the beautiful contradiction of life and the coast.
+        </p>
+        <p>
+          My work is designed to bring the vibrant and grounding energy into my collectors homes.
+        </p>
       </div>
     </div>
   </div>
@@ -23,7 +41,7 @@
 
 <style>
   .bio__content {
-    max-width: 40rem;
+    max-width: none;
   }
 
   .bio__content::after {
@@ -34,8 +52,8 @@
 
   .bio__portrait {
     float: left;
-    width: 6.75rem;
-    margin: 0.2rem var(--space-3) var(--space-2) 0;
+    width: 8rem;
+    margin: 0.35rem var(--space-3) var(--space-2) 0;
     padding: 0.3rem;
     background: var(--card-bg);
     border: 0.5px solid rgba(184, 154, 106, 0.35);
@@ -51,6 +69,12 @@
     border: 0.5px solid rgba(184, 154, 106, 0.22);
   }
 
+  .bio__text {
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+  }
+
   .bio__text p {
     margin: 0 0 var(--space-3);
     font-size: 16px;
@@ -63,15 +87,23 @@
 
   @media (min-width: 768px) {
     .bio__portrait {
-      width: 9.25rem;
-      margin-right: var(--space-4);
-      padding: 0.35rem;
+      width: 11rem;
+      margin: 0.4rem var(--space-4) var(--space-3) 0;
+      padding: 0.4rem;
+    }
+
+    .bio__text {
+      padding-top: var(--space-2);
+    }
+
+    .bio__text-clear {
+      clear: left;
     }
   }
 
   @media (max-width: 767px) {
     .bio__portrait {
-      width: 5.75rem;
+      width: 6.5rem;
       margin-right: var(--space-2);
       padding: 0.25rem;
     }
