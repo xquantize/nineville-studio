@@ -31,10 +31,16 @@ case "$MODE" in
   background)
     DESKTOP="$ROOT/public/images/background.webp"
     MOBILE="$ROOT/public/images/background-mobile.webp"
+    OG="$ROOT/public/images/og-image.webp"
     convert "$INPUT" -auto-orient -resize "2048x2048>" -quality 85 -define webp:method=6 "$DESKTOP"
     convert "$INPUT" -auto-orient -resize "1280x1280>" -quality 80 -define webp:method=6 "$MOBILE"
+    convert "$INPUT" -auto-orient -resize "1200x630^" -gravity center -extent 1200x630 -quality 82 -define webp:method=6 "$OG"
+    convert "$INPUT" -auto-orient -resize "180x180^" -gravity center -extent 180x180 png:- | convert - "$ROOT/public/apple-touch-icon.png"
+    convert "$INPUT" -auto-orient -resize "32x32^" -gravity center -extent 32x32 png:- | convert - "$ROOT/public/favicon.ico"
     echo "Wrote $DESKTOP ($(du -h "$DESKTOP" | cut -f1))"
     echo "Wrote $MOBILE ($(du -h "$MOBILE" | cut -f1))"
+    echo "Wrote $OG ($(du -h "$OG" | cut -f1))"
+    echo "Wrote $ROOT/public/apple-touch-icon.png and favicon.ico"
     ;;
   work)
     BASENAME="${OUTPUT_NAME:-$(basename "$INPUT" | sed 's/\.[^.]*$//')}"

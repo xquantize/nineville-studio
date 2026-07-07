@@ -44,21 +44,18 @@ import { site } from '../data/site';
     text-transform: uppercase;
     text-decoration: none;
     transition:
-      background var(--duration-fast) var(--ease-out),
-      transform var(--duration-normal) var(--ease-out),
-      box-shadow var(--duration-normal) var(--ease-out);
+      background var(--duration-gentle) var(--ease-gentle),
+      box-shadow var(--duration-gentle) var(--ease-gentle);
     min-height: 44px;
     line-height: 1.2;
   }
 
   .commission__button:hover {
     background: var(--sand-700);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(43, 36, 25, 0.15);
+    box-shadow: 0 6px 20px rgba(43, 36, 25, 0.12);
   }
 
   .commission__button:active {
-    transform: translateY(0);
     box-shadow: none;
   }
 

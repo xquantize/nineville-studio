@@ -5,6 +5,15 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let panMetrics = { maxPan: 0, docH: 0 };
+  let targetPan = 0;
+  let currentPan = 0;
+  let panRafId = 0;
+
+  function navOffset() {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--nav-height').trim();
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 56;
+  }
 
   function updatePanMetrics() {
     if (!img?.complete) return;
@@ -20,9 +29,27 @@
     return (scrollY / panMetrics.docH) * panMetrics.maxPan;
   }
 
-  function applyPan(scrollY: number) {
+  function applyPanFrame() {
     if (!img) return;
-    img.style.transform = `translate3d(0, ${-panOffset(scrollY)}px, 0)`;
+
+    const delta = targetPan - currentPan;
+    if (Math.abs(delta) < 0.05) {
+      currentPan = targetPan;
+      img.style.transform = `translate3d(0, ${-currentPan.toFixed(2)}px, 0)`;
+      panRafId = 0;
+      return;
+    }
+
+    currentPan += delta * 0.11;
+    img.style.transform = `translate3d(0, ${-currentPan.toFixed(2)}px, 0)`;
+    panRafId = requestAnimationFrame(applyPanFrame);
+  }
+
+  function setTargetPan(scrollY: number) {
+    targetPan = panOffset(scrollY);
+    if (!panRafId) {
+      panRafId = requestAnimationFrame(applyPanFrame);
+    }
   }
 
   function emitScroll(scrollY: number) {
@@ -35,13 +62,13 @@
     const lenis = new Lenis({
       autoRaf: true,
       anchors: {
-        offset: -56,
+        offset: -navOffset(),
       },
-      lerp: 0.075,
-      duration: 1.35,
+      lerp: 0.095,
+      duration: 1.55,
       smoothWheel: true,
       syncTouch: window.matchMedia('(pointer: fine)').matches,
-      wheelMultiplier: 0.85,
+      wheelMultiplier: 0.9,
       touchMultiplier: 1,
       infinite: false,
     });
@@ -49,23 +76,23 @@
     window.__lenis = lenis;
 
     lenis.on('scroll', ({ scroll }) => {
-      applyPan(scroll);
+      setTargetPan(scroll);
       emitScroll(scroll);
     });
 
     window.addEventListener('resize', () => {
       updatePanMetrics();
-      applyPan(lenis.scroll);
+      setTargetPan(lenis.scroll);
     });
 
     window.addEventListener('orientationchange', () => {
       window.setTimeout(() => {
         updatePanMetrics();
-        applyPan(lenis.scroll);
+        setTargetPan(lenis.scroll);
       }, 200);
     });
 
-    applyPan(0);
+    setTargetPan(0);
     emitScroll(0);
   }
 
@@ -73,7 +100,7 @@
     const onScroll = () => {
       updatePanMetrics();
       const y = window.scrollY;
-      applyPan(y);
+      setTargetPan(y);
       emitScroll(y);
     };
 

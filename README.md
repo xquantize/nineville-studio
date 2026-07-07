@@ -97,7 +97,7 @@ Then add the entry in `src/data/works.ts` with `width: 1200`, `height: 1500`.
 3. Replace placeholder bio paragraphs in `Bio.astro`.
 4. Edit `src/data/mediums.ts` to add real descriptions per medium.
 5. Edit `src/data/works.ts` to add real paintings.
-6. Update email and Instagram in `src/data/site.ts` (used by footer, nav, and commission). Search for `[PLACEHOLDER:` to find all other placeholder content quickly.
+6. Update `src/data/site.ts` — email, Instagram, and **`url`** (your live domain for sharing/SEO). Also update `public/robots.txt` and `public/sitemap.xml` if the domain changes.
 7. Deploy: push to GitHub, connect to Vercel, done.
 
 ## Project structure

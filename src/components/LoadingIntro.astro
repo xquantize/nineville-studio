@@ -29,8 +29,8 @@
   if (intro && !document.documentElement.classList.contains('skip-intro')) {
     sessionStorage.setItem('seen-intro', '1');
 
-    const minDisplay = 2400;
-    const fadeDuration = 900;
+    const minDisplay = 1100;
+    const fadeDuration = 1000;
     const started = performance.now();
 
     function dismiss() {
@@ -51,7 +51,7 @@
     } else if (bgImg) {
       bgImg.addEventListener('load', dismiss, { once: true });
       bgImg.addEventListener('error', dismiss, { once: true });
-      window.setTimeout(dismiss, 3800);
+      window.setTimeout(dismiss, 2200);
     } else {
       dismiss();
     }
@@ -79,8 +79,8 @@
     );
     opacity: 1;
     transition:
-      opacity 900ms var(--ease-out),
-      visibility 900ms;
+      opacity 1000ms var(--ease-gentle),
+      visibility 1000ms;
     pointer-events: auto;
   }
 

@@ -84,6 +84,7 @@ const worksForLightbox = works.map((work) => ({
   let workIndex = 0;
   let imageIndex = 0;
   let lastTrigger = null;
+  let renderToken = 0;
 
   function currentWork() {
     return worksForLightbox[workIndex];
@@ -101,45 +102,75 @@ const worksForLightbox = works.map((work) => ({
     const photo = work?.images[imageIndex];
     if (!work || !photo || !imageEl || !titleEl || !descEl || !metaEl || !counterEl) return;
 
-    imageEl.src = photo.src;
-    imageEl.alt = photo.alt;
-    titleEl.textContent = work.title;
-    descEl.textContent = work.description;
-    metaEl.textContent = work.details;
+    const token = ++renderToken;
+    const nextSrc = photo.src;
 
-    if (statusEl) {
-      if (work.status && statusLabels[work.status]) {
-        statusEl.textContent = statusLabels[work.status];
-        statusEl.dataset.status = work.status;
-        statusEl.hidden = false;
-      } else {
-        statusEl.textContent = '';
-        statusEl.removeAttribute('data-status');
-        statusEl.hidden = true;
+    const applyMeta = () => {
+      titleEl.textContent = work.title;
+      descEl.textContent = work.description;
+      metaEl.textContent = work.details;
+
+      if (statusEl) {
+        if (work.status && statusLabels[work.status]) {
+          statusEl.textContent = statusLabels[work.status];
+          statusEl.dataset.status = work.status;
+          statusEl.hidden = false;
+        } else {
+          statusEl.textContent = '';
+          statusEl.removeAttribute('data-status');
+          statusEl.hidden = true;
+        }
       }
-    }
 
-    const hasMultiple = work.images.length > 1;
-    if (prevBtn) prevBtn.hidden = !hasMultiple;
-    if (nextBtn) nextBtn.hidden = !hasMultiple;
+      const hasMultiple = work.images.length > 1;
+      if (prevBtn) prevBtn.hidden = !hasMultiple;
+      if (nextBtn) nextBtn.hidden = !hasMultiple;
 
-    if (hasMultiple) {
-      counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
-      counterEl.hidden = false;
-    } else {
-      counterEl.textContent = '';
-      counterEl.hidden = true;
-    }
-
-    if (captionEl) {
-      if (photo.caption) {
-        captionEl.textContent = photo.caption;
-        captionEl.hidden = false;
+      if (hasMultiple) {
+        counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
+        counterEl.hidden = false;
       } else {
-        captionEl.textContent = '';
-        captionEl.hidden = true;
+        counterEl.textContent = '';
+        counterEl.hidden = true;
       }
+
+      if (captionEl) {
+        if (photo.caption) {
+          captionEl.textContent = photo.caption;
+          captionEl.hidden = false;
+        } else {
+          captionEl.textContent = '';
+          captionEl.hidden = true;
+        }
+      }
+    };
+
+    const showPhoto = () => {
+      imageEl.src = nextSrc;
+      imageEl.alt = photo.alt;
+      imageEl.classList.remove('is-changing');
+      applyMeta();
+    };
+
+    const currentSrc = imageEl.getAttribute('src') || '';
+    if (currentSrc === nextSrc) {
+      showPhoto();
+      return;
     }
+
+    imageEl.classList.add('is-changing');
+    applyMeta();
+
+    const preload = new Image();
+    preload.onload = () => {
+      if (token !== renderToken) return;
+      showPhoto();
+    };
+    preload.onerror = () => {
+      if (token !== renderToken) return;
+      imageEl.classList.remove('is-changing');
+    };
+    preload.src = nextSrc;
   }
 
   function trapFocus(event) {
@@ -172,8 +203,10 @@ const worksForLightbox = works.map((work) => ({
     workIndex = index;
     imageIndex = 0;
     lastTrigger = trigger ?? null;
+    lightbox.classList.remove('is-closing');
     renderImage();
     lightbox.hidden = false;
+    requestAnimationFrame(() => lightbox.classList.add('is-open'));
     setLenisPaused(true);
     document.body.style.overflow = 'hidden';
     lightbox.querySelector('.art-lightbox__close')?.focus();
@@ -182,17 +215,24 @@ const worksForLightbox = works.map((work) => ({
   }
 
   function close() {
-    if (!lightbox || lightbox.hidden) return;
+    if (!lightbox || lightbox.hidden || lightbox.classList.contains('is-closing')) return;
 
-    lightbox.hidden = true;
-    setLenisPaused(false);
-    document.body.style.overflow = '';
+    lightbox.classList.remove('is-open');
+    lightbox.classList.add('is-closing');
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('keydown', trapFocus);
 
-    if (lastTrigger instanceof HTMLElement) {
-      lastTrigger.focus();
-    }
+    window.setTimeout(() => {
+      if (!lightbox) return;
+      lightbox.hidden = true;
+      lightbox.classList.remove('is-closing');
+      setLenisPaused(false);
+      document.body.style.overflow = '';
+
+      if (lastTrigger instanceof HTMLElement) {
+        lastTrigger.focus();
+      }
+    }, 380);
   }
 
   function showRelative(delta) {
@@ -250,10 +290,23 @@ const worksForLightbox = works.map((work) => ({
     padding: var(--space-2);
     box-sizing: border-box;
     pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.4s var(--ease-gentle),
+      visibility 0.4s var(--ease-gentle);
   }
 
-  .art-lightbox:not([hidden]) {
+  .art-lightbox.is-open {
     pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .art-lightbox.is-closing {
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
   }
 
   .art-lightbox[hidden] {
@@ -267,6 +320,12 @@ const worksForLightbox = works.map((work) => ({
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     pointer-events: auto;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-gentle);
+  }
+
+  .art-lightbox.is-open .art-lightbox__backdrop {
+    opacity: 1;
   }
 
   .art-lightbox__panel {
@@ -281,18 +340,21 @@ const worksForLightbox = works.map((work) => ({
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
     overflow: hidden;
     pointer-events: auto;
-    animation: lightbox-in var(--duration-normal) var(--ease-out) both;
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+    transition:
+      opacity 0.45s var(--ease-gentle),
+      transform 0.55s var(--ease-gentle);
   }
 
-  @keyframes lightbox-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
+  .art-lightbox.is-open .art-lightbox__panel {
+    opacity: 1;
+    transform: none;
+  }
+
+  .art-lightbox.is-closing .art-lightbox__panel {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
   }
 
   .art-lightbox__layout {
@@ -320,6 +382,12 @@ const worksForLightbox = works.map((work) => ({
     object-fit: contain;
     object-position: center;
     border-radius: 2px;
+    opacity: 1;
+    transition: opacity 0.35s var(--ease-gentle);
+  }
+
+  .art-lightbox__image.is-changing {
+    opacity: 0.35;
   }
 
   .art-lightbox__caption {
@@ -542,8 +610,11 @@ const worksForLightbox = works.map((work) => ({
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .art-lightbox__panel {
-      animation: none;
+    .art-lightbox,
+    .art-lightbox__backdrop,
+    .art-lightbox__panel,
+    .art-lightbox__image {
+      transition: none;
     }
   }
 </style>

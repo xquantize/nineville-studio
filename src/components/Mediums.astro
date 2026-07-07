@@ -1,5 +1,6 @@
 ---
 import { mediums } from '../data/mediums';
+import MediaFrame from './MediaFrame.astro';
 ---
 
 <section id="mediums" class="panel">
@@ -10,9 +11,14 @@ import { mediums } from '../data/mediums';
     <div class="mediums__grid">
       {
         mediums.map((medium) => (
-          <article class="medium-card" data-reveal data-reveal-stagger>
+          <article class="medium-card" data-reveal-fade>
             <div class="medium-card__image">
-              <img src={medium.image} alt="" aria-hidden="true" width="400" height="400" />
+              <MediaFrame
+                src={medium.image}
+                alt=""
+                width={400}
+                height={400}
+              />
             </div>
             <div class="medium-card__body">
               <h3 class="medium-card__name">{medium.name}</h3>
@@ -42,15 +48,13 @@ import { mediums } from '../data/mediums';
     border-radius: 4px;
     overflow: hidden;
     transition:
-      transform var(--duration-normal) var(--ease-out),
-      box-shadow var(--duration-normal) var(--ease-out),
-      border-color var(--duration-normal) var(--ease-out);
+      box-shadow var(--duration-gentle) var(--ease-gentle),
+      border-color var(--duration-gentle) var(--ease-gentle);
   }
 
   .medium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(43, 36, 25, 0.1);
-    border-color: var(--sand-500);
+    box-shadow: 0 12px 32px rgba(43, 36, 25, 0.08);
+    border-color: rgba(184, 154, 106, 0.35);
   }
 
   .medium-card__image {
@@ -59,15 +63,12 @@ import { mediums } from '../data/mediums';
     overflow: hidden;
   }
 
-  .medium-card__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 600ms var(--ease-out);
+  .medium-card__image .media-frame__img {
+    transition: transform 1.1s var(--ease-gentle);
   }
 
-  .medium-card:hover .medium-card__image img {
-    transform: scale(1.04);
+  .medium-card:hover .medium-card__image .media-frame__img {
+    transform: scale(1.03);
   }
 
   .medium-card__body {
@@ -108,11 +109,10 @@ import { mediums } from '../data/mediums';
     }
 
     .medium-card:hover {
-      transform: none;
       box-shadow: none;
     }
 
-    .medium-card:hover .medium-card__image img {
+    .medium-card:hover .medium-card__image .media-frame__img {
       transform: none;
     }
   }
@@ -140,10 +140,10 @@ import { mediums } from '../data/mediums';
 
   @media (prefers-reduced-motion: reduce) {
     .medium-card:hover {
-      transform: none;
+      box-shadow: none;
     }
 
-    .medium-card:hover .medium-card__image img {
+    .medium-card:hover .medium-card__image .media-frame__img {
       transform: none;
     }
   }

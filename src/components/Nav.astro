@@ -336,10 +336,10 @@
       opacity: 0;
       transform: translateY(-6px) scale(0.98);
       transform-origin: top right;
-      transition:
-        opacity var(--duration-fast) var(--ease-out),
-        transform var(--duration-normal) var(--ease-out),
-        visibility var(--duration-fast) var(--ease-out);
+    transition:
+      opacity var(--duration-normal) var(--ease-gentle),
+      transform 0.5s var(--ease-gentle),
+      visibility var(--duration-fast) var(--ease-gentle);
     }
 
     .nav--open .nav__panel {

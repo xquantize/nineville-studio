@@ -1,15 +1,21 @@
 ---
 import '../styles/global.css';
+import { site, absoluteUrl } from '../data/site';
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
 }
 
 const {
-  title = 'Nineville Studio — art by Laura Neundörfer',
-  description = 'Contemporary abstract paintings by Laura Neundörfer. Nineville Studio.',
+  title = site.title,
+  description = site.description,
+  ogImage = site.ogImage,
 } = Astro.props;
+
+const canonicalUrl = absoluteUrl('/');
+const ogImageUrl = absoluteUrl(ogImage);
 ---
 
 <!doctype html>
@@ -54,10 +60,28 @@ const {
       media="(min-width: 768px)"
       fetchpriority="high"
     />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -69,34 +93,13 @@ const {
   <body>
     <slot />
     <script is:inline>
-      window.addEventListener('load', function () {
-        window.scrollTo(0, 0);
-      });
-    </script>
-    <script is:inline>
       (function () {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-        var reveals = document.querySelectorAll('[data-reveal]');
+        var reveals = document.querySelectorAll('[data-reveal], [data-reveal-fade]');
         if (!reveals.length) return;
 
-        reveals.forEach(function (el) {
-          if (el.hasAttribute('data-reveal-stagger')) {
-            var parent = el.parentElement;
-            if (parent) {
-              var siblings = Array.prototype.filter.call(
-                parent.children,
-                function (child) {
-                  return child.hasAttribute('data-reveal');
-                }
-              );
-              var index = siblings.indexOf(el);
-              if (index > 0) {
-                el.style.setProperty('--reveal-delay', index * 90 + 'ms');
-              }
-            }
-          }
-        });
+        var observerOptions = { threshold: 0.01, rootMargin: '120px 0px -40px 0px' };
 
         var observer = new IntersectionObserver(
           function (entries) {
@@ -107,11 +110,31 @@ const {
               }
             });
           },
-          { threshold: 0.12, rootMargin: '0px 0px -5% 0px' }
+          observerOptions
         );
 
         reveals.forEach(function (el) {
           observer.observe(el);
+        });
+
+        document.querySelectorAll('[data-media-frame]').forEach(function (img) {
+          function markLoaded() {
+            img.classList.add('is-loaded');
+            img.parentElement?.classList.add('is-loaded');
+          }
+
+          if (img.complete && img.naturalWidth > 0) {
+            markLoaded();
+          } else {
+            img.addEventListener('load', markLoaded, { once: true });
+            img.addEventListener(
+              'error',
+              function () {
+                img.parentElement?.classList.add('is-error');
+              },
+              { once: true }
+            );
+          }
         });
       })();
     </script>
