@@ -9,12 +9,6 @@
   let currentPan = 0;
   let panRafId = 0;
 
-  function navOffset() {
-    const value = getComputedStyle(document.documentElement).getPropertyValue('--nav-height').trim();
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : 56;
-  }
-
   function updatePanMetrics() {
     if (!img?.complete) return;
 
@@ -61,9 +55,7 @@
 
     const lenis = new Lenis({
       autoRaf: true,
-      anchors: {
-        offset: -navOffset(),
-      },
+      anchors: true,
       lerp: 0.095,
       duration: 1.55,
       smoothWheel: true,

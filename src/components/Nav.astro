@@ -1,6 +1,6 @@
 <nav class="nav" aria-label="Main navigation">
   <div class="nav__inner">
-    <a href="#" class="nav__brand">Nineville Studio</a>
+    <a href="#top" class="nav__brand">Nineville Studio</a>
 
     <button
       type="button"
@@ -39,6 +39,7 @@
   const panel = document.querySelector('.nav__panel');
   const backdrop = document.querySelector('.nav__backdrop');
   const links = document.querySelectorAll('.nav__link');
+  const brand = document.querySelector<HTMLAnchorElement>('.nav__brand');
   const mobileQuery = window.matchMedia('(max-width: 767px)');
 
   function syncPanelA11y() {
@@ -89,6 +90,11 @@
 
   links.forEach((link) => {
     link.addEventListener('click', closeMenu);
+  });
+
+  brand?.addEventListener('click', () => {
+    closeMenu();
+    links.forEach((link) => link.classList.remove('is-active'));
   });
 
   const hero = document.querySelector('.hero');
