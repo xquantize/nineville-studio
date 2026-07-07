@@ -49,6 +49,7 @@ let pswpChangeHandler: (() => void) | null = null;
 let pswpZoomHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let savedScrollY = 0;
+let isLightboxOpen = false;
 
 function getScrollY() {
   return window.__lenis?.scroll ?? window.scrollY;
@@ -82,11 +83,26 @@ function isImageZoomed() {
   return slide.currZoomLevel > slide.zoomLevels.initial + 0.02;
 }
 
-function setWorkUrl(slug: string | null) {
+function syncOpenHistory(slug: string) {
   const url = new URL(window.location.href);
-  if (slug) url.searchParams.set('work', slug);
-  else url.searchParams.delete('work');
-  history.replaceState({ work: slug || null }, '', url);
+  url.searchParams.set('work', slug);
+  const currentSlug = new URLSearchParams(window.location.search).get('work');
+
+  if (history.state?.lightbox && currentSlug === slug) {
+    history.replaceState({ lightbox: true, work: slug }, '', url);
+    return;
+  }
+
+  // Shared links land directly on ?work= — seed a base entry so back closes the lightbox
+  if (currentSlug === slug && !history.state?.lightbox) {
+    const base = new URL(window.location.href);
+    base.searchParams.delete('work');
+    history.replaceState({ lightbox: false }, '', base);
+    history.pushState({ lightbox: true, work: slug }, '', url);
+    return;
+  }
+
+  history.pushState({ lightbox: true, work: slug }, '', url);
 }
 
 function updateEnquireLink(work: (typeof worksForLightbox)[number]) {
@@ -292,7 +308,7 @@ function trapFocus(event: KeyboardEvent) {
   }
 }
 
-function open(index: number, trigger: HTMLElement | null) {
+function open(index: number, trigger: HTMLElement | null, fromHistory = false) {
   if (!lightbox || !worksForLightbox.length) return;
 
   if (lightbox.parentElement !== document.body) {
@@ -302,9 +318,15 @@ function open(index: number, trigger: HTMLElement | null) {
   workIndex = index;
   imageIndex = 0;
   lastTrigger = trigger;
+  isLightboxOpen = true;
   lightbox.classList.remove('is-closing');
   lightbox.classList.toggle('art-lightbox--touch', !finePointer);
   lightbox.classList.toggle('art-lightbox--desktop', finePointer);
+
+  const slug = worksForLightbox[index]?.slug;
+  if (!fromHistory && slug) {
+    syncOpenHistory(slug);
+  }
 
   if (zoomHint) {
     zoomHint.hidden = finePointer;
@@ -317,19 +339,23 @@ function open(index: number, trigger: HTMLElement | null) {
     requestAnimationFrame(() => pswpInstance?.updateSize(true));
   });
 
-  setWorkUrl(worksForLightbox[index]?.slug ?? null);
   pausePageScroll();
   lightbox.querySelector<HTMLElement>('.art-lightbox__close')?.focus();
   document.addEventListener('keydown', onKeydown);
   document.addEventListener('keydown', trapFocus);
 }
 
-function close() {
-  if (!lightbox || lightbox.hidden || lightbox.classList.contains('is-closing')) return;
+function close(fromPopstate = false) {
+  if (!lightbox || lightbox.classList.contains('is-closing') || !isLightboxOpen) return;
 
+  if (!fromPopstate && new URLSearchParams(window.location.search).has('work')) {
+    history.back();
+    return;
+  }
+
+  isLightboxOpen = false;
   lightbox.classList.remove('is-open');
   lightbox.classList.add('is-closing');
-  setWorkUrl(null);
   document.removeEventListener('keydown', onKeydown);
   document.removeEventListener('keydown', trapFocus);
 
@@ -391,7 +417,21 @@ document.querySelectorAll('[data-work-open]').forEach((trigger) => {
 
 prevBtn?.addEventListener('click', () => showRelative(-1));
 nextBtn?.addEventListener('click', () => showRelative(1));
-closeTargets?.forEach((el) => el.addEventListener('click', close));
+closeTargets?.forEach((el) => el.addEventListener('click', () => close()));
+
+window.addEventListener('popstate', () => {
+  const slug = new URLSearchParams(window.location.search).get('work');
+
+  if (isLightboxOpen && !slug) {
+    close(true);
+    return;
+  }
+
+  if (!isLightboxOpen && slug) {
+    const index = worksForLightbox.findIndex((work) => work.slug === slug);
+    if (index >= 0) open(index, null, true);
+  }
+});
 
 function openFromUrl() {
   const slug = new URLSearchParams(window.location.search).get('work');

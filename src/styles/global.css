@@ -295,3 +295,67 @@ img {
     font-size: clamp(26px, 7vw, 36px);
   }
 }
+
+/* Touch feedback — coarse pointers only (phones/tablets) */
+@media (hover: none) and (pointer: coarse) {
+  .work-card,
+  .commission__button,
+  .nav__brand,
+  .nav__toggle,
+  .nav__link,
+  .hero__scroll,
+  .social-links__link,
+  .art-lightbox__close,
+  .art-lightbox__nav,
+  .art-lightbox__enquire {
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
+  }
+
+  .work-card:active {
+    opacity: 0.9;
+  }
+
+  .commission__button:active {
+    opacity: 0.92;
+    transform: scale(0.98);
+  }
+
+  .nav__brand:active,
+  .nav__toggle:active {
+    opacity: 0.65;
+  }
+
+  .nav__link:active {
+    opacity: 0.75;
+    background: rgba(184, 154, 106, 0.14);
+  }
+
+  .hero__scroll:active {
+    opacity: 1;
+    transform: translateX(-50%) scale(0.94);
+  }
+
+  .social-links__link:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+  }
+
+  .art-lightbox__close:active,
+  .art-lightbox__nav:active {
+    opacity: 0.75;
+    transform: translateY(-50%) scale(0.94);
+  }
+
+  .art-lightbox__close:active {
+    transform: scale(0.94);
+  }
+
+  .art-lightbox__enquire:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
