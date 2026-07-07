@@ -161,6 +161,19 @@ const ogImageUrl = absoluteUrl(ogImage);
           });
         }
 
+        // Most reliable iOS trigger: a 1px scroll and back mimics the real
+        // scroll that unblocks painting, but is visually imperceptible. Only
+        // runs while the user is still at the very top of the page.
+        function paintKick() {
+          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          if (y > 2) return;
+          if (document.documentElement.scrollHeight <= window.innerHeight + 2) return;
+          window.scrollTo(0, 1);
+          requestAnimationFrame(function () {
+            window.scrollTo(0, 0);
+          });
+        }
+
         // Reveal anything already on screen right away. Without this, the
         // observer's first paint can be delayed until the user scrolls,
         // leaving the landing content invisible on load.
@@ -175,6 +188,7 @@ const ogImageUrl = absoluteUrl(ogImage);
             }
           });
           forceRepaint();
+          paintKick();
         }
 
         requestAnimationFrame(function () {
@@ -182,8 +196,9 @@ const ogImageUrl = absoluteUrl(ogImage);
         });
         window.addEventListener('load', revealInView);
         window.addEventListener('pageshow', revealInView);
-        // Repeat a few times to cover the intro fade-out and late layout.
-        [150, 500, 1000, 1800].forEach(function (t) {
+        // Repeat a few times to cover the intro fade-out (~2.1s) and late
+        // layout so content paints once the overlay is actually gone.
+        [150, 500, 1000, 1800, 2400, 3200].forEach(function (t) {
           window.setTimeout(revealInView, t);
         });
       })();

@@ -130,9 +130,21 @@
     initWithLenis();
   }
 
-  if (img?.complete) {
-    start();
-  } else {
-    img?.addEventListener('load', start, { once: true });
+  // Start the scroll engine immediately. Its continuous rAF keeps the
+  // compositor painting from first load — waiting on the background image
+  // left mobile Safari without a paint until the first user scroll, so the
+  // landing content appeared blank until you scrolled. Pan metrics (desktop
+  // only) recalculate once the image is ready.
+  start();
+
+  if (img && !img.complete) {
+    img.addEventListener(
+      'load',
+      () => {
+        updatePanMetrics();
+        setTargetPan(window.__lenis ? window.__lenis.scroll : window.scrollY);
+      },
+      { once: true }
+    );
   }
 </script>
