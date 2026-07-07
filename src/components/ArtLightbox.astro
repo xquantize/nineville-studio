@@ -34,9 +34,7 @@
           </svg>
         </button>
 
-        <div class="art-lightbox__zoom-stage" data-lightbox-zoom-stage>
-          <img class="art-lightbox__image" src="" alt="" width="1200" height="1500" decoding="async" />
-        </div>
+        <div class="art-lightbox__zoom-stage" data-lightbox-zoom-stage></div>
         <p class="art-lightbox__zoom-hint" data-zoom-hint hidden>Pinch or double-tap to zoom</p>
         <p class="art-lightbox__caption" hidden></p>
       </div>
@@ -58,14 +56,30 @@
 </script>
 
 <style is:global>
-  .medium-zoom-overlay {
-    z-index: 10000;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+  .art-lightbox__zoom-stage {
+    position: relative;
+    width: 100%;
+    min-height: min(50dvh, 560px);
   }
 
-  .medium-zoom-image {
-    z-index: 10001;
+  .art-lightbox__zoom-stage .pswp {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .art-lightbox__zoom-stage .pswp__bg {
+    display: none;
+  }
+
+  .art-lightbox--desktop .art-lightbox__zoom-stage .pswp__img {
+    cursor: zoom-in;
+  }
+
+  .art-lightbox--zoomed .art-lightbox__zoom-stage .pswp__img {
+    cursor: grab;
   }
 </style>
 
@@ -175,10 +189,6 @@
     touch-action: none;
   }
 
-  .art-lightbox--desktop .art-lightbox__image {
-    cursor: zoom-in;
-  }
-
   .art-lightbox--zoomed .art-lightbox__nav {
     opacity: 0.25;
     pointer-events: none;
@@ -195,23 +205,6 @@
 
   .art-lightbox__zoom-hint[hidden] {
     display: none;
-  }
-
-  .art-lightbox__image {
-    display: block;
-    max-width: 100%;
-    max-height: min(50dvh, 560px);
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    object-position: center;
-    border-radius: 2px;
-    opacity: 1;
-    transition: opacity 0.35s var(--ease-gentle);
-  }
-
-  .art-lightbox__image.is-changing {
-    opacity: 0.35;
   }
 
   .art-lightbox__caption {
@@ -388,10 +381,7 @@
 
     .art-lightbox__zoom-stage {
       max-height: min(72dvh, 700px);
-    }
-
-    .art-lightbox__image {
-      max-height: min(72dvh, 700px);
+      min-height: min(72dvh, 700px);
     }
 
     .art-lightbox__details {
@@ -437,10 +427,7 @@
 
     .art-lightbox__zoom-stage {
       max-height: min(42dvh, 360px);
-    }
-
-    .art-lightbox__image {
-      max-height: min(42dvh, 360px);
+      min-height: min(42dvh, 360px);
     }
 
     .art-lightbox__details {
@@ -473,8 +460,7 @@
   @media (prefers-reduced-motion: reduce) {
     .art-lightbox,
     .art-lightbox__backdrop,
-    .art-lightbox__panel,
-    .art-lightbox__image {
+    .art-lightbox__panel {
       transition: none;
     }
   }

@@ -1,27 +1,24 @@
-import { works, formatWorkMeta, formatLightboxMeta } from '../data/works';
+import PhotoSwipe from 'photoswipe';
+import 'photoswipe/style.css';
+import { works, formatLightboxMeta } from '../data/works';
 import { site } from '../data/site';
-import mediumZoom from 'medium-zoom';
-import 'medium-zoom/dist/style.css';
-import Panzoom from '@panzoom/panzoom';
 
 const worksForLightbox = works.map((work) => ({
   id: work.id,
   slug: work.slug,
   title: work.title,
   description: work.detailDescription ?? work.description,
-  meta: formatWorkMeta(work),
-  details: formatLightboxMeta(work),
+  meta: formatLightboxMeta(work),
   status: work.status ?? null,
   images: work.images,
 }));
 
 const contactEmail = site.email;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+const defaultImageSize = { width: 1200, height: 1500 };
 
 const lightbox = document.getElementById('art-lightbox') as HTMLElement | null;
-const imageWrap = lightbox?.querySelector<HTMLElement>('.art-lightbox__image-wrap') ?? null;
 const zoomStage = lightbox?.querySelector<HTMLElement>('[data-lightbox-zoom-stage]') ?? null;
-const imageEl = lightbox?.querySelector<HTMLImageElement>('.art-lightbox__image') ?? null;
 const zoomHint = lightbox?.querySelector<HTMLElement>('[data-zoom-hint]') ?? null;
 const captionEl = lightbox?.querySelector<HTMLElement>('.art-lightbox__caption') ?? null;
 const titleEl = lightbox?.querySelector<HTMLElement>('.art-lightbox__title') ?? null;
@@ -45,23 +42,44 @@ const statusLabels: Record<string, string> = {
 let workIndex = 0;
 let imageIndex = 0;
 let lastTrigger: HTMLElement | null = null;
-let renderToken = 0;
-let touchStartX = 0;
-let touchStartY = 0;
-let lastTap = 0;
+let pswpWorkIndex = -1;
 
-let mediumZoomApi: ReturnType<typeof mediumZoom> | null = null;
-let panzoomApi: ReturnType<typeof Panzoom> | null = null;
-let wheelHandler: ((event: WheelEvent) => void) | null = null;
-let doubleTapHandler: ((event: TouchEvent) => void) | null = null;
-let panzoomChangeHandler: (() => void) | null = null;
+let pswpInstance: PhotoSwipe | null = null;
+let pswpChangeHandler: (() => void) | null = null;
+let pswpZoomHandler: (() => void) | null = null;
+let resizeHandler: (() => void) | null = null;
+let savedScrollY = 0;
+
+function getScrollY() {
+  return window.__lenis?.scroll ?? window.scrollY;
+}
+
+function pausePageScroll() {
+  savedScrollY = getScrollY();
+  const lenis = window.__lenis;
+  if (lenis) lenis.stop();
+  document.body.style.overflow = 'hidden';
+}
+
+function resumePageScroll() {
+  document.body.style.overflow = '';
+  const lenis = window.__lenis;
+  if (lenis) {
+    lenis.start();
+    lenis.scrollTo(savedScrollY, { immediate: true });
+    return;
+  }
+  window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' });
+}
 
 function currentWork() {
   return worksForLightbox[workIndex];
 }
 
 function isImageZoomed() {
-  return panzoomApi ? panzoomApi.getScale() > 1.02 : false;
+  const slide = pswpInstance?.currSlide;
+  if (!slide) return false;
+  return slide.currZoomLevel > slide.zoomLevels.initial + 0.02;
 }
 
 function setWorkUrl(slug: string | null) {
@@ -69,17 +87,6 @@ function setWorkUrl(slug: string | null) {
   if (slug) url.searchParams.set('work', slug);
   else url.searchParams.delete('work');
   history.replaceState({ work: slug || null }, '', url);
-}
-
-function preloadAdjacentPhotos(work: (typeof worksForLightbox)[number], activeIndex: number) {
-  if (!work || work.images.length <= 1) return;
-
-  [-1, 1].forEach((offset) => {
-    const photo = work.images[(activeIndex + offset + work.images.length) % work.images.length];
-    if (!photo?.src) return;
-    const img = new Image();
-    img.src = photo.src;
-  });
 }
 
 function updateEnquireLink(work: (typeof worksForLightbox)[number]) {
@@ -94,180 +101,175 @@ function updateEnquireLink(work: (typeof worksForLightbox)[number]) {
   }
 }
 
-function setLenisPaused(paused: boolean) {
-  const lenis = window.__lenis;
-  if (!lenis) return;
-  if (paused) lenis.stop();
-  else lenis.start();
+function updateZoomState() {
+  if (!lightbox) return;
+  lightbox.classList.toggle('art-lightbox--zoomed', isImageZoomed());
 }
 
-function teardownImageZoom() {
-  if (mediumZoomApi) {
-    mediumZoomApi.close();
-    mediumZoomApi.detach();
-    mediumZoomApi = null;
+function teardownPhotoSwipe() {
+  if (pswpInstance && pswpChangeHandler) {
+    pswpInstance.off('change', pswpChangeHandler);
+  }
+  if (pswpInstance && pswpZoomHandler) {
+    pswpInstance.off('zoomPanUpdate', pswpZoomHandler);
   }
 
-  if (panzoomApi) {
-    panzoomApi.destroy();
-    panzoomApi = null;
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler);
+    resizeHandler = null;
   }
 
-  if (wheelHandler && zoomStage) {
-    zoomStage.removeEventListener('wheel', wheelHandler);
-    wheelHandler = null;
+  if (pswpInstance) {
+    pswpInstance.destroy();
+    pswpInstance = null;
   }
 
-  if (doubleTapHandler && imageEl) {
-    imageEl.removeEventListener('touchend', doubleTapHandler);
-    doubleTapHandler = null;
-  }
-
-  if (panzoomChangeHandler && imageEl) {
-    imageEl.removeEventListener('panzoomchange', panzoomChangeHandler);
-    panzoomChangeHandler = null;
-  }
-
+  pswpWorkIndex = -1;
   lightbox?.classList.remove('art-lightbox--zoomed');
 }
 
-function setupImageZoom() {
-  teardownImageZoom();
-  if (!imageEl || !lightbox || lightbox.hidden) return;
+function buildDataSource(work: (typeof worksForLightbox)[number]) {
+  return work.images.map((photo) => ({
+    src: photo.src,
+    width: defaultImageSize.width,
+    height: defaultImageSize.height,
+    alt: photo.alt,
+  }));
+}
 
-  if (finePointer) {
-    mediumZoomApi = mediumZoom(imageEl, {
-      background: 'rgba(14, 16, 22, 0.94)',
-      margin: 40,
-      scrollOffset: 0,
-    });
+function applyWorkMeta() {
+  const work = currentWork();
+  if (!work || !titleEl || !descEl || !metaEl) return;
+
+  titleEl.textContent = work.title;
+  descEl.textContent = work.description;
+  metaEl.textContent = work.meta;
+
+  if (statusEl) {
+    if (work.status && statusLabels[work.status]) {
+      statusEl.textContent = statusLabels[work.status];
+      statusEl.dataset.status = work.status;
+      statusEl.hidden = false;
+    } else {
+      statusEl.textContent = '';
+      statusEl.removeAttribute('data-status');
+      statusEl.hidden = true;
+    }
+  }
+
+  const hasMultiple = work.images.length > 1;
+  if (prevBtn) prevBtn.hidden = !hasMultiple;
+  if (nextBtn) nextBtn.hidden = !hasMultiple;
+
+  updateEnquireLink(work);
+}
+
+function applyImageMeta() {
+  const work = currentWork();
+  const photo = work?.images[imageIndex];
+  if (!work || !photo || !counterEl) return;
+
+  const hasMultiple = work.images.length > 1;
+  if (hasMultiple) {
+    counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
+    counterEl.hidden = false;
+  } else {
+    counterEl.textContent = '';
+    counterEl.hidden = true;
+  }
+
+  if (captionEl) {
+    if (photo.caption) {
+      captionEl.textContent = photo.caption;
+      captionEl.hidden = false;
+    } else {
+      captionEl.textContent = '';
+      captionEl.hidden = true;
+    }
+  }
+}
+
+function syncPhotoSwipe() {
+  const work = currentWork();
+  if (!work || !zoomStage || !lightbox || lightbox.hidden) return;
+
+  if (pswpInstance && pswpWorkIndex === workIndex) {
+    if (pswpInstance.currIndex !== imageIndex) {
+      pswpInstance.goTo(imageIndex);
+    }
+    updateZoomState();
     return;
   }
 
-  if (!zoomStage) return;
+  teardownPhotoSwipe();
 
-  panzoomApi = Panzoom(imageEl, {
-    maxScale: 4,
-    minScale: 1,
-    contain: 'outside',
-    cursor: 'grab',
-    panOnlyWhenZoomed: true,
-    animate: true,
+  pswpInstance = new PhotoSwipe({
+    appendToEl: zoomStage,
+    dataSource: buildDataSource(work),
+    index: imageIndex,
+    bgOpacity: 0,
+    spacing: 0.05,
+    loop: work.images.length > 2,
+    allowPanToNext: !finePointer,
+    pinchToClose: false,
+    closeOnVerticalDrag: false,
+    showHideAnimationType: 'none',
+    showAnimationDuration: 0,
+    hideAnimationDuration: 0,
+    zoomAnimationDuration: 320,
+    escKey: false,
+    arrowKeys: false,
+    trapFocus: false,
+    returnFocus: false,
+    clickToCloseNonZoomable: false,
+    imageClickAction: finePointer ? 'zoom' : 'zoom-or-close',
+    doubleTapAction: 'zoom',
+    bgClickAction: false,
+    tapAction: false,
+    arrowPrev: false,
+    arrowNext: false,
+    close: false,
+    counter: false,
+    zoom: false,
+    wheelToZoom: finePointer,
+    mouseMovePan: true,
+    preload: [1, 1],
+    mainClass: 'pswp--embedded',
+    getViewportSizeFn: () => ({
+      x: zoomStage.clientWidth || 320,
+      y: zoomStage.clientHeight || 400,
+    }),
   });
 
-  wheelHandler = panzoomApi.zoomWithWheel;
-  zoomStage.addEventListener('wheel', wheelHandler, { passive: false });
+  pswpWorkIndex = workIndex;
 
-  doubleTapHandler = (event: TouchEvent) => {
-    if (!panzoomApi || event.changedTouches.length !== 1) return;
-
-    const now = Date.now();
-    const touch = event.changedTouches[0];
-
-    if (now - lastTap < 300) {
-      if (isImageZoomed()) {
-        panzoomApi.reset({ animate: true });
-        lightbox?.classList.remove('art-lightbox--zoomed');
-      } else {
-        panzoomApi.zoomToPoint(2.25, { clientX: touch.clientX, clientY: touch.clientY });
-        lightbox?.classList.add('art-lightbox--zoomed');
-      }
-    }
-
-    lastTap = now;
+  pswpChangeHandler = () => {
+    if (!pswpInstance) return;
+    imageIndex = pswpInstance.currIndex;
+    applyImageMeta();
+    updateZoomState();
   };
 
-  imageEl.addEventListener('touchend', doubleTapHandler, { passive: true });
-
-  panzoomChangeHandler = () => {
-    if (!panzoomApi) return;
-    if (panzoomApi.getScale() > 1.02) lightbox?.classList.add('art-lightbox--zoomed');
-    else lightbox?.classList.remove('art-lightbox--zoomed');
+  pswpZoomHandler = () => {
+    updateZoomState();
   };
-  imageEl.addEventListener('panzoomchange', panzoomChangeHandler);
+
+  pswpInstance.on('change', pswpChangeHandler);
+  pswpInstance.on('zoomPanUpdate', pswpZoomHandler);
+
+  resizeHandler = () => {
+    pswpInstance?.updateSize(true);
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  pswpInstance.init();
+  updateZoomState();
 }
 
 function renderImage() {
-  const work = currentWork();
-  const photo = work?.images[imageIndex];
-  if (!work || !photo || !imageEl || !titleEl || !descEl || !metaEl || !counterEl) return;
-
-  teardownImageZoom();
-
-  const token = ++renderToken;
-  const nextSrc = photo.src;
-
-  const applyMeta = () => {
-    titleEl.textContent = work.title;
-    descEl.textContent = work.description;
-    metaEl.textContent = work.details;
-
-    if (statusEl) {
-      if (work.status && statusLabels[work.status]) {
-        statusEl.textContent = statusLabels[work.status];
-        statusEl.dataset.status = work.status;
-        statusEl.hidden = false;
-      } else {
-        statusEl.textContent = '';
-        statusEl.removeAttribute('data-status');
-        statusEl.hidden = true;
-      }
-    }
-
-    const hasMultiple = work.images.length > 1;
-    if (prevBtn) prevBtn.hidden = !hasMultiple;
-    if (nextBtn) nextBtn.hidden = !hasMultiple;
-
-    if (hasMultiple) {
-      counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
-      counterEl.hidden = false;
-    } else {
-      counterEl.textContent = '';
-      counterEl.hidden = true;
-    }
-
-    if (captionEl) {
-      if (photo.caption) {
-        captionEl.textContent = photo.caption;
-        captionEl.hidden = false;
-      } else {
-        captionEl.textContent = '';
-        captionEl.hidden = true;
-      }
-    }
-
-    updateEnquireLink(work);
-    preloadAdjacentPhotos(work, imageIndex);
-  };
-
-  const showPhoto = () => {
-    imageEl.src = nextSrc;
-    imageEl.alt = photo.alt;
-    imageEl.classList.remove('is-changing');
-    applyMeta();
-    setupImageZoom();
-  };
-
-  const currentSrc = imageEl.getAttribute('src') || '';
-  if (currentSrc === nextSrc) {
-    showPhoto();
-    return;
-  }
-
-  imageEl.classList.add('is-changing');
-  applyMeta();
-
-  const preload = new Image();
-  preload.onload = () => {
-    if (token !== renderToken) return;
-    showPhoto();
-  };
-  preload.onerror = () => {
-    if (token !== renderToken) return;
-    imageEl.classList.remove('is-changing');
-    setupImageZoom();
-  };
-  preload.src = nextSrc;
+  applyWorkMeta();
+  applyImageMeta();
+  syncPhotoSwipe();
 }
 
 function trapFocus(event: KeyboardEvent) {
@@ -308,12 +310,15 @@ function open(index: number, trigger: HTMLElement | null) {
     zoomHint.hidden = finePointer;
   }
 
-  renderImage();
   lightbox.hidden = false;
-  requestAnimationFrame(() => lightbox.classList.add('is-open'));
+  requestAnimationFrame(() => {
+    lightbox?.classList.add('is-open');
+    renderImage();
+    requestAnimationFrame(() => pswpInstance?.updateSize(true));
+  });
+
   setWorkUrl(worksForLightbox[index]?.slug ?? null);
-  setLenisPaused(true);
-  document.body.style.overflow = 'hidden';
+  pausePageScroll();
   lightbox.querySelector<HTMLElement>('.art-lightbox__close')?.focus();
   document.addEventListener('keydown', onKeydown);
   document.addEventListener('keydown', trapFocus);
@@ -322,7 +327,6 @@ function open(index: number, trigger: HTMLElement | null) {
 function close() {
   if (!lightbox || lightbox.hidden || lightbox.classList.contains('is-closing')) return;
 
-  teardownImageZoom();
   lightbox.classList.remove('is-open');
   lightbox.classList.add('is-closing');
   setWorkUrl(null);
@@ -331,14 +335,16 @@ function close() {
 
   window.setTimeout(() => {
     if (!lightbox) return;
+    teardownPhotoSwipe();
     lightbox.hidden = true;
     lightbox.classList.remove('is-closing');
-    setLenisPaused(false);
-    document.body.style.overflow = '';
+    resumePageScroll();
 
-    if (lastTrigger instanceof HTMLElement) {
-      lastTrigger.focus();
-    }
+    requestAnimationFrame(() => {
+      if (lastTrigger instanceof HTMLElement) {
+        lastTrigger.focus({ preventScroll: true });
+      }
+    });
   }, 380);
 }
 
@@ -355,8 +361,7 @@ function onKeydown(event: KeyboardEvent) {
 
   if (event.key === 'Escape') {
     if (isImageZoomed()) {
-      panzoomApi?.reset({ animate: true });
-      lightbox.classList.remove('art-lightbox--zoomed');
+      pswpInstance?.toggleZoom();
       event.preventDefault();
       return;
     }
@@ -387,36 +392,6 @@ document.querySelectorAll('[data-work-open]').forEach((trigger) => {
 prevBtn?.addEventListener('click', () => showRelative(-1));
 nextBtn?.addEventListener('click', () => showRelative(1));
 closeTargets?.forEach((el) => el.addEventListener('click', close));
-
-if (imageWrap) {
-  imageWrap.addEventListener(
-    'touchstart',
-    (event) => {
-      if (event.touches.length !== 1 || isImageZoomed()) return;
-      touchStartX = event.touches[0].clientX;
-      touchStartY = event.touches[0].clientY;
-    },
-    { passive: true }
-  );
-
-  imageWrap.addEventListener(
-    'touchend',
-    (event) => {
-      const work = currentWork();
-      if (!work || work.images.length <= 1 || lightbox?.hidden || isImageZoomed()) return;
-      if (event.touches.length > 0) return;
-
-      const touch = event.changedTouches[0];
-      const deltaX = touch.clientX - touchStartX;
-      const deltaY = touch.clientY - touchStartY;
-
-      if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-
-      showRelative(deltaX < 0 ? 1 : -1);
-    },
-    { passive: true }
-  );
-}
 
 function openFromUrl() {
   const slug = new URLSearchParams(window.location.search).get('work');
