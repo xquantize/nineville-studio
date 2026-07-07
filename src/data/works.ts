@@ -1,8 +1,7 @@
-// To add a new piece: copy any entry, change the id, add images in /public/images/works/, update title + descriptions.
+// To add a new piece: copy any entry, change the id, add images in /public/images/works/<slug>/, update title + descriptions.
 // `description` = short line on the grid card. `detailDescription` = longer copy in the lightbox (optional).
-// `images` = one or more photos of the same piece (first image is the grid thumbnail). Add detail shots, angles, in-situ, etc.
+// `images` = one or more photos of the same piece (first image is the grid thumbnail). Numbered 1.webp, 2.webp, …
 // `dimensions` = optional, e.g. "80 × 100 cm". `status` = optional: available | sold | private collection
-// Export spec: 1200×1500 px (4:5), WebP ~80 quality, straight-on crop with even margins. See README.
 
 export interface WorkImage {
   src: string;
@@ -15,7 +14,7 @@ export type WorkStatus = 'available' | 'sold' | 'private collection';
 
 export interface Work {
   id: string;
-  /** URL slug for sharing — used in ?work=untitled-i links */
+  /** URL slug for sharing — used in ?work=slug links */
   slug: string;
   title: string;
   /** Short line shown on the grid card */
@@ -62,114 +61,46 @@ export function getWorkIndexBySlug(slug: string): number {
   return works.findIndex((work) => work.slug === slug);
 }
 
-export const works: Work[] = [
-  {
-    id: 'w01',
-    slug: 'untitled-i',
-    title: 'Untitled (I)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
-    detailDescription:
-      '[PLACEHOLDER: Longer description for the lightbox — process, materials, scale, what inspired the piece, etc.]',
-    medium: 'plaster',
-    year: 2025,
-    dimensions: '[PLACEHOLDER: 80 × 100 cm]',
-    status: 'available',
-    images: [
-      {
-        src: '/images/works/work-01.svg',
-        alt: 'Placeholder for Laura Neundörfer painting one — full view',
-        caption: 'Full view',
-      },
-      {
-        src: '/images/works/work-01.svg',
-        alt: 'Placeholder for Laura Neundörfer painting one — detail',
-        caption: 'Detail',
-      },
-      {
-        src: '/images/works/work-01.svg',
-        alt: 'Placeholder for Laura Neundörfer painting one — texture',
-        caption: 'Texture',
-      },
-    ],
-  },
-  {
-    id: 'w02',
-    slug: 'untitled-ii',
-    title: 'Untitled (II)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
-    medium: 'acrylic',
-    year: 2025,
-    status: 'available',
-    images: [
-      {
-        src: '/images/works/work-02.svg',
-        alt: 'Placeholder for Laura Neundörfer painting two',
-      },
-    ],
-  },
-  {
-    id: 'w03',
-    slug: 'untitled-iii',
-    title: 'Untitled (III)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
-    medium: 'resin',
-    year: 2024,
-    dimensions: '[PLACEHOLDER: 60 × 80 cm]',
-    status: 'private collection',
-    images: [
-      {
-        src: '/images/works/work-03.svg',
-        alt: 'Placeholder for Laura Neundörfer painting three — full view',
-        caption: 'Full view',
-      },
-      {
-        src: '/images/works/work-03.svg',
-        alt: 'Placeholder for Laura Neundörfer painting three — detail',
-        caption: 'Detail',
-      },
-    ],
-  },
-  {
-    id: 'w04',
-    slug: 'untitled-iv',
-    title: 'Untitled (IV)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
+function pieceImages(slug: string, title: string, count: number): WorkImage[] {
+  return Array.from({ length: count }, (_, index) => {
+    const photo = index + 1;
+    return {
+      src: `/images/works/${slug}/${photo}.webp`,
+      alt: `${title} — photo ${photo}`,
+    };
+  });
+}
+
+function piece(
+  id: string,
+  slug: string,
+  title: string,
+  photoCount: number,
+  overrides: Partial<Omit<Work, 'id' | 'slug' | 'title' | 'images'>> = {}
+): Work {
+  return {
+    id,
+    slug,
+    title,
+    description: '[PLACEHOLDER: 1-line description]',
     medium: 'mixed',
-    year: 2024,
-    images: [
-      {
-        src: '/images/works/work-04.svg',
-        alt: 'Placeholder for Laura Neundörfer painting four',
-      },
-    ],
-  },
-  {
-    id: 'w05',
-    slug: 'untitled-v',
-    title: 'Untitled (V)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
-    medium: 'plaster',
-    year: 2023,
-    status: 'sold',
-    images: [
-      {
-        src: '/images/works/work-05.svg',
-        alt: 'Placeholder for Laura Neundörfer painting five',
-      },
-    ],
-  },
-  {
-    id: 'w06',
-    slug: 'untitled-vi',
-    title: 'Untitled (VI)',
-    description: '[PLACEHOLDER: 1-line description — replace later]',
-    medium: 'acrylic',
-    year: 2023,
-    images: [
-      {
-        src: '/images/works/work-06.svg',
-        alt: 'Placeholder for Laura Neundörfer painting six',
-      },
-    ],
-  },
+    year: 2025,
+    status: 'available',
+    images: pieceImages(slug, title, photoCount),
+    ...overrides,
+  };
+}
+
+export const works: Work[] = [
+  piece('w01', 'beautiful-coral', 'Beautiful Coral', 8),
+  piece('w02', 'surfboard', 'Surfboard', 5),
+  piece('w03', 'beige-coral', 'Beige Coral', 2),
+  piece('w04', 'blue-coral', 'Blue Coral', 2),
+  piece('w05', 'blue-flower', 'Blue Flower', 2),
+  piece('w06', 'brown-coral', 'Brown Coral', 2),
+  piece('w07', 'neon-1-coral', 'Neon I Coral', 2),
+  piece('w08', 'neon-2-coral', 'Neon II Coral', 2),
+  piece('w09', 'white-coral', 'White Coral', 2),
+  piece('w10', 'white-flower', 'White Flower', 2),
+  piece('w11', 'white-purp-flower', 'White & Purple Flower', 2),
 ];

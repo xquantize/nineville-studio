@@ -25,3 +25,4 @@ pnpm-debug.log*
 
 # Full-size painting source — keep outside repo; run optimize-images.sh to regenerate WebP
 public/images/background.png
+wetransfer_pics-website_2026-07-07_0406/

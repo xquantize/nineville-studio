@@ -2,14 +2,52 @@
   <div class="panel-inner">
     <h2 id="bio" class="section-heading" data-reveal>Bio</h2>
 
-    <div class="bio__text" data-reveal>
-      <p>[PLACEHOLDER: Bio paragraph 1 — replace with Laura's words]</p>
+    <div class="bio__layout">
+      <figure class="bio__portrait" data-reveal>
+        <img
+          src="/images/bio-portrait.webp"
+          alt="Laura Neundörfer"
+          width="240"
+          height="300"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+
+      <div class="bio__text" data-reveal>
+        <p>[PLACEHOLDER: Bio paragraph 1 — replace with Laura's words]</p>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  .bio__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .bio__portrait {
+    flex-shrink: 0;
+    margin: 0;
+    width: 5.5rem;
+  }
+
+  .bio__portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 4px;
+    border: 0.5px solid rgba(184, 154, 106, 0.22);
+  }
+
   .bio__text {
+    flex: 1;
+    min-width: 0;
     max-width: 42rem;
   }
 
@@ -21,5 +59,15 @@
 
   .bio__text p:last-child {
     margin-bottom: 0;
+  }
+
+  @media (min-width: 768px) {
+    .bio__layout {
+      gap: var(--space-4);
+    }
+
+    .bio__portrait {
+      width: 7.5rem;
+    }
   }
 </style>
