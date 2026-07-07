@@ -33,16 +33,28 @@
     const fadeDuration = 1000;
     const started = performance.now();
 
+    // iOS Safari can defer painting the fade-out (and the content revealed
+    // behind it) until the first touch when a fixed background is present.
+    // Toggling body opacity forces an immediate compositor repaint.
+    function nudgeRepaint() {
+      document.body.style.opacity = '0.9999';
+      requestAnimationFrame(() => {
+        document.body.style.opacity = '';
+      });
+    }
+
     function dismiss() {
       const wait = Math.max(0, minDisplay - (performance.now() - started));
 
       window.setTimeout(() => {
         intro.classList.add('fade-out');
         intro.style.pointerEvents = 'none';
+        nudgeRepaint();
       }, wait);
 
       window.setTimeout(() => {
         intro.classList.add('hidden');
+        nudgeRepaint();
       }, wait + fadeDuration);
     }
 

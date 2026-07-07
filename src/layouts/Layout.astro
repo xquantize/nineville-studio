@@ -146,9 +146,19 @@ const ogImageUrl = absoluteUrl(ogImage);
           observer.observe(el);
         });
 
-        // Reveal anything already on screen right away. On mobile Safari a
-        // fixed-position background can delay the observer's first paint until
-        // the user scrolls, leaving content invisible on load — this forces it.
+        // iOS Safari can withhold the first paint of content layered over a
+        // fixed background until the user interacts. Toggling body opacity
+        // forces an immediate compositor repaint.
+        function nudgeRepaint() {
+          document.body.style.opacity = '0.9999';
+          requestAnimationFrame(function () {
+            document.body.style.opacity = '';
+          });
+        }
+
+        // Reveal anything already on screen right away. Without this, the
+        // observer's first paint can be delayed until the user scrolls,
+        // leaving the landing content invisible on load.
         function revealInView() {
           var vh = window.innerHeight || document.documentElement.clientHeight;
           reveals.forEach(function (el) {
@@ -159,6 +169,7 @@ const ogImageUrl = absoluteUrl(ogImage);
               observer.unobserve(el);
             }
           });
+          nudgeRepaint();
         }
 
         requestAnimationFrame(function () {
