@@ -12,6 +12,7 @@
       decoding="async"
     />
   </picture>
+  <div class="scroll-bg__atmosphere" aria-hidden="true"></div>
 </div>
 
 <style>
@@ -30,14 +31,52 @@
     min-height: 100%;
     object-fit: cover;
     object-position: top center;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scale(1.016);
+    transform-origin: 50% 22%;
     backface-visibility: hidden;
     will-change: transform;
   }
 
+  .scroll-bg__atmosphere {
+    position: absolute;
+    inset: -12%;
+    background:
+      radial-gradient(
+        ellipse 70% 55% at 28% 18%,
+        rgba(251, 246, 234, 0.09) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 72% 78%,
+        rgba(184, 154, 106, 0.07) 0%,
+        transparent 62%
+      );
+    mix-blend-mode: soft-light;
+    opacity: 0.38;
+    animation: scroll-bg-atmosphere 40s var(--ease-in-out) infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes scroll-bg-atmosphere {
+    from {
+      transform: translate3d(-0.8%, -0.5%, 0) scale(1.01);
+      opacity: 0.28;
+    }
+    to {
+      transform: translate3d(1%, 0.8%, 0) scale(1.02);
+      opacity: 0.4;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .scroll-bg__img {
+      transform: translate3d(0, 0, 0);
       will-change: auto;
+    }
+
+    .scroll-bg__atmosphere {
+      animation: none;
+      opacity: 0.35;
     }
   }
 </style>

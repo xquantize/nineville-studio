@@ -3,11 +3,24 @@
 
   const img = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const ambientMotion = !reducedMotion;
+
+  const BASE_SCALE = 1.016;
+  const AMBIENT_SCALE = 0.005;
+  const MOUSE_X_MAX = 8;
+  const MOUSE_Y_MAX = 5;
 
   let panMetrics = { maxPan: 0, docH: 0 };
   let targetPan = 0;
   let currentPan = 0;
-  let panRafId = 0;
+  let motionRafId = 0;
+  let motionStart = performance.now();
+
+  let mouseTargetX = 0;
+  let mouseTargetY = 0;
+  let mouseCurrentX = 0;
+  let mouseCurrentY = 0;
 
   function updatePanMetrics() {
     if (!img?.complete) return;
@@ -23,31 +36,102 @@
     return (scrollY / panMetrics.docH) * panMetrics.maxPan;
   }
 
-  function applyPanFrame() {
+  function ambientOffset(time: number) {
+    const t = (time - motionStart) * 0.001;
+    return {
+      x: Math.sin(t * 0.11) * 5 + Math.sin(t * 0.063) * 2,
+      y: Math.cos(t * 0.095) * 4 + Math.cos(t * 0.051) * 1.5,
+      scale: BASE_SCALE + Math.sin(t * 0.082) * AMBIENT_SCALE,
+    };
+  }
+
+  function applyBackgroundTransform() {
     if (!img) return;
 
-    const delta = targetPan - currentPan;
-    if (Math.abs(delta) < 0.05) {
-      currentPan = targetPan;
-      img.style.transform = `translate3d(0, ${-currentPan.toFixed(2)}px, 0)`;
-      panRafId = 0;
-      return;
+    const ambient = ambientMotion ? ambientOffset(performance.now()) : { x: 0, y: 0, scale: 1 };
+    const mouseX = ambientMotion && finePointer ? mouseCurrentX : 0;
+    const mouseY = ambientMotion && finePointer ? mouseCurrentY : 0;
+    const x = ambient.x + mouseX;
+    const y = -currentPan + ambient.y + mouseY;
+
+    img.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${ambient.scale.toFixed(4)})`;
+  }
+
+  function motionFrame() {
+    if (ambientMotion && finePointer) {
+      mouseCurrentX += (mouseTargetX - mouseCurrentX) * 0.06;
+      mouseCurrentY += (mouseTargetY - mouseCurrentY) * 0.06;
     }
 
-    currentPan += delta * 0.11;
-    img.style.transform = `translate3d(0, ${-currentPan.toFixed(2)}px, 0)`;
-    panRafId = requestAnimationFrame(applyPanFrame);
+    const panDelta = targetPan - currentPan;
+    if (Math.abs(panDelta) >= 0.05) {
+      currentPan += panDelta * 0.11;
+    } else {
+      currentPan = targetPan;
+    }
+
+    applyBackgroundTransform();
+    motionRafId = requestAnimationFrame(motionFrame);
+  }
+
+  function startMotionLoop() {
+    if (motionRafId) return;
+    motionRafId = requestAnimationFrame(motionFrame);
+  }
+
+  function stopMotionLoop() {
+    if (!motionRafId) return;
+    cancelAnimationFrame(motionRafId);
+    motionRafId = 0;
   }
 
   function setTargetPan(scrollY: number) {
     targetPan = panOffset(scrollY);
-    if (!panRafId) {
-      panRafId = requestAnimationFrame(applyPanFrame);
+
+    if (ambientMotion) {
+      startMotionLoop();
+      return;
     }
+
+    currentPan = targetPan;
+    applyBackgroundTransform();
   }
 
   function emitScroll(scrollY: number) {
     window.dispatchEvent(new CustomEvent('app-scroll', { detail: { scroll: scrollY } }));
+  }
+
+  function bindPointerParallax() {
+    if (!ambientMotion || !finePointer) return;
+
+    window.addEventListener(
+      'pointermove',
+      (event) => {
+        const nx = event.clientX / window.innerWidth - 0.5;
+        const ny = event.clientY / window.innerHeight - 0.5;
+        mouseTargetX = nx * MOUSE_X_MAX * 2;
+        mouseTargetY = ny * MOUSE_Y_MAX * 2;
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      'pointerleave',
+      () => {
+        mouseTargetX = 0;
+        mouseTargetY = 0;
+      },
+      { passive: true }
+    );
+  }
+
+  function bindVisibilityPause() {
+    if (!ambientMotion) return;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopMotionLoop();
+      else startMotionLoop();
+    });
   }
 
   function initWithLenis() {
@@ -59,7 +143,7 @@
       lerp: 0.095,
       duration: 1.55,
       smoothWheel: true,
-      syncTouch: window.matchMedia('(pointer: fine)').matches,
+      syncTouch: finePointer,
       wheelMultiplier: 0.9,
       touchMultiplier: 1,
       infinite: false,
@@ -102,11 +186,16 @@
   }
 
   function start() {
+    bindPointerParallax();
+    bindVisibilityPause();
+
     if (reducedMotion) {
       initNative();
       return;
     }
+
     initWithLenis();
+    startMotionLoop();
   }
 
   if (img?.complete) {
