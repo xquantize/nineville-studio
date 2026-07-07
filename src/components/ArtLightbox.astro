@@ -1,8 +1,10 @@
 ---
 import { works, formatWorkMeta, formatLightboxMeta } from '../data/works';
+import { site } from '../data/site';
 
 const worksForLightbox = works.map((work) => ({
   id: work.id,
+  slug: work.slug,
   title: work.title,
   description: work.detailDescription ?? work.description,
   meta: formatWorkMeta(work),
@@ -55,19 +57,22 @@ const worksForLightbox = works.map((work) => ({
         <p id="art-lightbox-desc" class="art-lightbox__desc"></p>
         <p class="art-lightbox__meta"></p>
         <p class="art-lightbox__status" hidden></p>
+        <a class="art-lightbox__enquire" data-lightbox-enquire hidden>Enquire about this piece</a>
       </div>
     </div>
   </div>
 </div>
 
-<script define:vars={{ worksForLightbox }}>
+<script define:vars={{ worksForLightbox, contactEmail: site.email }}>
   const lightbox = document.getElementById('art-lightbox');
+  const imageWrap = lightbox?.querySelector('.art-lightbox__image-wrap');
   const imageEl = lightbox?.querySelector('.art-lightbox__image');
   const captionEl = lightbox?.querySelector('.art-lightbox__caption');
   const titleEl = lightbox?.querySelector('.art-lightbox__title');
   const descEl = lightbox?.querySelector('.art-lightbox__desc');
   const metaEl = lightbox?.querySelector('.art-lightbox__meta');
   const statusEl = lightbox?.querySelector('.art-lightbox__status');
+  const enquireEl = lightbox?.querySelector('[data-lightbox-enquire]');
   const counterEl = lightbox?.querySelector('.art-lightbox__counter');
   const prevBtn = lightbox?.querySelector('[data-lightbox-prev]');
   const nextBtn = lightbox?.querySelector('[data-lightbox-next]');
@@ -85,9 +90,41 @@ const worksForLightbox = works.map((work) => ({
   let imageIndex = 0;
   let lastTrigger = null;
   let renderToken = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
 
   function currentWork() {
     return worksForLightbox[workIndex];
+  }
+
+  function setWorkUrl(slug) {
+    const url = new URL(window.location.href);
+    if (slug) url.searchParams.set('work', slug);
+    else url.searchParams.delete('work');
+    history.replaceState({ work: slug || null }, '', url);
+  }
+
+  function preloadAdjacentPhotos(work, activeIndex) {
+    if (!work || work.images.length <= 1) return;
+
+    [-1, 1].forEach((offset) => {
+      const photo = work.images[(activeIndex + offset + work.images.length) % work.images.length];
+      if (!photo?.src) return;
+      const img = new Image();
+      img.src = photo.src;
+    });
+  }
+
+  function updateEnquireLink(work) {
+    if (!enquireEl) return;
+
+    if (work?.status === 'available' || !work?.status) {
+      const subject = encodeURIComponent(`Enquiry: ${work.title}`);
+      enquireEl.href = `mailto:${contactEmail}?subject=${subject}`;
+      enquireEl.hidden = false;
+    } else {
+      enquireEl.hidden = true;
+    }
   }
 
   function setLenisPaused(paused) {
@@ -143,6 +180,9 @@ const worksForLightbox = works.map((work) => ({
           captionEl.hidden = true;
         }
       }
+
+      updateEnquireLink(work);
+      preloadAdjacentPhotos(work, imageIndex);
     };
 
     const showPhoto = () => {
@@ -207,6 +247,7 @@ const worksForLightbox = works.map((work) => ({
     renderImage();
     lightbox.hidden = false;
     requestAnimationFrame(() => lightbox.classList.add('is-open'));
+    setWorkUrl(worksForLightbox[index]?.slug ?? null);
     setLenisPaused(true);
     document.body.style.overflow = 'hidden';
     lightbox.querySelector('.art-lightbox__close')?.focus();
@@ -219,6 +260,7 @@ const worksForLightbox = works.map((work) => ({
 
     lightbox.classList.remove('is-open');
     lightbox.classList.add('is-closing');
+    setWorkUrl(null);
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('keydown', trapFocus);
 
@@ -275,9 +317,51 @@ const worksForLightbox = works.map((work) => ({
   nextBtn?.addEventListener('click', () => showRelative(1));
   closeTargets?.forEach((el) => el.addEventListener('click', close));
 
+  if (imageWrap) {
+    imageWrap.addEventListener(
+      'touchstart',
+      (event) => {
+        if (event.touches.length !== 1) return;
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      },
+      { passive: true }
+    );
+
+    imageWrap.addEventListener(
+      'touchend',
+      (event) => {
+        const work = currentWork();
+        if (!work || work.images.length <= 1 || lightbox?.hidden) return;
+
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+
+        if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+        showRelative(deltaX < 0 ? 1 : -1);
+      },
+      { passive: true }
+    );
+  }
+
+  function openFromUrl() {
+    const slug = new URLSearchParams(window.location.search).get('work');
+    if (!slug) return;
+
+    const index = worksForLightbox.findIndex((work) => work.slug === slug);
+    if (index < 0) return;
+
+    const delay = document.documentElement.classList.contains('skip-intro') ? 80 : 1200;
+    window.setTimeout(() => open(index, null), delay);
+  }
+
   if (lightbox && lightbox.parentElement !== document.body) {
     document.body.appendChild(lightbox);
   }
+
+  openFromUrl();
 </script>
 
 <style>
@@ -457,6 +541,35 @@ const worksForLightbox = works.map((work) => ({
   }
 
   .art-lightbox__status[hidden] {
+    display: none;
+  }
+
+  .art-lightbox__enquire {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--space-3);
+    padding: 12px 22px;
+    min-height: 44px;
+    border-radius: 100px;
+    background: var(--sand-50);
+    color: var(--sand-900);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background var(--duration-gentle) var(--ease-gentle),
+      box-shadow var(--duration-gentle) var(--ease-gentle);
+  }
+
+  .art-lightbox__enquire:hover {
+    background: var(--sand-200);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .art-lightbox__enquire[hidden] {
     display: none;
   }
 

@@ -15,6 +15,8 @@ export type WorkStatus = 'available' | 'sold' | 'private collection';
 
 export interface Work {
   id: string;
+  /** URL slug for sharing — used in ?work=untitled-i links */
+  slug: string;
   title: string;
   /** Short line shown on the grid card */
   description: string;
@@ -50,9 +52,20 @@ export function getWorkCover(work: Work): WorkImage {
   return work.images[0];
 }
 
+export const workStatusLabels: Record<WorkStatus, string> = {
+  available: 'Available',
+  sold: 'Sold',
+  'private collection': 'Private collection',
+};
+
+export function getWorkIndexBySlug(slug: string): number {
+  return works.findIndex((work) => work.slug === slug);
+}
+
 export const works: Work[] = [
   {
     id: 'w01',
+    slug: 'untitled-i',
     title: 'Untitled (I)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     detailDescription:
@@ -81,6 +94,7 @@ export const works: Work[] = [
   },
   {
     id: 'w02',
+    slug: 'untitled-ii',
     title: 'Untitled (II)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'acrylic',
@@ -95,6 +109,7 @@ export const works: Work[] = [
   },
   {
     id: 'w03',
+    slug: 'untitled-iii',
     title: 'Untitled (III)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'resin',
@@ -116,6 +131,7 @@ export const works: Work[] = [
   },
   {
     id: 'w04',
+    slug: 'untitled-iv',
     title: 'Untitled (IV)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'mixed',
@@ -129,6 +145,7 @@ export const works: Work[] = [
   },
   {
     id: 'w05',
+    slug: 'untitled-v',
     title: 'Untitled (V)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'plaster',
@@ -143,6 +160,7 @@ export const works: Work[] = [
   },
   {
     id: 'w06',
+    slug: 'untitled-vi',
     title: 'Untitled (VI)',
     description: '[PLACEHOLDER: 1-line description — replace later]',
     medium: 'acrylic',

@@ -1,5 +1,5 @@
 ---
-import { works, formatWorkMeta, getWorkCover } from '../data/works';
+import { works, formatWorkMeta, getWorkCover, workStatusLabels } from '../data/works';
 import MediaFrame from './MediaFrame.astro';
 ---
 
@@ -21,6 +21,11 @@ import MediaFrame from './MediaFrame.astro';
               aria-label={`View ${work.title}`}
             >
               <div class="work-card__image-wrap">
+                {work.status && (
+                  <span class="work-card__status" data-status={work.status}>
+                    {workStatusLabels[work.status]}
+                  </span>
+                )}
                 <MediaFrame
                   src={cover.src}
                   alt={cover.alt}
@@ -67,9 +72,40 @@ import MediaFrame from './MediaFrame.astro';
   }
 
   .work-card__image-wrap {
+    position: relative;
     overflow: hidden;
     border-radius: 4px 4px 0 0;
     aspect-ratio: 4 / 5;
+  }
+
+  .work-card__status {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 2;
+    padding: 0.3rem 0.55rem;
+    border-radius: 100px;
+    font-family: var(--font-sans);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(var(--veil-dark), 0.82);
+    color: var(--sand-200);
+    border: 0.5px solid rgba(184, 154, 106, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    pointer-events: none;
+  }
+
+  .work-card__status[data-status='available'] {
+    color: var(--sand-100);
+    border-color: rgba(184, 154, 106, 0.45);
+  }
+
+  .work-card__status[data-status='sold'],
+  .work-card__status[data-status='private collection'] {
+    color: var(--text-on-veil-muted);
+    border-color: rgba(184, 154, 106, 0.2);
   }
 
   .work-card__image-wrap .media-frame__img {

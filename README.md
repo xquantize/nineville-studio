@@ -79,7 +79,8 @@ Then add the entry in `src/data/works.ts` with `width: 1200`, `height: 1500`.
 1. Optimize the image (see above) into `public/images/works/`.
 2. Open `src/data/works.ts` and copy an existing entry in the `works` array.
 3. Update:
-   - `id` — unique slug (e.g. `w07`)
+   - `slug` — shareable URL id (e.g. `my-piece-name` → `?work=my-piece-name`)
+   - `id` — internal id (e.g. `w07`)
    - `title` — painting title
    - `description` — one-line summary (grid card)
    - `detailDescription` — optional longer text (lightbox view)
