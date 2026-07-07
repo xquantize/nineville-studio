@@ -123,11 +123,11 @@
     }
   }
 
-  function currentSection(scrollY: number): string | null {
-    const marker = scrollY + window.innerHeight * 0.35;
+  function currentSection(): string | null {
+    const marker = window.innerHeight * 0.35;
     let current: string | null = null;
     for (const section of sections) {
-      if (section.offsetTop <= marker) current = section.id;
+      if (section.getBoundingClientRect().top - marker <= 0) current = section.id;
     }
     return current;
   }
@@ -138,7 +138,7 @@
     nav?.classList.toggle('nav--on-hero', onHero);
     nav?.classList.toggle('nav--scrolled', !onHero && scrollY > 24);
 
-    setActiveSection(onHero ? null : currentSection(scrollY));
+    setActiveSection(onHero ? null : currentSection());
   };
 
   onScroll(window.scrollY);

@@ -5,11 +5,13 @@
 
     <div class="bio__content">
       <figure class="bio__portrait" data-reveal>
+        <span class="bio__portrait-window" aria-hidden="true"></span>
         <img
-          src="/images/bio-portrait.webp"
+          class="bio__portrait-cutout"
+          src="/images/bio-portrait-cutout.webp"
           alt="Laura Neundörfer"
-          width={440}
-          height={521}
+          width={700}
+          height={700}
           loading="lazy"
           decoding="async"
         />
@@ -51,22 +53,38 @@
   }
 
   .bio__portrait {
+    position: relative;
     float: left;
-    width: 8rem;
+    width: 8.5rem;
+    aspect-ratio: 1;
     margin: 0.35rem var(--space-3) var(--space-2) 0;
-    padding: 0.3rem;
-    background: var(--card-bg);
-    border: 0.5px solid rgba(184, 154, 106, 0.35);
-    border-radius: 4px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgba(184, 154, 106, 0.5);
+    box-shadow: 0 8px 28px rgba(14, 16, 22, 0.35);
     box-sizing: border-box;
   }
 
-  .bio__portrait img {
-    display: block;
+  /* Window into the scrolling painting behind Laura — position driven by JS */
+  .bio__portrait-window {
+    position: absolute;
+    inset: 0;
+    background-image: url('/images/background.webp');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    will-change: background-position;
+  }
+
+  .bio__portrait-cutout {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto;
-    border-radius: 2px;
-    border: 0.5px solid rgba(184, 154, 106, 0.22);
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.55) translate(-14%, -16%);
+    transform-origin: center;
   }
 
   .bio__text {
@@ -87,9 +105,8 @@
 
   @media (min-width: 768px) {
     .bio__portrait {
-      width: 11rem;
+      width: 12rem;
       margin: 0.4rem var(--space-4) var(--space-3) 0;
-      padding: 0.4rem;
     }
 
     .bio__text {
@@ -103,9 +120,8 @@
 
   @media (max-width: 767px) {
     .bio__portrait {
-      width: 6.5rem;
+      width: 7rem;
       margin-right: var(--space-2);
-      padding: 0.25rem;
     }
 
     .bio__text p {
@@ -114,3 +130,65 @@
     }
   }
 </style>
+
+<script>
+  const portrait = document.querySelector<HTMLElement>('.bio__portrait');
+  const windowEl = document.querySelector<HTMLElement>('.bio__portrait-window');
+
+  if (portrait && windowEl) {
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    let imgW = 1638;
+    let imgH = 2048;
+    let rafId = 0;
+
+    const bgImage = new Image();
+    function loadNatural() {
+      bgImage.src = mobileQuery.matches
+        ? '/images/background-mobile.webp'
+        : '/images/background.webp';
+    }
+    bgImage.addEventListener('load', () => {
+      if (bgImage.naturalWidth && bgImage.naturalHeight) {
+        imgW = bgImage.naturalWidth;
+        imgH = bgImage.naturalHeight;
+      }
+      windowEl!.style.backgroundImage = `url('${bgImage.src}')`;
+      update();
+    });
+
+    // Mirror a viewport-fixed "cover" background so the circle is a window into it.
+    function update() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const scale = Math.max(vw / imgW, vh / imgH);
+      const bw = imgW * scale;
+      const bh = imgH * scale;
+      const ox = (vw - bw) / 2;
+      const oy = (vh - bh) / 2;
+      const rect = portrait!.getBoundingClientRect();
+
+      windowEl!.style.backgroundSize = `${bw.toFixed(1)}px ${bh.toFixed(1)}px`;
+      windowEl!.style.backgroundPosition = `${(ox - rect.left).toFixed(1)}px ${(oy - rect.top).toFixed(1)}px`;
+    }
+
+    function schedule() {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        update();
+      });
+    }
+
+    window.addEventListener('app-scroll', schedule);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', () => {
+      loadNatural();
+      schedule();
+    });
+    window.addEventListener('load', schedule);
+    mobileQuery.addEventListener('change', loadNatural);
+
+    loadNatural();
+    update();
+  }
+</script>
