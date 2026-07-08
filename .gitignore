@@ -30,8 +30,3 @@ wetransfer_pics-website_2026-07-07_0406/
 # Python water-animation experiments (animate_background_water.py)
 background-water.gif
 background-water-*.png
-!public/images/background-water.gif
-!public/images/background-water.webp
-!public/images/background-water-mobile.webp
-!public/images/background-water.mp4
-!public/images/background-water-mobile.mp4

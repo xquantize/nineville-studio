@@ -74,7 +74,9 @@ import { site } from '../data/site';
     background: rgba(32, 36, 48, 0.5);
     color: var(--text-on-veil);
     font-family: var(--font-sans);
-    font-size: 14px;
+    /* Must be >=16px or iOS Safari auto-zooms the page when the field is
+       focused, which is jarring on mobile. */
+    font-size: 16px;
     outline: none;
     transition: border-color var(--duration-fast) var(--ease-out);
   }

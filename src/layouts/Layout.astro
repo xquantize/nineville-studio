@@ -36,29 +36,22 @@ const ogImageUrl = absoluteUrl(ogImage);
           root.classList.add('skip-intro');
         }
 
-        // When there's no intro overlay, reveal the hero on the next frame.
-        // When the intro shows, it adds `hero-ready` as it fades out instead.
-        if (root.classList.contains('skip-intro')) {
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              root.classList.add('hero-ready');
-            });
-          });
-        }
-        // Ultimate failsafe so the hero can never stay hidden.
-        window.setTimeout(function () {
-          root.classList.add('hero-ready');
-        }, 3000);
-
-        /* Real viewport height — fixes mobile gap when URL bar shows/hides */
+        /* Real viewport height for the hero. Only update on WIDTH change
+           (orientation) — recalculating on every URL-bar show/hide resized the
+           hero and made content jump while scrolling on mobile. */
+        var lastW = 0;
         function setAppSize() {
-          document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
-          document.documentElement.style.setProperty('--app-width', window.innerWidth + 'px');
+          var w = window.innerWidth;
+          if (w === lastW) return;
+          lastW = w;
+          root.style.setProperty('--app-height', window.innerHeight + 'px');
+          root.style.setProperty('--app-width', w + 'px');
         }
         setAppSize();
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         window.addEventListener('resize', setAppSize);
         window.addEventListener('orientationchange', function () {
+          lastW = 0;
           setTimeout(setAppSize, 150);
         });
       })();
@@ -83,6 +76,7 @@ const ogImageUrl = absoluteUrl(ogImage);
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#141820" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
 
@@ -113,6 +107,32 @@ const ogImageUrl = absoluteUrl(ogImage);
     <slot />
     <script is:inline>
       (function () {
+        var root = document.documentElement;
+
+        // Reveal the hero. On iOS, content over a position:fixed background
+        // won't repaint from an opacity change alone (only a real touch-scroll
+        // triggers it). Toggling display forces a full re-render of the hero
+        // subtree, which iOS does honor — so the text appears without a scroll.
+        function revealHero() {
+          if (root.classList.contains('hero-ready')) return;
+          root.classList.add('hero-ready');
+          var hero = document.querySelector('.hero');
+          if (hero) {
+            hero.style.display = 'none';
+            void hero.offsetHeight;
+            hero.style.display = '';
+          }
+        }
+
+        if (root.classList.contains('skip-intro')) {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(revealHero);
+          });
+        }
+        window.addEventListener('intro-fading', revealHero);
+        // Failsafe: the hero can never stay hidden.
+        window.setTimeout(revealHero, 2600);
+
         var reveals = Array.prototype.slice.call(
           document.querySelectorAll('[data-reveal], [data-reveal-fade]')
         );

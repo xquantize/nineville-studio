@@ -39,9 +39,8 @@
       window.setTimeout(() => {
         intro.classList.add('fade-out');
         intro.style.pointerEvents = 'none';
-        // Trigger the hero entrance as the overlay begins to clear so it
-        // animates in on a visible, freshly-painted frame.
-        document.documentElement.classList.add('hero-ready');
+        // Reveal the hero (with its forced repaint) as the overlay clears.
+        window.dispatchEvent(new Event('intro-fading'));
       }, wait);
 
       window.setTimeout(() => {

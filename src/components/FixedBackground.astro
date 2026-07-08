@@ -68,10 +68,13 @@
     }
   }
 
-  /* On phones the background is static (no JS pan), so drop the GPU layer
-     hint and pause the blend-mode animation — both are costly to repaint. */
+  /* On phones the background is static (no JS pan). Drop the GPU layer hint,
+     scale transform and backface hack, and pause the blend-mode animation —
+     a plain fixed image is cheaper and avoids iOS compositing quirks. */
   @media (max-width: 767px) {
     .scroll-bg__img {
+      transform: none;
+      backface-visibility: visible;
       will-change: auto;
     }
 
