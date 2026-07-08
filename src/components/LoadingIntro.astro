@@ -39,12 +39,14 @@
       window.setTimeout(() => {
         intro.classList.add('fade-out');
         intro.style.pointerEvents = 'none';
-        // Reveal the hero (with its forced repaint) as the overlay clears.
+        // Overlay starts clearing — begin the hero fade-in.
         window.dispatchEvent(new Event('intro-fading'));
       }, wait);
 
       window.setTimeout(() => {
         intro.classList.add('hidden');
+        // Overlay fully gone — force the hero to paint now that it's visible.
+        window.dispatchEvent(new Event('intro-done'));
       }, wait + fadeDuration);
     }
 

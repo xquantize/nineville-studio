@@ -109,29 +109,49 @@ const ogImageUrl = absoluteUrl(ogImage);
       (function () {
         var root = document.documentElement;
 
-        // Reveal the hero. On iOS, content over a position:fixed background
-        // won't repaint from an opacity change alone (only a real touch-scroll
-        // triggers it). Toggling display forces a full re-render of the hero
-        // subtree, which iOS does honor — so the text appears without a scroll.
-        function revealHero() {
-          if (root.classList.contains('hero-ready')) return;
+        // Show the hero (opacity 0 -> 1 via the .hero-ready class).
+        function showHero() {
           root.classList.add('hero-ready');
+        }
+
+        // Force iOS to paint the hero. On iOS, content over a position:fixed
+        // background won't repaint from an opacity change alone (only a real
+        // touch-scroll triggers it). Toggling display forces a full re-render,
+        // which iOS honors. CRUCIAL: this must run AFTER the loading overlay is
+        // gone — repainting while it's still on top just repaints hidden pixels.
+        function repaintHero() {
+          // If the user already scrolled, a real scroll has painted the hero
+          // and toggling display here could cause a visible jump — skip it.
+          var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+          if (y > 4) return;
           var hero = document.querySelector('.hero');
-          if (hero) {
-            hero.style.display = 'none';
-            void hero.offsetHeight;
-            hero.style.display = '';
-          }
+          if (!hero) return;
+          hero.style.display = 'none';
+          void hero.offsetHeight;
+          hero.style.display = '';
         }
 
         if (root.classList.contains('skip-intro')) {
+          // No overlay: show + paint on the next frames.
           requestAnimationFrame(function () {
-            requestAnimationFrame(revealHero);
+            showHero();
+            requestAnimationFrame(repaintHero);
           });
         }
-        window.addEventListener('intro-fading', revealHero);
-        // Failsafe: the hero can never stay hidden.
-        window.setTimeout(revealHero, 2600);
+
+        // Overlay begins clearing: start the fade-in.
+        window.addEventListener('intro-fading', showHero);
+        // Overlay fully gone: NOW force the paint (hero is unoccluded).
+        window.addEventListener('intro-done', function () {
+          repaintHero();
+          window.setTimeout(repaintHero, 60);
+        });
+
+        // Failsafe: never leave the hero hidden or unpainted.
+        window.setTimeout(function () {
+          showHero();
+          repaintHero();
+        }, 2800);
 
         var reveals = Array.prototype.slice.call(
           document.querySelectorAll('[data-reveal], [data-reveal-fade]')
