@@ -30,3 +30,7 @@ wetransfer_pics-website_2026-07-07_0406/
 # Python water-animation experiments (animate_background_water.py)
 background-water.gif
 background-water-*.png
+
+# Local prank Easter egg
+src/components/BoyfriendEgg.astro
+public/images/get_fucked_guys.png

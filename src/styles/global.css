@@ -19,8 +19,9 @@
   --text-on-veil-kicker: #b8a888;
 
   /* Type */
-  --font-serif: 'Fraunces', Georgia, serif;
+  --font-display: 'Anton', 'Arial Narrow', system-ui, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* Spacing scale */
   --space-1: 0.5rem;
@@ -100,6 +101,11 @@ main {
   padding-top: var(--space-12);
 }
 
+/* Bio leads the veil — no gap; it fades up into the hero blur */
+.content-veil > .bio:first-child {
+  margin-top: 0;
+}
+
 .content-veil .section-kicker {
   color: var(--text-on-veil-kicker);
 }
@@ -112,9 +118,9 @@ main {
 h1,
 h2,
 h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
 }
 
 a {
@@ -132,7 +138,7 @@ img {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  padding: clamp(4rem, 5vw, 5rem) 0;
+  padding: clamp(5.5rem, 9vw, 8rem) 0;
   border: none;
 }
 
@@ -143,9 +149,9 @@ img {
 }
 
 .section-kicker {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sand-500);
   margin: 0 0 var(--space-2);
@@ -272,6 +278,10 @@ img {
     margin-top: 0;
   }
 
+  .content-veil > .bio:first-child {
+    margin-top: 0;
+  }
+
   /* Fade images in without the scale transform — the zoom reads as a
      "jump" on phones, especially as lazy images decode mid-scroll. */
   .media-frame__img {
@@ -284,8 +294,8 @@ img {
   }
 
   .content-veil .panel {
-    padding: var(--space-4) var(--space-3);
-    margin-bottom: var(--space-2);
+    padding: var(--space-6) var(--space-3);
+    margin-bottom: var(--space-3);
     border-radius: 8px;
     background: rgba(20, 24, 34, 0.55);
     border: 0.5px solid rgba(184, 154, 106, 0.14);
@@ -312,13 +322,20 @@ img {
 
 /* Touch feedback — coarse pointers only (phones/tablets) */
 @media (hover: none) and (pointer: coarse) {
-  .work-card,
+  .gallery__slide,
+  .gallery__portal-item,
+  .gallery__photo,
+  .gallery__caption-inquire,
   .commission__button,
-  .workshops__button,
+  .workshops__date-link,
+  .workshops__all,
+  .workshops__inquire,
+  .workshops__trigger,
   .footer__join,
   .nav__brand,
   .nav__toggle,
   .nav__link,
+  .nav__cta,
   .hero__scroll,
   .social-links__link,
   .art-lightbox__close,
@@ -331,7 +348,7 @@ img {
       background var(--duration-fast) var(--ease-out);
   }
 
-  .work-card:active {
+  .gallery__slide:active {
     opacity: 0.9;
   }
 
@@ -340,10 +357,13 @@ img {
     transform: scale(0.98);
   }
 
-  .workshops__button:active,
+  .workshops__date-link:active,
+  .workshops__all:active,
+  .workshops__inquire:active,
+  .workshops__trigger:active,
+  .gallery__caption-inquire:active,
   .footer__join:active {
-    opacity: 0.92;
-    transform: scale(0.98);
+    opacity: 0.7;
   }
 
   .nav__brand:active,

@@ -1,0 +1,229 @@
+---
+import { getSipPaintPhotos } from '../data/sipnpaint';
+
+const photos = getSipPaintPhotos();
+const tilts = [-2.4, 1.5, -1.2, 2.1, -1.7, 1.1, -2, 1.8];
+---
+
+{
+  photos.length > 0 && (
+    <div class="sip-film" aria-label="Moments from Sip & Paint" data-sip-film>
+      <div class="sip-film__stage" data-reveal>
+        <div class="sip-film__row">
+          <div class="sip-film__track">
+            <div class="sip-film__set">
+              {photos.map((src, i) => (
+                <button
+                  type="button"
+                  class="sip-film__frame"
+                  style={`--tilt: ${tilts[i % tilts.length]}deg`}
+                  data-sip-pswp={src}
+                  data-sip-index={i}
+                  data-pswp-width="720"
+                  data-pswp-height="900"
+                  aria-label={`Open Sip & Paint photo ${i + 1}`}
+                >
+                  <span class="sip-film__mat">
+                    <img src={src} alt="" width={360} height={450} loading="lazy" decoding="async" />
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div class="sip-film__set sip-film__dup" aria-hidden="true">
+              {photos.map((src, i) => (
+                <button
+                  type="button"
+                  class="sip-film__frame"
+                  style={`--tilt: ${tilts[i % tilts.length]}deg`}
+                  data-sip-pswp={src}
+                  data-sip-index={i}
+                  data-pswp-width="720"
+                  data-pswp-height="900"
+                  tabindex="-1"
+                >
+                  <span class="sip-film__mat">
+                    <img src={src} alt="" width={360} height={450} loading="lazy" decoding="async" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  import '../scripts/sip-film.ts';
+</script>
+
+<style is:global>
+  .sip-pswp-caption {
+    position: absolute;
+    left: 50%;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(14, 16, 22, 0.55);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(251, 246, 234, 0.78);
+    pointer-events: none;
+  }
+
+  .pswp {
+    --pswp-bg: #0e1016;
+  }
+</style>
+
+<style>
+  .sip-film {
+    position: relative;
+    margin: clamp(1.75rem, 3.5vw, 2.75rem) 0 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .sip-film__stage {
+    position: relative;
+    padding: 0.35rem 0 0.25rem;
+  }
+
+  .sip-film__row {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+
+  .sip-film__track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: sip-film-scroll 75s linear infinite;
+  }
+
+  .sip-film__set {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 2.2vw, 1.75rem);
+    padding: 1.1rem clamp(1rem, 2.2vw, 1.75rem) 1.1rem 0;
+  }
+
+  .sip-film__frame {
+    --frame-color: #0b3a66;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(9.5rem, 22vw, 14rem);
+    aspect-ratio: 4 / 5;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform 0.35s var(--ease-gentle);
+    isolation: isolate;
+  }
+
+  .sip-film__frame::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+    z-index: -1;
+    border-radius: 8px;
+    background: var(--frame-color);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    transform: rotate(-1.8deg) translate(0.2rem, 0.15rem);
+    transition:
+      transform 0.35s var(--ease-gentle),
+      box-shadow 0.35s var(--ease-gentle);
+  }
+
+  .sip-film__frame:focus-visible {
+    outline: 2px solid #ff7f89;
+    outline-offset: 3px;
+  }
+
+  .sip-film__mat {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+    background: rgba(251, 246, 234, 0.96);
+    border-radius: 4px;
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.25);
+    transition: box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  .sip-film__frame:hover,
+  .sip-film__frame:focus-visible {
+    transform: rotate(var(--tilt, 0deg)) translateY(-0.35rem) scale(1.025);
+  }
+
+  .sip-film__frame:hover::before,
+  .sip-film__frame:focus-visible::before {
+    transform: rotate(-3deg) translate(0.3rem, 0.25rem);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34);
+  }
+
+  .sip-film__frame:hover .sip-film__mat,
+  .sip-film__frame:focus-visible .sip-film__mat {
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 127, 137, 0.45);
+  }
+
+  .sip-film__mat img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+  }
+
+  @keyframes sip-film-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .sip-film__frame {
+      width: clamp(7.75rem, 34vw, 10rem);
+    }
+
+    .sip-film__track {
+      animation-duration: 58s;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sip-film__track {
+      animation: none;
+      transform: none;
+      padding-inline: var(--space-2);
+    }
+
+    .sip-film__dup {
+      display: none;
+    }
+
+    .sip-film__row {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+  }
+</style>
