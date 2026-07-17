@@ -1,85 +1,139 @@
----
-import { site } from '../data/site';
----
+<section class="commission">
+  <div id="commission" class="commission__band">
+    <div class="panel-inner">
+      <div class="commission__wrap">
+        <p class="commission__kicker" data-reveal>Commissions</p>
 
-<section class="panel">
-  <div class="panel-inner commission">
-    <p class="section-kicker" data-reveal>A piece made for you</p>
-    <h2 id="commission" class="section-heading commission__heading" data-reveal>Commissions</h2>
+        <h2 class="commission__title" data-reveal>
+          <span class="commission__title-line">A piece made</span>
+          <span class="commission__title-accent">for you</span><span class="commission__title-line">.</span>
+        </h2>
 
-    <div class="commission__body" data-reveal>
-      <p>
-        The most special artworks hold a personal connection; a place, a feeling, a memory.
-      </p>
-      <p>Let's build yours.</p>
+        <div class="commission__body" data-reveal>
+          <p>The most special artworks hold a personal connection.</p>
+          <p>Let’s build yours.</p>
+        </div>
+
+        <a
+          class="commission__button"
+          href="#get-in-touch"
+          data-contact-trigger
+          data-contact-topic="commissions"
+          data-contact-subject="Commission inquiry"
+          data-contact-message="Share your vision — subject, mood, colours, space it’s for..."
+          data-reveal
+        >
+          Inquire about a commission &rarr;
+        </a>
+      </div>
     </div>
-
-    <a class="commission__button" href={`mailto:${site.email}`} data-reveal>
-      Inquire about a commission
-    </a>
   </div>
 </section>
 
 <style>
-  .commission__heading {
-    margin-bottom: var(--space-4);
+  .commission {
+    --band-pink: #ffa5ab;
+    --band-navy: #07294a;
+  }
+
+  /* Same band pattern as Sip & Paint — full-width colour block */
+  .commission__band {
+    position: relative;
+    margin: clamp(2rem, 5vw, 4rem) 0;
+    padding: clamp(5.5rem, 12vw, 9rem) 0;
+    background: var(--band-pink);
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-4));
+  }
+
+  .commission__wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .commission__kicker {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+
+  .commission__title {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 0.28em;
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 8vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .commission__title-line {
+    color: #ffffff;
+  }
+
+  .commission__title-accent {
+    color: var(--band-navy);
   }
 
   .commission__body {
-    max-width: none;
     margin: 0 0 var(--space-6);
+    max-width: 38ch;
   }
 
   .commission__body p {
-    margin: 0 0 var(--space-3);
-    font-size: 17px;
-    line-height: 1.7;
-  }
-
-  .commission__body p:last-child {
-    margin-bottom: 0;
+    margin: 0;
+    font-size: clamp(16px, 1.9vw, 19px);
+    line-height: 1.65;
+    color: #ffffff;
   }
 
   .commission__button {
-    display: inline-block;
-    background: var(--sand-900);
-    color: var(--sand-50);
-    padding: 14px 32px;
-    border-radius: 100px;
-    font-family: var(--font-sans);
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    padding: 16px clamp(32px, 6vw, 56px);
+    border-radius: 0;
+    background: var(--band-navy);
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     text-decoration: none;
     transition:
-      background var(--duration-gentle) var(--ease-gentle),
-      box-shadow var(--duration-gentle) var(--ease-gentle);
-    min-height: 44px;
-    line-height: 1.2;
+      background var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
   }
 
   .commission__button:hover {
-    background: var(--sand-700);
-    box-shadow: 0 6px 20px rgba(43, 36, 25, 0.12);
+    background: #0a355c;
   }
 
   .commission__button:active {
-    box-shadow: none;
     transform: scale(0.98);
   }
 
   @media (max-width: 767px) {
-    .commission__body p {
-      font-size: 16px;
-      line-height: 1.65;
+    .commission__title {
+      flex-direction: column;
+      align-items: center;
     }
 
     .commission__button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
     }
   }
 </style>

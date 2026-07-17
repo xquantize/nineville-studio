@@ -4,74 +4,85 @@ import { site } from '../data/site';
 ---
 
 <footer class="footer">
-  <div class="panel-inner footer__inner">
-    <div class="footer__mailing" data-reveal>
-      <p class="footer__label">Join the studio mailing list</p>
-      <form
-        class="footer__form"
-        action={site.mailingListUrl || undefined}
-        method={site.mailingListUrl ? 'post' : undefined}
-        target={site.mailingListUrl ? '_blank' : undefined}
-        data-mailing-form
-        data-fallback-email={site.email}
-      >
-        <input
-          class="footer__input"
-          type="email"
-          name={site.mailingListUrl ? 'EMAIL' : 'email'}
-          placeholder="Your email"
-          required
-          autocomplete="email"
-        />
-        <button class="footer__join" type="submit">
-          Join
-        </button>
-      </form>
-    </div>
+  <div class="panel-inner">
+    <div class="footer__wrap">
+      <div class="footer__mailing" data-reveal>
+        <p class="footer__label">Join the studio mailing list</p>
+        <form
+          class="footer__form"
+          action={site.mailingListUrl || undefined}
+          method={site.mailingListUrl ? 'post' : undefined}
+          target={site.mailingListUrl ? '_blank' : undefined}
+          data-mailing-form
+          data-fallback-email={site.email}
+        >
+          <input
+            class="footer__input"
+            type="email"
+            name={site.mailingListUrl ? 'EMAIL' : 'email'}
+            placeholder="Your email"
+            required
+            autocomplete="email"
+          />
+          <button class="footer__join" type="submit">Join</button>
+        </form>
+      </div>
 
-    <div class="footer__grid">
-      <div class="footer__col">
+      <div class="footer__main" data-reveal>
         <p class="footer__brand">Nineville Studio</p>
         <p class="footer__artist">art by Laura Neundörfer</p>
+
+        <div class="footer__connect">
+          <p class="footer__label">Connect</p>
+          <SocialLinks class="footer__social" />
+        </div>
       </div>
 
-      <div class="footer__col">
-        <p class="footer__label">Connect</p>
-        <SocialLinks />
-      </div>
-
-      <div class="footer__col footer__col--copy">
-        <p class="footer__copyright">© Nineville Studio 2026</p>
-      </div>
+      <p class="footer__copyright">© Nineville Studio 2026</p>
     </div>
   </div>
 </footer>
 
 <style>
   .footer {
-    padding: var(--space-6) 0 calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+    padding: clamp(4.5rem, 9vw, 7rem) 0 calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .footer__wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .footer__mailing {
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-6);
-    border-bottom: 0.5px solid rgba(184, 154, 106, 0.2);
+    width: 100%;
+    max-width: 28rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .footer__form {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-2);
-    max-width: 28rem;
+    width: 100%;
   }
 
   .footer__input {
     flex: 1 1 12rem;
     min-width: 0;
     padding: 12px 16px;
-    border: 0.5px solid rgba(184, 154, 106, 0.35);
+    border: 0.5px solid rgba(255, 255, 255, 0.22);
     border-radius: 100px;
-    background: rgba(32, 36, 48, 0.5);
+    background: rgba(32, 36, 48, 0.45);
     color: var(--text-on-veil);
     font-family: var(--font-sans);
     /* Must be >=16px or iOS Safari auto-zooms the page when the field is
@@ -86,7 +97,7 @@ import { site } from '../data/site';
   }
 
   .footer__input:focus {
-    border-color: rgba(184, 154, 106, 0.65);
+    border-color: rgba(255, 127, 137, 0.55);
   }
 
   .footer__join {
@@ -94,62 +105,93 @@ import { site } from '../data/site';
     padding: 12px 28px;
     border: none;
     border-radius: 100px;
-    background: var(--sand-900);
-    color: var(--sand-50);
-    font-family: var(--font-sans);
-    font-size: 13px;
-    letter-spacing: 0.1em;
+    background: #ff7f89;
+    color: #1a1e28;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
     min-height: 44px;
-    transition: background var(--duration-gentle) var(--ease-gentle);
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
   }
 
   .footer__join:hover {
-    background: var(--sand-700);
+    background: #ff96a0;
   }
 
-  .footer__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
+  .footer__join:active {
+    transform: scale(0.98);
+  }
+
+  .footer__main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    margin-bottom: clamp(2rem, 4vw, 3rem);
   }
 
   .footer__brand {
     margin: 0;
-    font-family: var(--font-serif);
-    font-size: 18px;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--sand-50);
   }
 
   .footer__artist {
-    margin: var(--space-1) 0 0;
-    font-size: 13px;
-    font-style: italic;
+    margin: 0 0 var(--space-5);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--text-on-veil-muted);
+  }
+
+  .footer__connect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer__connect :global(.social-links) {
+    justify-content: center;
   }
 
   .footer__label {
     margin: 0 0 var(--space-2);
+    font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-on-veil-kicker);
+    color: #ff7f89;
   }
 
   .footer__copyright {
     margin: 0;
-    font-size: 12px;
+    padding-top: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 28rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--text-on-veil-muted);
   }
 
-  @media (min-width: 768px) {
-    .footer__grid {
-      grid-template-columns: repeat(3, 1fr);
-      align-items: start;
+  @media (max-width: 767px) {
+    .footer__form {
+      flex-direction: column;
+      align-items: stretch;
     }
 
-    .footer__col--copy {
-      text-align: right;
+    .footer__join {
+      width: 100%;
     }
   }
 </style>

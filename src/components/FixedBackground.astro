@@ -22,9 +22,22 @@
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
+    background: #1a1e28;
+  }
+
+  .scroll-bg::before {
+    content: '';
+    position: absolute;
+    inset: -2%;
+    background-image: url('/images/background.webp');
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.03);
   }
 
   .scroll-bg__img {
+    position: relative;
+    z-index: 1;
     display: block;
     width: 100%;
     height: auto;
@@ -39,6 +52,7 @@
 
   .scroll-bg__atmosphere {
     position: absolute;
+    z-index: 2;
     inset: -12%;
     background:
       radial-gradient(
@@ -71,6 +85,10 @@
   /* On phones the background is static (no JS pan). Drop the GPU layer hint,
      scale transform and backface hack, and pause the blend-mode animation. */
   @media (max-width: 767px) {
+    .scroll-bg::before {
+      background-image: url('/images/background-mobile.webp');
+    }
+
     .scroll-bg__img {
       transform: none;
       backface-visibility: visible;

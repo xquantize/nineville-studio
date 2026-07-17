@@ -1,7 +1,45 @@
 <section id="top" class="hero" aria-label="Introduction">
   <div class="hero__content panel-inner">
-    <h1 class="hero__title">Nineville Studio</h1>
-    <p class="hero__subtitle">art by Laura Neundörfer</p>
+    <div class="hero__mark">
+      <div class="hero__title-wrap">
+        <h1 class="hero__title">Nineville Studio</h1>
+        <svg
+          class="hero__understroke"
+          viewBox="0 0 520 36"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="hero-stroke-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ff7f89" stop-opacity="0" />
+              <stop offset="14%" stop-color="#ff7f89" stop-opacity="0.85" />
+              <stop offset="78%" stop-color="#ff96a0" stop-opacity="0.75" />
+              <stop offset="100%" stop-color="#ff7f89" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            class="hero__understroke-ghost"
+            d="M18 22 C96 10 168 30 248 18 C318 8 392 12 502 16"
+            fill="none"
+            stroke="#ff7f89"
+            stroke-width="7"
+            stroke-linecap="round"
+            pathLength="100"
+          />
+          <path
+            class="hero__understroke-path"
+            d="M18 22 C96 10 168 30 248 18 C318 8 392 12 502 16"
+            fill="none"
+            stroke="url(#hero-stroke-fade)"
+            stroke-width="2.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            pathLength="100"
+          />
+        </svg>
+      </div>
+      <p class="hero__subtitle">art by Laura Neundörfer</p>
+    </div>
   </div>
 
   <a href="#bio" class="hero__scroll" aria-label="Scroll to bio section">
@@ -36,6 +74,18 @@
     will-change: transform, opacity;
   }
 
+  .hero__mark {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero__title-wrap {
+    position: relative;
+    padding-bottom: 0.42em;
+  }
+
   /* Hidden only while JS controls the intro; revealed via .hero-ready. */
   html.js-hero .hero__content {
     opacity: 0;
@@ -52,21 +102,57 @@
 
   .hero__title {
     margin: 0;
-    font-size: clamp(40px, 8vw, 88px);
-    letter-spacing: -0.02em;
-    line-height: 1.05;
+    font-size: clamp(44px, 8.5vw, 96px);
+    letter-spacing: 0.01em;
+    line-height: 1.02;
     color: var(--sand-50);
     text-shadow:
       0 2px 28px rgba(0, 0, 0, 0.4),
       0 0 48px rgba(0, 0, 0, 0.15);
   }
 
+  .hero__understroke {
+    position: absolute;
+    left: 2%;
+    top: calc(100% - 0.38em);
+    width: 78%;
+    height: clamp(16px, 2.4vw, 28px);
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .hero__understroke-ghost,
+  .hero__understroke-path {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+
+  .hero__understroke-ghost {
+    opacity: 0.18;
+    filter: blur(3px);
+  }
+
+  :global(html.js-hero.hero-ready) .hero__understroke-ghost,
+  :global(html.js-hero.hero-ready) .hero__understroke-path {
+    animation: hero-draw-understroke 1.45s var(--ease-gentle) 0.55s forwards;
+  }
+
+  /* No-JS / already-ready fallback so the stroke is never stuck invisible */
+  :global(html:not(.js-hero)) .hero__understroke-ghost,
+  :global(html:not(.js-hero)) .hero__understroke-path,
+  :global(html.skip-intro) .hero__understroke-ghost,
+  :global(html.skip-intro) .hero__understroke-path {
+    stroke-dashoffset: 0;
+  }
+
   .hero__subtitle {
-    margin: var(--space-2) 0 0;
-    font-family: var(--font-sans);
-    font-size: 15px;
-    font-style: italic;
-    letter-spacing: 0.1em;
+    margin: var(--space-3) 0 0;
+    align-self: stretch;
+    padding-right: 4.5em;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.08em;
     color: var(--sand-50);
     text-shadow: 0 1px 16px rgba(0, 0, 0, 0.3);
   }
@@ -137,10 +223,23 @@
     }
   }
 
+  @keyframes hero-draw-understroke {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
   @media (max-width: 767px) {
     .hero__title {
       font-size: clamp(36px, 11vw, 52px);
       line-height: 1.08;
+    }
+
+    .hero__understroke {
+      left: 3%;
+      top: calc(100% - 0.42em);
+      width: 86%;
+      height: 18px;
     }
 
     .hero__subtitle {
@@ -169,6 +268,14 @@
 
     .hero__chevron {
       animation: none;
+    }
+
+    .hero__understroke-ghost,
+    .hero__understroke-path,
+    :global(html.js-hero.hero-ready) .hero__understroke-ghost,
+    :global(html.js-hero.hero-ready) .hero__understroke-path {
+      animation: none;
+      stroke-dashoffset: 0;
     }
   }
 </style>

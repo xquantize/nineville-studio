@@ -155,11 +155,11 @@ function buildDataSource(work: (typeof worksForLightbox)[number]) {
 
 function applyWorkMeta() {
   const work = currentWork();
-  if (!work || !titleEl || !descEl || !metaEl) return;
+  if (!work) return;
 
-  titleEl.textContent = work.title;
-  descEl.textContent = work.description;
-  metaEl.textContent = work.meta;
+  if (titleEl) titleEl.textContent = work.title;
+  if (descEl) descEl.textContent = work.description;
+  if (metaEl) metaEl.textContent = work.meta;
 
   if (statusEl) {
     if (work.status && statusLabels[work.status]) {
@@ -183,15 +183,17 @@ function applyWorkMeta() {
 function applyImageMeta() {
   const work = currentWork();
   const photo = work?.images[imageIndex];
-  if (!work || !photo || !counterEl) return;
+  if (!work || !photo) return;
 
   const hasMultiple = work.images.length > 1;
-  if (hasMultiple) {
-    counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
-    counterEl.hidden = false;
-  } else {
-    counterEl.textContent = '';
-    counterEl.hidden = true;
+  if (counterEl) {
+    if (hasMultiple) {
+      counterEl.textContent = `Photo ${imageIndex + 1} of ${work.images.length}`;
+      counterEl.hidden = false;
+    } else {
+      counterEl.textContent = '';
+      counterEl.hidden = true;
+    }
   }
 
   if (captionEl) {
@@ -308,7 +310,7 @@ function trapFocus(event: KeyboardEvent) {
   }
 }
 
-function open(index: number, trigger: HTMLElement | null, fromHistory = false) {
+function open(index: number, trigger: HTMLElement | null, fromHistory = false, startImage = 0) {
   if (!lightbox || !worksForLightbox.length) return;
 
   if (lightbox.parentElement !== document.body) {
@@ -316,7 +318,9 @@ function open(index: number, trigger: HTMLElement | null, fromHistory = false) {
   }
 
   workIndex = index;
-  imageIndex = 0;
+  const openingWork = worksForLightbox[index];
+  const lastImage = openingWork ? openingWork.images.length - 1 : 0;
+  imageIndex = Math.min(Math.max(startImage, 0), Math.max(lastImage, 0));
   lastTrigger = trigger;
   isLightboxOpen = true;
   lightbox.classList.remove('is-closing');
@@ -408,11 +412,18 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-document.querySelectorAll('[data-work-open]').forEach((trigger) => {
-  trigger.addEventListener('click', () => {
-    const index = Number(trigger.getAttribute('data-work-open'));
-    if (!Number.isNaN(index)) open(index, trigger as HTMLElement);
-  });
+// Delegated so dynamically cloned gallery photos (looping strips) also open.
+document.addEventListener('click', (event) => {
+  const target = event.target as HTMLElement | null;
+  const trigger = target?.closest<HTMLElement>('[data-work-open]');
+  if (!trigger) return;
+
+  const index = Number(trigger.getAttribute('data-work-open'));
+  if (Number.isNaN(index)) return;
+
+  const photoAttr = trigger.getAttribute('data-photo-index');
+  const startImage = photoAttr ? Number(photoAttr) : 0;
+  open(index, trigger, false, Number.isNaN(startImage) ? 0 : startImage);
 });
 
 prevBtn?.addEventListener('click', () => showRelative(-1));

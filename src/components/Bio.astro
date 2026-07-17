@@ -1,49 +1,119 @@
-<section class="panel">
-  <div class="panel-inner">
-    <p class="section-kicker" data-reveal>About Laura</p>
-    <h2 id="bio" class="section-heading" data-reveal>Bio</h2>
+<section id="bio" class="bio">
+  <div class="bio__band">
+    <div class="panel-inner">
+      <div class="bio__wrap">
+        <header class="bio__header">
+          <p class="section-kicker" data-reveal>Meet the artist</p>
+          <h2 class="section-heading bio__title" data-reveal>
+            <span class="bio__title-about">About</span>
+            <span class="bio__title-name">Laura</span>
+          </h2>
+        </header>
 
-    <div class="bio__content">
-      <figure class="bio__portrait" data-reveal>
-        <span class="bio__portrait-window" aria-hidden="true"></span>
-        <img
-          class="bio__portrait-cutout"
-          src="/images/bio-portrait-cutout.webp"
-          alt="Laura Neundörfer"
-          width={700}
-          height={700}
-          loading="lazy"
-          decoding="async"
-        />
-      </figure>
+        <div class="bio__content">
+          <figure class="bio__portrait" data-reveal>
+            <span class="bio__portrait-glow" aria-hidden="true"></span>
+            <span class="bio__portrait-clip">
+              {/* Painting shows through the circle — synced to the fixed background */}
+              <span class="bio__portrait-window" aria-hidden="true"></span>
+              <img
+                class="bio__portrait-cutout"
+                src="/images/bio-portrait-cutout.webp"
+                alt="Laura Neundörfer"
+                width={700}
+                height={700}
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+          </figure>
 
-      <div class="bio__text" data-reveal>
-        <p>
-          Laura is a mixed-media artist creating textured artworks that bridge the gap between
-          structure and fluid mediums.
-        </p>
-        <p>
-          For the first part of her life, her world was defined by systems and structures in
-          Germany. It was a predictable rhythm that kept her safe, but left little space for
-          creativity. What began as a passion for surfing evolved into a whole new way of living:
-          She left the landlocked lifestyle behind, moved abroad to the coast and allowed herself to
-          be guided by creativity, freedom and flow.
-        </p>
-        <p class="bio__text-clear">
-          Today, her art is the tangible map of that journey. By pairing raw textures with fluid
-          resin, she captures the beautiful contradiction of life and the coast.
-        </p>
-        <p>
-          Her work is designed to bring the vibrant and grounding energy into her collectors homes.
-        </p>
+          <div class="bio__text" data-reveal>
+            <p class="bio__lead">
+              Laura is a mixed-media artist creating textured artworks that bridge the gap between
+              structure and fluid mediums.
+            </p>
+            <p>
+              For the first part of her life, her world was defined by systems and structures in
+              Germany. It was a predictable rhythm that kept her safe, but left little space for
+              creativity.
+            </p>
+            <p>
+              What began as a passion for surfing evolved into a whole new way of living: She left the
+              landlocked lifestyle behind, moved abroad to the coast and allowed herself to be guided
+              by creativity, freedom and flow.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <style>
+  .bio {
+    --bio-blue: #07294a;
+    /* Land higher under the nav on jump */
+    scroll-margin-top: var(--scroll-anchor-offset);
+  }
+
+  /* Soft edge fades, solid navy holds most of the band.
+     Less top padding so a #bio jump lands the title higher under the nav. */
+  .bio__band {
+    position: relative;
+    margin: 0 0 clamp(3.5rem, 7vw, 6rem);
+    padding: clamp(3.25rem, 5.5vw, 5rem) 0 clamp(5.5rem, 10vw, 9rem);
+    background: linear-gradient(
+      180deg,
+      rgba(7, 41, 74, 0) 0%,
+      rgba(7, 41, 74, 0.65) 10%,
+      var(--bio-blue) 18%,
+      var(--bio-blue) 82%,
+      rgba(7, 41, 74, 0.65) 90%,
+      rgba(7, 41, 74, 0) 100%
+    );
+  }
+
+  .bio__wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+
+  .bio__header {
+    text-align: left;
+  }
+
+  .bio__band .section-kicker {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .bio__title {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: clamp(0.45rem, 1.4vw, 1rem);
+    line-height: 0.9;
+    font-size: clamp(48px, 10vw, 104px);
+    text-transform: uppercase;
+    margin: 0 0 var(--space-3);
+  }
+
+  .bio__title-about {
+    color: #ffffff;
+  }
+
+  .bio__title-name {
+    color: #ff7f89;
+  }
+
   .bio__content {
     max-width: none;
+  }
+
+  .bio__lead {
+    color: #ffffff;
+    font-weight: 700;
   }
 
   .bio__content::after {
@@ -55,17 +125,43 @@
   .bio__portrait {
     position: relative;
     float: left;
-    width: 8.5rem;
+    width: 11rem;
     aspect-ratio: 1;
     margin: 0.35rem var(--space-3) var(--space-2) 0;
     border-radius: 50%;
-    overflow: hidden;
-    border: 1px solid rgba(184, 154, 106, 0.5);
-    box-shadow: 0 8px 28px rgba(14, 16, 22, 0.35);
     box-sizing: border-box;
+    z-index: 1;
   }
 
-  /* Window into the scrolling painting behind Laura — position driven by JS */
+  .bio__portrait-glow {
+    position: absolute;
+    inset: -26%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 50% 48%,
+      rgba(255, 127, 137, 0.7) 0%,
+      rgba(255, 127, 137, 0.35) 36%,
+      rgba(255, 127, 137, 0.14) 56%,
+      transparent 72%
+    );
+    filter: blur(12px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bio__portrait-clip {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgba(255, 127, 137, 0.55);
+    box-shadow:
+      0 0 0 5px rgba(255, 127, 137, 0.14),
+      0 8px 28px rgba(14, 16, 22, 0.35);
+    z-index: 1;
+  }
+
+  /* Window into the scrolling painting — not the blue band */
   .bio__portrait-window {
     position: absolute;
     inset: 0;
@@ -95,16 +191,20 @@
     margin: 0 0 var(--space-3);
     font-size: 17px;
     line-height: 1.7;
+    color: rgba(251, 246, 234, 0.9);
   }
 
   .bio__text p:last-child {
     margin-bottom: 0;
   }
 
-  /* Tablet+ — larger circle, justified text with a clean right edge */
   @media (min-width: 768px) {
+    .bio__header {
+      margin-left: calc(16rem + var(--space-4));
+    }
+
     .bio__portrait {
-      width: 12rem;
+      width: 16rem;
       margin: 0.4rem var(--space-4) var(--space-3) 0;
     }
 
@@ -114,22 +214,31 @@
       text-justify: inter-word;
       hyphens: none;
     }
-
-    .bio__text-clear {
-      clear: left;
-    }
   }
 
-  /* Phones — stack: portrait on top, all text below full-width */
   @media (max-width: 767px) {
+    .bio__band {
+      margin-left: calc(-1 * var(--space-2));
+      margin-right: calc(-1 * var(--space-2));
+    }
+
     .bio__portrait {
       float: none;
-      width: 8.5rem;
+      width: 12rem;
       margin: 0 0 var(--space-3);
     }
 
-    /* Soften the lower-res mobile background showing through the circle.
-       Scale up slightly so the blur's soft edges stay outside the frame. */
+    .bio__header {
+      text-align: center;
+    }
+
+    .bio__title {
+      justify-content: center;
+      flex-wrap: wrap;
+      row-gap: 0.1rem;
+      margin-bottom: var(--space-4);
+    }
+
     .bio__portrait-window {
       filter: blur(2.5px);
       transform: scale(1.12);

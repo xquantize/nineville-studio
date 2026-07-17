@@ -1,0 +1,821 @@
+---
+import {
+  series,
+  getWorksInSeries,
+  getWorkIndexBySlug,
+  getSeriesAtmosphere,
+  takeAtmosphere,
+  formatWorkMeta,
+} from '../data/works';
+---
+
+<section id="gallery" class="gallery">
+  {/* Shown once a series is open */}
+  <div class="panel-inner">
+    <div class="gallery__head">
+      <button type="button" class="gallery__collections" data-series-clear data-reveal hidden>
+        ← Collections
+      </button>
+
+      <div class="gallery__head-text">
+        <p class="section-kicker" data-reveal>Collections</p>
+        <h2 class="gallery__title gallery__title--open" data-reveal>
+          <span class="gallery__title-word">The</span>
+          <span class="gallery__title-accent">Gallery</span>
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  {/* Landing: stage + title + names in one composition */}
+  <div class="panel-inner">
+    <div class="gallery__portal" data-gallery-portal data-reveal>
+      <div class="gallery__portal-stage" aria-hidden="true">
+        <div class="gallery__portal-glow" />
+        {
+          series.map((s, i) => {
+            const atmosphere = getSeriesAtmosphere(s);
+            const peeks = takeAtmosphere(atmosphere.pool, 3);
+            return (
+              <div
+                class:list={['gallery__portal-stack', { 'is-active': i === 0 }]}
+                data-series-plate={s.slug}
+                data-peek-mode={atmosphere.mode}
+                data-peek-pool={JSON.stringify(atmosphere.pool)}
+              >
+                {peeks.map((src, pi) => (
+                  <div class={`gallery__portal-shard gallery__portal-shard--${pi + 1}`}>
+                    <img
+                      src={src}
+                      alt=""
+                      width={480}
+                      height={600}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })
+        }
+        <div class="gallery__portal-meta">
+          <p class="gallery__portal-tag" data-portal-tag>
+            {series[0]?.tagline ?? ''}
+          </p>
+          <p class="gallery__portal-count" data-portal-count>
+            {(() => {
+              const n = getWorksInSeries(series[0]).length;
+              return `${n} ${n === 1 ? 'work' : 'works'}`;
+            })()}
+          </p>
+        </div>
+      </div>
+
+      <div class="gallery__portal-side">
+        <p class="section-kicker">Collections</p>
+        <h2 class="gallery__title gallery__title--portal">
+          <span class="gallery__title-word">The</span>
+          <span class="gallery__title-accent">Gallery</span>
+        </h2>
+
+        <div class="gallery__portal-list" role="list">
+          {
+            series.map((s, i) => {
+              const count = getWorksInSeries(s).length;
+              return (
+                <button
+                  type="button"
+                  class:list={['gallery__portal-item', { 'is-focus': i === 0 }]}
+                  role="listitem"
+                  data-series-focus={s.slug}
+                  data-series-open={s.slug}
+                  data-tagline={s.tagline ?? ''}
+                  data-count={`${count} ${count === 1 ? 'work' : 'works'}`}
+                  aria-label={`Open ${s.name} series`}
+                >
+                  <span class="gallery__portal-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="gallery__portal-name">{s.name}</span>
+                </button>
+              );
+            })
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery__works">
+    <div class="panel-inner">
+      {
+        series.map((s) => (
+          <div class="gallery__series-intro" data-series-intro={s.slug} hidden>
+            <p class="section-kicker">{s.name}</p>
+            <p class="gallery__series-desc">{s.description}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    {
+      series.map((s) =>
+        getWorksInSeries(s).map((work) => {
+          const index = getWorkIndexBySlug(work.slug);
+          const available = !work.status || work.status === 'available';
+          return (
+            <article class="gallery__piece" data-series={s.slug} hidden>
+              <div class="gallery__strip">
+                <div class="gallery__track" data-count={work.images.length}>
+                  {work.images.map((photo, ii) => (
+                    <button
+                      type="button"
+                      class="gallery__photo"
+                      data-work-open={index}
+                      data-photo-index={ii}
+                      aria-label={`View ${work.title}, photo ${ii + 1}`}
+                    >
+                      <img
+                        class="gallery__photo-img"
+                        src={photo.src}
+                        alt={photo.alt}
+                        width={560}
+                        height={700}
+                        loading="lazy"
+                        decoding="async"
+                        data-media-frame
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div class="panel-inner">
+                <p class="gallery__caption">
+                  <span class="gallery__caption-name">{work.title}</span>
+                  <span class="gallery__caption-sep" aria-hidden="true">·</span>
+                  <span class="gallery__caption-meta">{formatWorkMeta(work)}</span>
+                  {available && (
+                    <>
+                      <span class="gallery__caption-sep gallery__caption-sep--pink" aria-hidden="true">
+                        ·
+                      </span>
+                      <a
+                        class="gallery__caption-inquire"
+                        href="#get-in-touch"
+                        data-contact-trigger
+                        data-contact-topic="artwork"
+                        data-contact-artwork={work.title}
+                        data-contact-subject={`Artwork inquiry: ${work.title}`}
+                        data-contact-message={`Anything you’d like to know about “${work.title}”...`}
+                      >
+                        Inquire &rarr;
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+            </article>
+          );
+        })
+      )
+    }
+  </div>
+
+  <div class="panel-inner">
+    <div class="gallery__foot" data-series-foot hidden>
+      <button type="button" class="gallery__collections gallery__collections--foot" data-series-clear>
+        ← Collections
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '../scripts/gallery.ts';
+</script>
+
+<style>
+  .gallery {
+    --gallery-col: 1040px;
+    --section-gap: clamp(3.5rem, 7vw, 6rem);
+    position: relative;
+    margin-top: var(--section-gap);
+    padding: clamp(3rem, 5.5vw, 5rem) 0;
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
+  }
+
+  /* Landing fills the viewport so the pink commissions band doesn’t peek in */
+  .gallery:not(.has-series) {
+    min-height: calc(100svh - var(--scroll-anchor-offset));
+    padding-top: clamp(3rem, 5.5vw, 5rem);
+    padding-bottom: clamp(4.5rem, 10vh, 8rem);
+    box-sizing: border-box;
+  }
+
+  .gallery__head {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: none;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .gallery.has-series .gallery__head {
+    display: flex;
+    margin-bottom: var(--space-6);
+  }
+
+  .gallery__head-text {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .gallery__title {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    font-size: clamp(48px, 10vw, 104px);
+  }
+
+  .gallery__title--open {
+    align-items: flex-end;
+  }
+
+  .gallery__title--portal {
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+    font-size: clamp(40px, 7vw, 80px);
+  }
+
+  .gallery__portal-side .section-kicker {
+    margin-bottom: var(--space-2);
+  }
+
+  .gallery__head-text .section-kicker {
+    margin-bottom: var(--space-2);
+  }
+
+  .gallery__title-word {
+    color: #ffffff;
+  }
+
+  .gallery__title-accent {
+    color: #ff7f89;
+  }
+
+  /* Back control — only when a series is open */
+  .gallery__collections {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #ff7f89;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .gallery__collections:hover {
+    color: var(--sand-50);
+  }
+
+  .gallery__collections:focus-visible {
+    outline: 2px solid #ff7f89;
+    outline-offset: 4px;
+  }
+
+  .gallery:not(.has-series) .gallery__collections {
+    display: none;
+  }
+
+  .gallery__foot {
+    display: none;
+    max-width: var(--gallery-col);
+    margin: 0 auto;
+    padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(1rem, 2vw, 1.5rem);
+    text-align: center;
+  }
+
+  .gallery.has-series .gallery__foot {
+    display: block;
+  }
+
+  .gallery__collections--foot {
+    font-size: 13px;
+    letter-spacing: 0.16em;
+  }
+
+  /* ——— Landing portal: stage + title + names ——— */
+  .gallery__portal {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+    align-items: start;
+  }
+
+  .gallery.has-series .gallery__portal {
+    display: none;
+  }
+
+  .gallery__portal-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gallery__portal-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+
+  .gallery__portal-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75em;
+    padding: 0.1rem 0;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .gallery__portal-item:focus-visible {
+    outline: 2px solid #ff7f89;
+    outline-offset: 6px;
+  }
+
+  .gallery__portal-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: rgba(255, 127, 137, 0.55);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .gallery__portal-name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(32px, 5.5vw, 56px);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: rgba(251, 246, 234, 0.38);
+    transition:
+      color 0.45s var(--ease-gentle),
+      transform 0.45s var(--ease-gentle);
+  }
+
+  .gallery__portal-item.is-focus .gallery__portal-num {
+    color: #ff7f89;
+  }
+
+  .gallery__portal-item.is-focus .gallery__portal-name {
+    color: var(--sand-50);
+    transform: translateX(6px);
+  }
+
+  .gallery__portal-item:hover .gallery__portal-name {
+    color: rgba(251, 246, 234, 0.72);
+  }
+
+  .gallery__portal-item.is-focus:hover .gallery__portal-name {
+    color: #ff7f89;
+  }
+
+  .gallery__portal-stage {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 420px);
+    min-height: 480px;
+  }
+
+  .gallery__portal-glow {
+    position: absolute;
+    inset: -5% -18% 8%;
+    background:
+      radial-gradient(ellipse at 40% 35%, rgba(255, 127, 137, 0.28), transparent 55%),
+      radial-gradient(ellipse at 70% 70%, rgba(255, 255, 255, 0.06), transparent 50%);
+    filter: blur(22px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .gallery__portal-stack {
+    position: absolute;
+    inset: 0 0 2.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s var(--ease-gentle);
+    z-index: 1;
+  }
+
+  .gallery__portal-stack.is-active {
+    opacity: 1;
+    z-index: 2;
+  }
+
+  .gallery__portal-shard {
+    position: absolute;
+    overflow: hidden;
+    background: rgba(8, 12, 20, 0.55);
+    box-shadow:
+      0 22px 50px rgba(0, 0, 0, 0.48),
+      0 0 0 1px rgba(255, 255, 255, 0.14);
+    transition:
+      transform 1s var(--ease-gentle),
+      filter 0.8s var(--ease-gentle);
+  }
+
+  .gallery__portal-shard img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Push past white studio edges — land on pigment / texture */
+    object-position: center 42%;
+    transform: scale(1.55);
+    filter: saturate(1.05) contrast(1.08);
+    transition: transform 1.2s var(--ease-gentle);
+  }
+
+  /* Constellation — tall wing + hero + lower rectangle */
+  .gallery__portal-shard--1 {
+    width: 46%;
+    aspect-ratio: 3 / 5;
+    left: 0;
+    top: 6%;
+    z-index: 1;
+    border-radius: 8px;
+    transform: rotate(-14deg) translate(-6%, 8%);
+    filter: brightness(0.82);
+  }
+
+  .gallery__portal-shard--1 img {
+    object-position: 35% 48%;
+    transform: scale(1.7);
+  }
+
+  .gallery__portal-shard--2 {
+    width: 68%;
+    aspect-ratio: 4 / 5;
+    left: 26%;
+    top: 0;
+    z-index: 3;
+    border-radius: 10px;
+    transform: rotate(3deg);
+  }
+
+  .gallery__portal-shard--2 img {
+    object-position: 50% 40%;
+    transform: scale(1.5);
+  }
+
+  .gallery__portal-shard--3 {
+    width: 40%;
+    aspect-ratio: 4 / 5;
+    right: -6%;
+    top: auto;
+    bottom: 2%;
+    height: auto;
+    z-index: 4;
+    border-radius: 8px;
+    transform: rotate(0deg) translate(0, 0);
+  }
+
+  .gallery__portal-shard--3 img {
+    object-position: 55% 45%;
+    transform: scale(1.65);
+  }
+
+  .gallery__portal-stack.is-active .gallery__portal-shard--1 {
+    transform: rotate(-16deg) translate(-8%, 4%);
+  }
+
+  .gallery__portal-stack.is-active .gallery__portal-shard--2 {
+    transform: rotate(2deg) translate(0, -3%);
+  }
+
+  .gallery__portal-stack.is-active .gallery__portal-shard--3 {
+    transform: rotate(0deg) translate(0, 0);
+  }
+
+  .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--1 {
+    transform: rotate(-18deg) translate(-12%, 2%);
+    filter: brightness(0.9);
+  }
+
+  .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--2 {
+    transform: rotate(1deg) translate(2%, -5%) scale(1.03);
+  }
+
+  .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--2 img {
+    transform: scale(1.58);
+  }
+
+  .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--3 {
+    transform: rotate(0deg) translate(3%, 0);
+  }
+
+  .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--3 img {
+    transform: scale(1.72);
+  }
+
+  .gallery__portal-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    text-align: center;
+  }
+
+  .gallery__portal-tag,
+  .gallery__portal-count {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .gallery__portal-tag {
+    color: var(--sand-50);
+    min-height: 1.2em;
+  }
+
+  .gallery__portal-count {
+    margin-top: 0.35rem;
+    color: #ff7f89;
+  }
+
+  @media (min-width: 800px) {
+    .gallery__portal {
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: clamp(2rem, 4vw, 3.5rem);
+      align-items: center;
+    }
+
+    .gallery__portal-stage {
+      width: min(100%, 520px);
+      min-height: 580px;
+      justify-self: center;
+      padding-left: clamp(1rem, 3vw, 2.5rem);
+    }
+
+    .gallery__portal-side {
+      align-items: flex-end;
+      padding-top: 0;
+    }
+
+    .gallery__title--portal {
+      align-items: flex-end;
+      text-align: right;
+      margin-bottom: var(--space-6);
+    }
+
+    .gallery__portal-side .section-kicker {
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .gallery__portal-list {
+      align-items: flex-end;
+    }
+
+    .gallery__portal-item {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .gallery__portal-item.is-focus .gallery__portal-name {
+      transform: translateX(-6px);
+    }
+
+    .gallery__portal-meta {
+      text-align: left;
+      padding-left: 12%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery__portal-name,
+    .gallery__portal-stack,
+    .gallery__portal-shard,
+    .gallery__portal-shard img {
+      transition: none;
+    }
+  }
+
+  /* ——— Works ——— */
+  .gallery__works {
+    margin-top: var(--space-8);
+  }
+
+  .gallery:not(.has-series) .gallery__works {
+    display: none;
+  }
+
+  .gallery__piece {
+    margin-bottom: clamp(3.5rem, 7vw, 7rem);
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity var(--duration-gentle) var(--ease-gentle),
+      transform var(--duration-gentle) var(--ease-gentle);
+  }
+
+  .gallery__piece[hidden] {
+    display: none;
+  }
+
+  .gallery__piece:last-child {
+    margin-bottom: 0;
+  }
+
+  .gallery__piece.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ——— Full-bleed photo strip ——— */
+  .gallery__strip {
+    /* Crisp inside the text column; fades to nothing past its left/right edge line.
+       NOTE: keep the 7rem / 1040 values in sync with setupLoop() in gallery.ts */
+    --fade: max(7rem, calc((100% - var(--gallery-col)) / 2));
+    --band: clamp(300px, 52vh, 560px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: clamp(1.25rem, 2vw, 2rem) 0;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--fade);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--fade),
+      #000 calc(100% - var(--fade)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--fade),
+      #000 calc(100% - var(--fade)),
+      transparent 100%
+    );
+  }
+
+  .gallery__strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gallery__strip[data-loop='on'] {
+    scroll-snap-type: none;
+  }
+
+  .gallery__strip[data-loop='on'] .gallery__track {
+    justify-content: flex-start;
+  }
+
+  .gallery__track {
+    display: flex;
+    gap: var(--space-2);
+    width: max-content;
+    min-width: 100%;
+    margin: 0 auto;
+    justify-content: center;
+  }
+
+  .gallery__photo {
+    flex: 0 0 auto;
+    height: var(--band);
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: zoom-in;
+    scroll-snap-align: center;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .gallery__photo-img {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    display: block;
+    opacity: 0;
+    transform: scale(1.02);
+    transition:
+      opacity 0.8s var(--ease-gentle),
+      transform 1.1s var(--ease-gentle);
+  }
+
+  .gallery__photo-img.is-loaded {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .gallery__photo:hover .gallery__photo-img.is-loaded {
+    transform: scale(1.04);
+  }
+
+  .gallery__photo:focus-visible {
+    outline: 2px solid #ff7f89;
+    outline-offset: 3px;
+  }
+
+  .gallery__series-intro {
+    max-width: 640px;
+    margin: 0 auto var(--space-8);
+    text-align: center;
+  }
+
+  .gallery__series-intro[hidden] {
+    display: none;
+  }
+
+  .gallery__series-intro .section-kicker {
+    margin-bottom: var(--space-2);
+    color: #ff7f89;
+  }
+
+  .gallery__series-desc {
+    margin: 0;
+    font-size: clamp(16px, 1.8vw, 19px);
+    line-height: 1.7;
+    color: var(--text-on-veil);
+  }
+
+  .gallery__caption {
+    max-width: 1040px;
+    margin: var(--space-4) auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.7em;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .gallery__caption-name {
+    color: var(--sand-50);
+  }
+
+  .gallery__caption-meta {
+    color: var(--text-on-veil-muted);
+  }
+
+  .gallery__caption-sep {
+    color: var(--text-on-veil-muted);
+  }
+
+  .gallery__caption-sep--pink {
+    color: #ff7f89;
+  }
+
+  .gallery__caption-inquire {
+    color: #ff7f89;
+    text-decoration: none;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+
+  .gallery__caption-inquire:hover {
+    opacity: 0.7;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery__piece {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .gallery__photo-img,
+    .gallery__photo:hover .gallery__photo-img.is-loaded {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>
