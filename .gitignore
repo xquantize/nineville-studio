@@ -34,3 +34,12 @@ background-water-*.png
 # Local prank Easter egg
 src/components/BoyfriendEgg.astro
 public/images/get_fucked_guys.png
+
+# Source / unused images — keep locally; site uses optimized copies in thumbs/ and works/<slug>/
+public/images/mediums/plaster.heic
+public/images/mediums/mixed.svg
+public/images/sipnpaint/*.jpg
+public/images/works/IMG_*
+public/images/bio-portrait.webp
+public/images/bio-portrait-placeholder.svg
+public/images/hero-placeholder.svg
