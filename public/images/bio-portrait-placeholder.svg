@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
-  <!-- TODO: Replace with Laura's portrait photo -->
-  <rect width="600" height="600" fill="#EADFC4"/>
-  <circle cx="300" cy="240" r="80" fill="#D8C49C"/>
-  <ellipse cx="300" cy="480" rx="140" ry="120" fill="#D8C49C"/>
-</svg>
