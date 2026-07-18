@@ -453,9 +453,9 @@ import { site } from '../data/site';
     max-width: 900px;
     margin: 0 auto;
     padding: clamp(1.15rem, 2.8vw, 1.85rem) clamp(1.15rem, 3vw, 2rem);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    background: rgba(8, 12, 20, 0.16);
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 
   .contact__intro {
@@ -493,10 +493,10 @@ import { site } from '../data/site';
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
-    padding: 0.35rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    background: rgba(8, 12, 20, 0.18);
+    padding: 0.2rem 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 
   .contact__topic-hint {
@@ -607,9 +607,9 @@ import { site } from '../data/site';
     min-width: 0;
     box-sizing: border-box;
     padding: 0.72rem 0.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    background: rgba(8, 12, 20, 0.2);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-on-veil);
     font-family: var(--font-sans);
     font-size: 16px;
@@ -631,7 +631,7 @@ import { site } from '../data/site';
 
   .contact__input:focus {
     border-color: rgba(255, 127, 137, 0.7);
-    background: rgba(8, 12, 20, 0.34);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .contact__input.is-invalid,
@@ -709,6 +709,17 @@ import { site } from '../data/site';
     .contact__row {
       grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .contact {
+      padding-top: var(--space-6);
+      padding-bottom: var(--space-6);
+    }
+
+    .contact__wrap {
+      padding: var(--space-4) var(--space-3);
     }
   }
 </style>

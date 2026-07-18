@@ -4,10 +4,15 @@
   const img = document.querySelector('.scroll-bg__img') as HTMLImageElement | null;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  // On touch devices the JS-lerped pan fights native momentum scroll and
-  // causes jank, so keep the background static there.
-  const panBackground = finePointer && !reducedMotion;
+  // Touch / coarse / narrow: never run Lenis — it fights native fling.
+  const useNativeScroll =
+    reducedMotion ||
+    !finePointer ||
+    window.matchMedia('(hover: none)').matches ||
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(max-width: 767px)').matches;
 
+  const panBackground = !useNativeScroll;
   const BASE_SCALE = 1.016;
 
   let panMetrics = { maxPan: 0, docH: 0 };
@@ -79,7 +84,7 @@
       lerp: 0.095,
       duration: 1.55,
       smoothWheel: true,
-      syncTouch: finePointer,
+      syncTouch: false,
       wheelMultiplier: 0.9,
       touchMultiplier: 1,
       infinite: false,
@@ -109,20 +114,17 @@
   }
 
   function initNative() {
-    const onScroll = () => {
-      updatePanMetrics();
-      const y = window.scrollY;
-      setTargetPan(y);
-      emitScroll(y);
-    };
+    if (img) img.style.transform = '';
 
+    const onScroll = () => {
+      emitScroll(window.scrollY);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
     onScroll();
   }
 
   function start() {
-    if (reducedMotion) {
+    if (useNativeScroll) {
       initNative();
       return;
     }
@@ -130,11 +132,6 @@
     initWithLenis();
   }
 
-  // Start the scroll engine immediately. Its continuous rAF keeps the
-  // compositor painting from first load — waiting on the background image
-  // left mobile Safari without a paint until the first user scroll, so the
-  // landing content appeared blank until you scrolled. Pan metrics (desktop
-  // only) recalculate once the image is ready.
   start();
 
   if (img && !img.complete) {

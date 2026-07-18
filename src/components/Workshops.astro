@@ -272,7 +272,7 @@ import SipPaintFilm from './SipPaintFilm.astro';
   .workshops__wrap {
     max-width: 1040px;
     margin: 0 auto;
-    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-4));
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--scroll-anchor-gap) + var(--space-4));
   }
 
   .workshops__head {
@@ -319,11 +319,11 @@ import SipPaintFilm from './SipPaintFilm.astro';
 
   /* ——— Accordion ——— */
   .workshops__accordion {
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-top: none;
   }
 
   .workshops__item {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   }
 
   .workshops__trigger {
@@ -443,11 +443,10 @@ import SipPaintFilm from './SipPaintFilm.astro';
     gap: var(--space-1) var(--space-4);
     align-items: start;
     padding: var(--space-3) 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
   }
 
   .workshops__date:first-child {
-    border-top: none;
     padding-top: 0;
   }
 
@@ -504,7 +503,7 @@ import SipPaintFilm from './SipPaintFilm.astro';
     gap: var(--space-4) var(--space-6);
     margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
     padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
   }
 
   .workshops__actions--private {
@@ -516,9 +515,9 @@ import SipPaintFilm from './SipPaintFilm.astro';
     align-items: center;
     min-height: 42px;
     padding: 0.65rem 1.1rem;
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 999px;
-    background: rgba(8, 12, 20, 0.18);
+    background: rgba(255, 255, 255, 0.04);
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
@@ -532,8 +531,8 @@ import SipPaintFilm from './SipPaintFilm.astro';
   }
 
   .workshops__all:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .workshops__all:active {

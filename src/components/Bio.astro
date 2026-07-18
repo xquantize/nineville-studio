@@ -22,8 +22,9 @@
                 alt="Laura Neundörfer"
                 width={700}
                 height={700}
-                loading="lazy"
+                loading="eager"
                 decoding="async"
+                fetchpriority="low"
               />
             </span>
           </figure>
@@ -53,16 +54,14 @@
 <style>
   .bio {
     --bio-blue: #07294a;
-    /* Land higher under the nav on jump */
     scroll-margin-top: var(--scroll-anchor-offset);
   }
 
-  /* Soft edge fades, solid navy holds most of the band.
-     Less top padding so a #bio jump lands the title higher under the nav. */
+  /* Soft edge fades, solid navy holds most of the band. */
   .bio__band {
     position: relative;
     margin: 0 0 clamp(3.5rem, 7vw, 6rem);
-    padding: clamp(3.25rem, 5.5vw, 5rem) 0 clamp(5.5rem, 10vw, 9rem);
+    padding: clamp(4.75rem, 7.5vw, 7rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
       rgba(7, 41, 74, 0) 0%,
@@ -139,12 +138,12 @@
     border-radius: 50%;
     background: radial-gradient(
       circle at 50% 48%,
-      rgba(255, 127, 137, 0.7) 0%,
-      rgba(255, 127, 137, 0.35) 36%,
-      rgba(255, 127, 137, 0.14) 56%,
+      rgba(255, 127, 137, 0.62) 0%,
+      rgba(255, 127, 137, 0.28) 38%,
+      rgba(255, 127, 137, 0.1) 56%,
       transparent 72%
     );
-    filter: blur(12px);
+    /* Soft halo without live filter:blur (costly while scrolling) */
     pointer-events: none;
     z-index: 0;
   }
@@ -154,11 +153,16 @@
     inset: 0;
     border-radius: 50%;
     overflow: hidden;
+    /* clip-path is reliable on Safari; border-radius alone can fail when
+       a child uses filter / transform and paints outside the circle. */
+    clip-path: circle(50%);
+    -webkit-clip-path: circle(50%);
     border: 1px solid rgba(255, 127, 137, 0.55);
     box-shadow:
       0 0 0 5px rgba(255, 127, 137, 0.14),
       0 8px 28px rgba(14, 16, 22, 0.35);
     z-index: 1;
+    isolation: isolate;
   }
 
   /* Window into the scrolling painting — not the blue band */
@@ -168,7 +172,7 @@
     background-image: url('/images/background.webp');
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center;
+    background-position: center top;
     will-change: background-position;
   }
 
@@ -218,8 +222,29 @@
 
   @media (max-width: 767px) {
     .bio__band {
+      /* Match veil gutter — no 100vw (overflow fights iOS scroll). */
       margin-left: calc(-1 * var(--space-2));
       margin-right: calc(-1 * var(--space-2));
+      margin-top: 0;
+      margin-bottom: clamp(2.5rem, 6vw, 4rem);
+      padding-top: clamp(2.5rem, 8vw, 4rem);
+      background: linear-gradient(
+        180deg,
+        rgba(7, 41, 74, 0) 0%,
+        rgba(7, 41, 74, 0.35) 14%,
+        var(--bio-blue) 32%,
+        var(--bio-blue) 78%,
+        rgba(7, 41, 74, 0.55) 90%,
+        rgba(7, 41, 74, 0) 100%
+      );
+    }
+
+    /* Full-bleed band, but keep the copy off the screen edges. The global
+       mobile rule zeroes .panel-inner padding for .panel cards; restore a
+       gutter here since the band isn't a card. */
+    .bio__band .panel-inner {
+      padding-left: var(--space-3);
+      padding-right: var(--space-3);
     }
 
     .bio__portrait {
@@ -239,9 +264,23 @@
       margin-bottom: var(--space-4);
     }
 
+    /* Soft pink halo — gradient only (no filter:blur). */
+    .bio__portrait-glow {
+      inset: -18%;
+      background: radial-gradient(
+        circle at 50% 48%,
+        rgba(255, 127, 137, 0.55) 0%,
+        rgba(255, 127, 137, 0.22) 42%,
+        transparent 70%
+      );
+    }
+
     .bio__portrait-window {
-      filter: blur(2.5px);
-      transform: scale(1.12);
+      /* Soft painting fill — no filter blur (Safari turns that into a square). */
+      background-image: url('/images/background-mobile.webp');
+      background-position: center 22%;
+      background-size: 140% auto;
+      will-change: auto;
     }
 
     .bio__text p {
@@ -258,15 +297,15 @@
 
   if (portrait && windowEl) {
     const mobileQuery = window.matchMedia('(max-width: 767px)');
+    if (!mobileQuery.matches) {
     let imgW = 1638;
     let imgH = 2048;
     let rafId = 0;
+    let inView = true;
 
     const bgImage = new Image();
     function loadNatural() {
-      bgImage.src = mobileQuery.matches
-        ? '/images/background-mobile.webp'
-        : '/images/background.webp';
+      bgImage.src = '/images/background.webp';
     }
     bgImage.addEventListener('load', () => {
       if (bgImage.naturalWidth && bgImage.naturalHeight) {
@@ -279,6 +318,7 @@
 
     // Mirror a viewport-fixed "cover" background so the circle is a window into it.
     function update() {
+      if (!inView) return;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const scale = Math.max(vw / imgW, vh / imgH);
@@ -288,16 +328,27 @@
       const oy = (vh - bh) / 2;
       const rect = portrait!.getBoundingClientRect();
 
-      windowEl!.style.backgroundSize = `${bw.toFixed(1)}px ${bh.toFixed(1)}px`;
-      windowEl!.style.backgroundPosition = `${(ox - rect.left).toFixed(1)}px ${(oy - rect.top).toFixed(1)}px`;
+      windowEl!.style.backgroundSize = `${bw.toFixed(0)}px ${bh.toFixed(0)}px`;
+      windowEl!.style.backgroundPosition = `${(ox - rect.left).toFixed(0)}px ${(oy - rect.top).toFixed(0)}px`;
     }
 
     function schedule() {
-      if (rafId) return;
+      if (!inView || rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = 0;
         update();
       });
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          inView = entry?.isIntersecting ?? false;
+          if (inView) schedule();
+        },
+        { rootMargin: '20% 0px' }
+      );
+      io.observe(portrait);
     }
 
     window.addEventListener('app-scroll', schedule);
@@ -307,9 +358,18 @@
       schedule();
     });
     window.addEventListener('load', schedule);
-    mobileQuery.addEventListener('change', loadNatural);
+    mobileQuery.addEventListener('change', () => {
+      if (mobileQuery.matches) {
+        windowEl!.style.backgroundSize = '';
+        windowEl!.style.backgroundPosition = '';
+      } else {
+        loadNatural();
+        schedule();
+      }
+    });
 
     loadNatural();
     update();
+    }
   }
 </script>

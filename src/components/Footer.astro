@@ -45,6 +45,14 @@ import { site } from '../data/site';
 
 <style>
   .footer {
+    /* Soft blend into the solid end-cap — avoids a hard discoloured seam */
+    background: linear-gradient(
+      180deg,
+      rgba(20, 24, 32, 0) 0%,
+      rgba(20, 24, 32, 0.72) 4.5rem,
+      #141820 7.5rem,
+      #141820 100%
+    );
     padding: clamp(4.5rem, 9vw, 7rem) 0 calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
   }
 
@@ -62,7 +70,7 @@ import { site } from '../data/site';
     max-width: 28rem;
     margin-bottom: clamp(2.5rem, 5vw, 4rem);
     padding-bottom: clamp(2.5rem, 5vw, 4rem);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -80,9 +88,9 @@ import { site } from '../data/site';
     flex: 1 1 12rem;
     min-width: 0;
     padding: 12px 16px;
-    border: 0.5px solid rgba(255, 255, 255, 0.22);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
     border-radius: 100px;
-    background: rgba(32, 36, 48, 0.45);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-on-veil);
     font-family: var(--font-sans);
     /* Must be >=16px or iOS Safari auto-zooms the page when the field is
@@ -174,7 +182,7 @@ import { site } from '../data/site';
   .footer__copyright {
     margin: 0;
     padding-top: var(--space-4);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
     width: 100%;
     max-width: 28rem;
     font-family: var(--font-mono);
@@ -185,6 +193,48 @@ import { site } from '../data/site';
   }
 
   @media (max-width: 767px) {
+    .footer {
+      padding-top: var(--space-6);
+      padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+      margin-left: calc(-1 * var(--space-2));
+      margin-right: calc(-1 * var(--space-2));
+      margin-bottom: 0;
+      padding-left: var(--space-2);
+      padding-right: var(--space-2);
+      /* Solid end-cap flush with the page — no veil padding peeking under */
+      background: linear-gradient(
+        180deg,
+        rgba(20, 24, 32, 0) 0%,
+        #141820 3.5rem,
+        #141820 100%
+      );
+    }
+
+    .footer__mailing {
+      max-width: 21rem;
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-6);
+    }
+
+    .footer__form {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .footer__input {
+      flex: 1 1 auto;
+      padding: 10px 14px;
+    }
+
+    .footer__join {
+      width: auto;
+      min-height: 42px;
+      padding: 10px 18px;
+    }
+  }
+
+  @media (max-width: 359px) {
     .footer__form {
       flex-direction: column;
       align-items: stretch;

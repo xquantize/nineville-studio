@@ -2,7 +2,10 @@
   <div class="hero__content panel-inner">
     <div class="hero__mark">
       <div class="hero__title-wrap">
-        <h1 class="hero__title">Nineville Studio</h1>
+        <h1 class="hero__title">
+          <span class="hero__title-line">Nineville</span>
+          <span class="hero__title-line">Studio</span>
+        </h1>
         <svg
           class="hero__understroke"
           viewBox="0 0 520 36"
@@ -69,9 +72,6 @@
   .hero__content {
     width: 100%;
     text-align: left;
-    /* Own compositor layer so it paints reliably on iOS even while the
-       loading overlay is on top of it. */
-    will-change: transform, opacity;
   }
 
   .hero__mark {
@@ -90,11 +90,13 @@
   html.js-hero .hero__content {
     opacity: 0;
     transform: translateY(10px);
+    will-change: transform, opacity;
   }
 
   html.js-hero.hero-ready .hero__content {
     opacity: 1;
     transform: none;
+    will-change: auto;
     transition:
       opacity 1.3s var(--ease-gentle),
       transform 1.3s var(--ease-gentle);
@@ -109,6 +111,11 @@
     text-shadow:
       0 2px 28px rgba(0, 0, 0, 0.4),
       0 0 48px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Desktop: keep as one horizontal phrase */
+  .hero__title-line + .hero__title-line::before {
+    content: '\00a0';
   }
 
   .hero__understroke {
@@ -230,9 +237,25 @@
   }
 
   @media (max-width: 767px) {
+    .hero {
+      /* 100lvh is stable (unlike 100dvh). Dynamic viewport height was resizing
+         the hero as the iOS URL bar showed/hid — that shifted the whole page
+         mid-fling and felt like the scroll was “grabbing”. */
+      min-height: 100svh;
+      min-height: 100lvh;
+      padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
+    }
+
     .hero__title {
-      font-size: clamp(36px, 11vw, 52px);
-      line-height: 1.08;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: clamp(48px, 15vw, 72px);
+      line-height: 0.92;
+    }
+
+    .hero__title-line + .hero__title-line::before {
+      content: none;
     }
 
     .hero__understroke {
@@ -245,10 +268,6 @@
     .hero__subtitle {
       font-size: 13px;
       letter-spacing: 0.08em;
-    }
-
-    .hero {
-      padding-bottom: calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
     }
   }
 

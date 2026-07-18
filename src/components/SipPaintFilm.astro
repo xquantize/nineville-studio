@@ -206,6 +206,11 @@ const tilts = [-2.4, 1.5, -1.2, 2.1, -1.7, 1.1, -2, 1.8];
     .sip-film__track {
       animation-duration: 58s;
     }
+
+    /* Pause the infinite reel when off-screen — big scroll win on phones */
+    .sip-film__track.is-paused {
+      animation-play-state: paused;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -227,3 +232,17 @@ const tilts = [-2.4, 1.5, -1.2, 2.1, -1.7, 1.1, -2, 1.8];
     }
   }
 </style>
+
+<script>
+  const film = document.querySelector<HTMLElement>('[data-sip-film]');
+  const track = film?.querySelector<HTMLElement>('.sip-film__track');
+  if (film && track && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        track.classList.toggle('is-paused', !(entry?.isIntersecting ?? false));
+      },
+      { rootMargin: '80px 0px', threshold: 0 }
+    );
+    io.observe(film);
+  }
+</script>
