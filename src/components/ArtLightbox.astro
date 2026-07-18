@@ -1,4 +1,19 @@
 ---
+import { works, formatLightboxMeta } from '../data/works';
+import { site } from '../data/site';
+
+const lightboxPayload = {
+  email: site.email,
+  works: works.map((work) => ({
+    id: work.id,
+    slug: work.slug,
+    title: work.title,
+    description: work.detailDescription ?? work.description,
+    meta: formatLightboxMeta(work),
+    status: work.status ?? null,
+    images: work.images,
+  })),
+};
 ---
 
 <div
@@ -35,6 +50,9 @@
     <p class="art-lightbox__zoom-hint" data-zoom-hint hidden>Pinch or double-tap to zoom</p>
   </div>
 </div>
+
+{/* Build-time catalog JSON — keeps fs scanning out of the client bundle */}
+<script type="application/json" id="gallery-works-data" set:html={JSON.stringify(lightboxPayload)} />
 
 <script>
   import '../scripts/art-lightbox.ts';

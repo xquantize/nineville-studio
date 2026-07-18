@@ -30,11 +30,36 @@ import MediaFrame from './MediaFrame.astro';
           </div>
         </div>
 
-        <div class="mediums__video" data-reveal aria-label="Process video coming soon">
-          <span class="mediums__video-play" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M8 5.5 L18 12 L8 18.5 Z" fill="currentColor" />
-            </svg>
+        <div
+          class="mediums__video"
+          data-method-open
+          data-reveal
+          role="button"
+          tabindex="0"
+          aria-label="Watch the full method film"
+        >
+          <span class="mediums__video-plate" aria-hidden="true"></span>
+          <span class="mediums__video-mat">
+            <video
+              class="mediums__video-el"
+              data-method-preview
+              src="/videos/method/method-preview.mp4"
+              poster="/videos/method/method-poster.webp"
+              muted
+              autoplay
+              playsinline
+              webkit-playsinline
+              loop
+              preload="none"
+              disablepictureinpicture
+              disableremoteplayback
+              aria-hidden="true"
+            ></video>
+            <span class="mediums__video-shade" aria-hidden="true"></span>
+            <span class="mediums__video-hint">
+              <span class="mediums__video-hint--touch">Tap to watch more</span>
+              <span class="mediums__video-hint--desk">Click to watch more</span>
+            </span>
           </span>
         </div>
       </div>
@@ -262,6 +287,211 @@ import MediaFrame from './MediaFrame.astro';
       applyDeck();
     }
   }
+
+  // ——— Method film: always muted, mobile autoplay, Laura lightbox ———
+  const previewBtn = document.querySelector<HTMLElement>('[data-method-open]');
+  const preview = document.querySelector<HTMLVideoElement>('[data-method-preview]');
+  const lightbox = document.querySelector<HTMLElement>('[data-method-lightbox]');
+  const fullVideo = document.querySelector<HTMLVideoElement>('[data-method-full]');
+  const closeBtns = document.querySelectorAll<HTMLElement>('[data-method-close]');
+  const reduceVideoMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lightboxOpen = false;
+  let closeTimer: number | null = null;
+  let previewWantsPlay = false;
+  let previewRetryTimer: number | null = null;
+
+  function forceMute(video: HTMLVideoElement) {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.volume = 0;
+    video.setAttribute('muted', '');
+  }
+
+  function attachFullSource() {
+    if (!fullVideo || fullVideo.dataset.ready === '1') return;
+    const src = fullVideo.dataset.src;
+    if (!src) return;
+    forceMute(fullVideo);
+    fullVideo.setAttribute('playsinline', '');
+    fullVideo.setAttribute('webkit-playsinline', '');
+    fullVideo.playsInline = true;
+    fullVideo.src = src;
+    fullVideo.load();
+    fullVideo.dataset.ready = '1';
+  }
+
+  function playMuted(video: HTMLVideoElement) {
+    forceMute(video);
+    const result = video.play();
+    if (result && typeof result.catch === 'function') {
+      result.catch(() => {
+        // iOS often rejects the first play() before enough data — retry below
+      });
+    }
+  }
+
+  function stopPreviewRetries() {
+    if (previewRetryTimer !== null) {
+      window.clearInterval(previewRetryTimer);
+      previewRetryTimer = null;
+    }
+  }
+
+  function kickPreview() {
+    if (!preview || reduceVideoMotion || lightboxOpen || !previewWantsPlay) return;
+    forceMute(preview);
+    preview.playsInline = true;
+    preview.setAttribute('playsinline', '');
+    preview.setAttribute('webkit-playsinline', '');
+    preview.autoplay = true;
+    preview.loop = true;
+    // Do NOT call load() — on iOS it resets the element and blocks muted autoplay
+    // until a tap. Src is already in the HTML; just raise preload and play.
+    if (preview.preload !== 'auto') preview.preload = 'auto';
+    playMuted(preview);
+  }
+
+  function setPreviewWantsPlay(on: boolean) {
+    previewWantsPlay = on;
+    if (!preview) return;
+    if (on && !lightboxOpen && !reduceVideoMotion) {
+      kickPreview();
+      stopPreviewRetries();
+      // Keep retrying while in view — iOS often needs several play() attempts
+      previewRetryTimer = window.setInterval(() => {
+        if (!previewWantsPlay || lightboxOpen || reduceVideoMotion) {
+          stopPreviewRetries();
+          return;
+        }
+        if (preview.paused) kickPreview();
+      }, 400);
+    } else {
+      stopPreviewRetries();
+      preview.pause();
+    }
+  }
+
+  /** iOS: first touch unlocks muted playback for later IntersectionObserver plays */
+  function unlockPreviewMedia() {
+    if (!preview || preview.dataset.mediaUnlocked === '1') return;
+    forceMute(preview);
+    preview.playsInline = true;
+    const play = preview.play();
+    if (play && typeof play.then === 'function') {
+      play
+        .then(() => {
+          preview.dataset.mediaUnlocked = '1';
+          if (!previewWantsPlay || lightboxOpen) preview.pause();
+          else kickPreview();
+        })
+        .catch(() => {});
+    }
+  }
+
+  function openMethodFilm() {
+    if (!lightbox || !fullVideo || lightboxOpen) return;
+    if (closeTimer !== null) {
+      window.clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+    preview?.pause();
+    stopPreviewRetries();
+    attachFullSource();
+    forceMute(fullVideo);
+    lightbox.hidden = false;
+    document.documentElement.classList.add('is-method-open');
+    requestAnimationFrame(() => {
+      lightbox.classList.add('is-open');
+      lightbox.classList.remove('is-closing');
+    });
+    lightboxOpen = true;
+    playMuted(fullVideo);
+  }
+
+  function closeMethodFilm() {
+    if (!lightbox || !fullVideo || !lightboxOpen) return;
+    lightboxOpen = false;
+    fullVideo.pause();
+    fullVideo.currentTime = 0;
+    lightbox.classList.add('is-closing');
+    lightbox.classList.remove('is-open');
+    document.documentElement.classList.remove('is-method-open');
+    const finish = () => {
+      lightbox.hidden = true;
+      lightbox.classList.remove('is-closing');
+      closeTimer = null;
+      if (previewWantsPlay) setPreviewWantsPlay(true);
+    };
+    if (reduceVideoMotion) finish();
+    else closeTimer = window.setTimeout(finish, 420);
+  }
+
+  previewBtn?.addEventListener('click', openMethodFilm);
+  previewBtn?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openMethodFilm();
+    }
+  });
+  closeBtns.forEach((btn) => btn.addEventListener('click', closeMethodFilm));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && lightboxOpen) closeMethodFilm();
+  });
+
+  [preview, fullVideo].forEach((video) => {
+    if (!video) return;
+    forceMute(video);
+    video.addEventListener('volumechange', () => forceMute(video));
+  });
+
+  if (preview && !reduceVideoMotion) {
+    forceMute(preview);
+    preview.playsInline = true;
+    preview.setAttribute('playsinline', '');
+    preview.setAttribute('webkit-playsinline', '');
+    preview.autoplay = true;
+    preview.loop = true;
+
+    // When data arrives, try again (covers the common iOS first-reject case)
+    preview.addEventListener('loadeddata', () => kickPreview());
+    preview.addEventListener('canplay', () => kickPreview());
+    preview.addEventListener('canplaythrough', () => kickPreview());
+
+    if ('IntersectionObserver' in window) {
+      const warmIO = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) return;
+          preview.preload = 'auto';
+          forceMute(preview);
+          warmIO.disconnect();
+        },
+        { rootMargin: '1000px 0px', threshold: 0 }
+      );
+
+      const playIO = new IntersectionObserver(
+        ([entry]) => {
+          const on = Boolean(entry?.isIntersecting);
+          setPreviewWantsPlay(on);
+        },
+        // threshold 0 = any pixel visible — more reliable on mobile URL-bar resize
+        { threshold: 0, rootMargin: '40px 0px' }
+      );
+
+      const target = previewBtn ?? preview;
+      warmIO.observe(target);
+      playIO.observe(target);
+    } else {
+      setPreviewWantsPlay(true);
+    }
+
+    // Touch during scroll counts as a gesture on iOS — unlock muted play
+    document.addEventListener('touchstart', unlockPreviewMedia, { passive: true });
+    document.addEventListener('touchend', unlockPreviewMedia, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && previewWantsPlay) kickPreview();
+    });
+  }
 </script>
 
 <style>
@@ -272,8 +502,8 @@ import MediaFrame from './MediaFrame.astro';
   /* Soft edge fades, solid navy holds most of the band */
   .mediums__process {
     position: relative;
-    margin: clamp(4.5rem, 9vw, 8rem) 0 clamp(3.5rem, 7vw, 6rem);
-    padding: clamp(5.5rem, 10vw, 9rem) 0;
+    margin: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(3.5rem, 7vw, 6rem);
+    padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
       rgba(7, 41, 74, 0) 0%,
@@ -337,37 +567,141 @@ import MediaFrame from './MediaFrame.astro';
   }
 
   .mediums__video {
+    --video-tilt: -1.4deg;
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    max-width: 520px;
+    margin-inline: auto;
+    aspect-ratio: 16 / 10;
+    padding: 0;
+    border: none;
+    background: none;
+    display: block;
+    cursor: pointer;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+    transform: rotate(var(--video-tilt));
+    transition: transform 0.45s var(--ease-gentle);
+  }
+
+  .mediums__video-plate {
+    position: absolute;
+    inset: -0.45rem -0.55rem -0.6rem -0.45rem;
+    z-index: -1;
     border-radius: 10px;
+    background: linear-gradient(145deg, #0b3a66 0%, #07294a 100%);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+    transform: rotate(2.2deg) translate(0.15rem, 0.2rem);
+    transition:
+      transform 0.45s var(--ease-gentle),
+      box-shadow 0.45s var(--ease-gentle);
+  }
+
+  .mediums__video-mat {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2px;
+    border-radius: 8px;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background:
-      radial-gradient(120% 120% at 50% 38%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)),
-      rgba(8, 14, 22, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 127, 137, 0.92) 42%,
+      rgba(255, 255, 255, 0.78) 72%,
+      rgba(255, 127, 137, 0.85) 100%
+    );
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.35s var(--ease-gentle);
   }
 
-  .mediums__video-play {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: rgba(251, 246, 234, 0.92);
-    color: #12303f;
-    padding-left: 4px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    transition: transform var(--duration-normal) var(--ease-out);
+  .mediums__video-el {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 6px;
+    background: #0a1018;
+    pointer-events: none;
   }
 
-  .mediums__video:hover .mediums__video-play {
-    transform: scale(1.06);
+  .mediums__video-shade {
+    position: absolute;
+    inset: 2px;
+    border-radius: 6px;
+    background: linear-gradient(
+      180deg,
+      transparent 42%,
+      rgba(8, 14, 22, 0.38) 78%,
+      rgba(8, 14, 22, 0.7) 100%
+    );
+    pointer-events: none;
+  }
+
+  .mediums__video:hover,
+  .mediums__video:focus-visible {
+    transform: rotate(var(--video-tilt)) translateY(-0.35rem) scale(1.015);
+  }
+
+  .mediums__video:hover .mediums__video-plate,
+  .mediums__video:focus-visible .mediums__video-plate {
+    transform: rotate(3.2deg) translate(0.28rem, 0.3rem);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.44);
+  }
+
+  .mediums__video:hover .mediums__video-mat,
+  .mediums__video:focus-visible .mediums__video-mat {
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+  }
+
+  .mediums__video:focus-visible {
+    outline: 2px solid #ff7f89;
+    outline-offset: 4px;  
+  }
+
+  .mediums__video-hint {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: calc(0.9rem + 2px);
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(251, 246, 234, 0.9);
+    text-align: center;
+    pointer-events: none;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .mediums__video-hint--touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .mediums__video-hint--touch {
+      display: inline;
+    }
+
+    .mediums__video-hint--desk {
+      display: none;
+    }
+
+    .mediums__video:hover,
+    .mediums__video:focus-visible {
+      transform: rotate(var(--video-tilt));
+    }
+
+    .mediums__video:hover .mediums__video-plate,
+    .mediums__video:focus-visible .mediums__video-plate {
+      transform: rotate(2.2deg) translate(0.15rem, 0.2rem);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+    }
   }
 
   /* ——— Overlapping cluster ——— */
@@ -461,11 +795,10 @@ import MediaFrame from './MediaFrame.astro';
     height: 100%;
     overflow: hidden;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(8, 12, 20, 0.65);
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+    border: none;
+    background: transparent;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.36);
     transition:
-      border-color var(--duration-fast) var(--ease-out),
       box-shadow 0.85s var(--ease-gentle);
     pointer-events: none;
   }
@@ -473,8 +806,7 @@ import MediaFrame from './MediaFrame.astro';
   .mediums__chip.is-front .mediums__chip-frame,
   .mediums__chip.is-active .mediums__chip-frame,
   .mediums__chip.is-peek .mediums__chip-frame {
-    border-color: rgba(255, 127, 137, 0.55);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.46);
   }
 
   .mediums__chip-frame .media-frame {
@@ -535,7 +867,7 @@ import MediaFrame from './MediaFrame.astro';
     max-width: 42ch;
     margin-top: var(--space-4);
     padding-top: var(--space-3);
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-top: none;
     text-align: center;
   }
 
@@ -568,8 +900,21 @@ import MediaFrame from './MediaFrame.astro';
       margin-right: calc(-1 * var(--space-2));
     }
 
+    /* Restore a side gutter inside the full-bleed band (global mobile rule
+       zeroes .panel-inner padding for .panel cards, not for this band). */
+    .mediums__process .panel-inner {
+      padding-left: var(--space-3);
+      padding-right: var(--space-3);
+    }
+
     .mediums__copy p {
       font-size: 15px;
+    }
+
+    /* The rotated back cards in the deck poke a few px past the viewport;
+       clip horizontally so they can't create a sideways scroll. */
+    .mediums__cards {
+      overflow-x: clip;
     }
 
     .mediums__stack {
@@ -580,13 +925,35 @@ import MediaFrame from './MediaFrame.astro';
     .mediums__chip {
       width: 180px;
     }
+
+    .mediums__video {
+      max-width: none;
+      --video-tilt: -0.8deg;
+    }
+
+    .mediums__video-hint {
+      bottom: 0.7rem;
+      font-size: 10px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .mediums__video-play,
     .mediums__chip,
-    .mediums__chip-frame {
+    .mediums__chip-frame,
+    .mediums__video,
+    .mediums__video-plate,
+    .mediums__video-mat {
       transition: none;
+    }
+
+    .mediums__video-el {
+      display: none;
+    }
+
+    .mediums__video-mat {
+      background:
+        url('/videos/method/method-poster.webp') center / cover no-repeat,
+        #0a1018;
     }
   }
 </style>

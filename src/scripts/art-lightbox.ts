@@ -1,19 +1,27 @@
-import PhotoSwipe from 'photoswipe';
-import 'photoswipe/style.css';
-import { works, formatLightboxMeta } from '../data/works';
-import { site } from '../data/site';
+import type PhotoSwipe from 'photoswipe';
 
-const worksForLightbox = works.map((work) => ({
-  id: work.id,
-  slug: work.slug,
-  title: work.title,
-  description: work.detailDescription ?? work.description,
-  meta: formatLightboxMeta(work),
-  status: work.status ?? null,
-  images: work.images,
-}));
+type LightboxImage = { src: string; alt: string; caption?: string };
+type LightboxWork = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  meta: string;
+  status: string | null;
+  images: LightboxImage[];
+};
 
-const contactEmail = site.email;
+function readLightboxPayload(): { works: LightboxWork[]; email: string } {
+  const el = document.getElementById('gallery-works-data');
+  if (!el?.textContent) return { works: [], email: '' };
+  try {
+    return JSON.parse(el.textContent) as { works: LightboxWork[]; email: string };
+  } catch {
+    return { works: [], email: '' };
+  }
+}
+
+const { works: worksForLightbox, email: contactEmail } = readLightboxPayload();
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 const defaultImageSize = { width: 1200, height: 1500 };
 
@@ -50,6 +58,21 @@ let pswpZoomHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let savedScrollY = 0;
 let isLightboxOpen = false;
+let PhotoSwipeCtor: typeof PhotoSwipe | null = null;
+let photoSwipeLoading: Promise<typeof PhotoSwipe> | null = null;
+
+async function loadPhotoSwipe() {
+  if (PhotoSwipeCtor) return PhotoSwipeCtor;
+  if (!photoSwipeLoading) {
+    photoSwipeLoading = Promise.all([import('photoswipe'), import('photoswipe/style.css')]).then(
+      ([mod]) => {
+        PhotoSwipeCtor = mod.default;
+        return PhotoSwipeCtor;
+      }
+    );
+  }
+  return photoSwipeLoading;
+}
 
 function getScrollY() {
   return window.__lenis?.scroll ?? window.scrollY;
@@ -207,7 +230,7 @@ function applyImageMeta() {
   }
 }
 
-function syncPhotoSwipe() {
+async function syncPhotoSwipe() {
   const work = currentWork();
   if (!work || !zoomStage || !lightbox || lightbox.hidden) return;
 
@@ -221,7 +244,11 @@ function syncPhotoSwipe() {
 
   teardownPhotoSwipe();
 
-  pswpInstance = new PhotoSwipe({
+  const PSWP = await loadPhotoSwipe();
+  // Guard: lightbox may have closed while the module was loading.
+  if (!lightbox || lightbox.hidden || currentWork() !== work) return;
+
+  pswpInstance = new PSWP({
     appendToEl: zoomStage,
     dataSource: buildDataSource(work),
     index: imageIndex,
@@ -287,7 +314,7 @@ function syncPhotoSwipe() {
 function renderImage() {
   applyWorkMeta();
   applyImageMeta();
-  syncPhotoSwipe();
+  void syncPhotoSwipe();
 }
 
 function trapFocus(event: KeyboardEvent) {

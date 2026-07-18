@@ -57,9 +57,14 @@
 
 html {
   scroll-padding-top: 0;
-  scrollbar-gutter: stable;
   background: #1a1e28;
   overflow-x: clip;
+}
+
+@media (min-width: 768px) {
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 
 body {
@@ -68,6 +73,18 @@ body {
   color: var(--sand-900);
   background: transparent;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    /* Stops iOS rubber-band at the footer — fixed bg + bounce = glitchy tear */
+    overscroll-behavior-y: none;
+    background: #141820;
+  }
 }
 
 main {
@@ -84,7 +101,8 @@ main {
     rgba(var(--veil-dark), 0) 0%,
     rgba(var(--veil-dark), 0.14) calc(var(--hero-fade) * 0.5),
     rgba(var(--veil-dark), 0.32) var(--hero-fade),
-    rgba(var(--veil-dark), 0.45) 100%
+    rgba(var(--veil-dark), 0.45) 78%,
+    rgba(20, 24, 32, 0.88) 100%
   );
   backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
   -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(1.05);
@@ -93,7 +111,8 @@ main {
 .content-veil::before {
   content: '';
   display: block;
-  height: calc(var(--hero-fade) * 0.35);
+  /* Bridge from hero into bio */
+  height: clamp(4.5rem, 10vh, 8rem);
   pointer-events: none;
 }
 
@@ -211,11 +230,8 @@ img {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(
-    145deg,
-    rgba(38, 42, 54, 0.65) 0%,
-    rgba(28, 32, 42, 0.82) 100%
-  );
+  /* Match the veil — avoid a darker “empty box” before the image lands */
+  background: rgba(var(--veil-dark), 0.18);
 }
 
 .media-frame__img {
@@ -260,17 +276,25 @@ img {
     --hero-fade: clamp(4rem, 12vh, 7rem);
   }
 
-  /* Tighter veil gutter — sections read as grouped cards.
-     Subtle blur for depth; kept light (6px) so mobile GPUs stay smooth
-     now that the background pan and atmosphere animation are disabled here. */
+  /* Mobile: frost lives on .content-veil (same idea as desktop) so the hero
+     landing stays sharp. Slightly softer blur keeps scroll usable on iOS. */
   .content-veil {
-    padding: var(--space-2) var(--space-2) var(--space-4);
-    backdrop-filter: blur(6px) saturate(1.03);
-    -webkit-backdrop-filter: blur(6px) saturate(1.03);
+    padding: var(--space-2) var(--space-2) 0;
+    backdrop-filter: blur(10px) saturate(1.05);
+    -webkit-backdrop-filter: blur(10px) saturate(1.05);
+    background: linear-gradient(
+      180deg,
+      rgba(var(--veil-dark), 0) 0%,
+      rgba(var(--veil-dark), 0.16) calc(var(--hero-fade) * 0.5),
+      rgba(var(--veil-dark), 0.34) var(--hero-fade),
+      rgba(var(--veil-dark), 0.45) 60%,
+      rgba(20, 24, 32, 0.88) 90%,
+      #141820 100%
+    );
   }
 
   .content-veil::before {
-    height: var(--space-2);
+    height: clamp(3.25rem, 8vh, 5.5rem);
   }
 
   .content-veil > .panel:first-child {
@@ -282,8 +306,7 @@ img {
     margin-top: 0;
   }
 
-  /* Fade images in without the scale transform — the zoom reads as a
-     "jump" on phones, especially as lazy images decode mid-scroll. */
+  /* Fade images / reveals without transforms — cheaper while scrolling. */
   .media-frame__img {
     transform: none;
     transition: opacity 0.6s var(--ease-gentle);
@@ -293,12 +316,29 @@ img {
     transform: none;
   }
 
+  [data-reveal] {
+    transform: none;
+    /* Instant — no 950ms opacity fades fighting the first fling */
+    opacity: 1;
+    transition: none;
+  }
+
+  [data-reveal].is-visible {
+    transform: none;
+  }
+
+  [data-reveal-fade] {
+    opacity: 1;
+    transition: none;
+  }
+
+  /* Sections stay continuous with the veil — no card chrome / hairline boxes */
   .content-veil .panel {
     padding: var(--space-6) var(--space-3);
     margin-bottom: var(--space-3);
-    border-radius: 8px;
-    background: rgba(20, 24, 34, 0.55);
-    border: 0.5px solid rgba(184, 154, 106, 0.14);
+    border-radius: 0;
+    background: transparent;
+    border: none;
   }
 
   .content-veil .panel:last-of-type {
@@ -317,6 +357,12 @@ img {
   .section-heading {
     margin-bottom: var(--space-3);
     font-size: clamp(26px, 7vw, 36px);
+  }
+
+  /* Clip full-bleed bands — never use 100vw (it overflows and makes
+     iOS vertical scroll feel like it’s fighting every section). */
+  .content-veil {
+    overflow-x: clip;
   }
 }
 

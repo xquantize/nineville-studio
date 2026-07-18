@@ -126,6 +126,20 @@
   }
 
   @media (max-width: 767px) {
+    /* Match veil gutter — no 100vw (overflow fights iOS scroll). */
+    .commission__band {
+      margin-left: calc(-1 * var(--space-2));
+      margin-right: calc(-1 * var(--space-2));
+      margin-top: var(--space-4);
+      margin-bottom: var(--space-4);
+      padding: var(--space-8) var(--space-3);
+    }
+
+    .commission__band .panel-inner {
+      padding-left: var(--space-3);
+      padding-right: var(--space-3);
+    }
+
     .commission__title {
       flex-direction: column;
       align-items: center;

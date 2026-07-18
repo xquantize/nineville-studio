@@ -30,16 +30,45 @@ wetransfer_pics-website_2026-07-07_0406/
 # Python water-animation experiments (animate_background_water.py)
 background-water.gif
 background-water-*.png
+__pycache__/
 
 # Local prank Easter egg
 src/components/BoyfriendEgg.astro
 public/images/get_fucked_guys.png
 
-# Source / unused images — keep locally; site uses optimized copies in thumbs/ and works/<slug>/
+# Source / unused images — keep locally; site uses optimized WebP
 public/images/mediums/plaster.heic
 public/images/mediums/mixed.svg
 public/images/sipnpaint/*.jpg
-public/images/works/IMG_*
+public/images/works/
+public/images/works/**
 public/images/bio-portrait.webp
 public/images/bio-portrait-placeholder.svg
 public/images/hero-placeholder.svg
+
+# Unused frost experiment assets (site uses sharp backgrounds + veil blur)
+public/images/background-blur.webp
+public/images/background-mobile-blur.webp
+    
+# Raw series drops (JPG/PNG/HEIC) — convert to WebP before shipping
+public/images/series/**/*.jpg
+public/images/series/**/*.jpeg
+public/images/series/**/*.png
+public/images/series/**/*.heic
+public/images/series/IMG_*
+
+# Huge ProRes masters — site ships optimized MP4s only
+public/videos/method/*.mov
+public/videos/method/method-poster.jpg
+
+# Local tooling / Playwright / one-off scripts (not for Vercel)
+.tools/
+pw-browsers/
+shots/
+check.mjs
+check2.mjs
+ck.mjs
+ck2.mjs
+diag.mjs
+shot.mjs
+uxcheck.mjs

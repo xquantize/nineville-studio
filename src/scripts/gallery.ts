@@ -8,6 +8,7 @@ if (gallery) {
   );
   const seriesFoot = gallery.querySelector<HTMLElement>('[data-series-foot]');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mobileGallery = window.matchMedia('(max-width: 767px)');
 
   const portal = gallery.querySelector<HTMLElement>('[data-gallery-portal]');
   const portalItems = Array.from(
@@ -34,6 +35,10 @@ if (gallery) {
 
   // Mirror of the CSS --fade on .gallery__strip (keep 7rem / 1040 in sync).
   function fadeWidth(strip: HTMLElement) {
+    if (mobileGallery.matches) {
+      const fade = parseFloat(getComputedStyle(strip).getPropertyValue('--fade'));
+      return Number.isFinite(fade) ? fade : 0;
+    }
     return Math.max(7 * rootFontSize, (strip.clientWidth - 1040) / 2);
   }
 
@@ -66,6 +71,12 @@ if (gallery) {
 
     const originals = Array.from(track.children) as HTMLElement[];
     if (!originals.length) return;
+
+    // On touch, native snap scroll feels smoother than clone-and-jump looping.
+    if (mobileGallery.matches) {
+      strip.scrollLeft = 0;
+      return;
+    }
 
     // Only loop when the row actually overflows the viewport.
     if (track.scrollWidth <= strip.clientWidth + 2) return;
@@ -153,10 +164,25 @@ if (gallery) {
         : pool;
 
     imgs.forEach((img, i) => {
-      const next = picks[i % picks.length];
+      const next = picks[i % picks.length] ?? img.dataset.src;
       if (!next) return;
       const absolute = new URL(next, window.location.origin).href;
       if (img.src !== absolute) img.src = next;
+    });
+  }
+
+  // Warm every plate so crossfades show real images, not empty shards.
+  function preloadPortalPlates() {
+    portalPlates.forEach((plate) => applyAtmosphere(plate, false));
+  }
+  preloadPortalPlates();
+
+  function syncPortalAria() {
+    if (!mobileGallery.matches) return;
+    portalItems.forEach((item) => {
+      const on = item.dataset.seriesFocus === portalFocus;
+      const name = item.querySelector('.gallery__portal-name')?.textContent?.trim() ?? 'series';
+      item.setAttribute('aria-label', on ? `Open ${name} series` : `Preview ${name}`);
     });
   }
 
@@ -165,6 +191,7 @@ if (gallery) {
     portalItems.forEach((item) => {
       item.classList.toggle('is-focus', item.dataset.seriesFocus === slug);
     });
+    syncPortalAria();
     portalPlates.forEach((plate) => {
       const on = plate.dataset.seriesPlate === slug;
       plate.classList.toggle('is-active', on);
@@ -187,15 +214,50 @@ if (gallery) {
     if (reduceMotion || portalPaused || !portalInView || activeSeries || portalItems.length < 2) {
       return;
     }
+    // Longer beat so the mobile crossfade is readable
+    const beat = mobileGallery.matches ? 3800 : 3200;
     portalTimer = window.setInterval(() => {
       const idx = portalItems.findIndex((el) => el.dataset.seriesFocus === portalFocus);
       const next = portalItems[(idx + 1) % portalItems.length];
       const slug = next?.dataset.seriesFocus;
       if (slug) focusPortal(slug);
-    }, 3200);
+    }, beat);
   }
 
-  function clearSeries() {
+  function galleryOffset() {
+    const nav = document.querySelector<HTMLElement>('.nav');
+    return -((nav?.getBoundingClientRect().height ?? 56) + 16);
+  }
+
+  function scrollToGalleryTop(immediate = false, onComplete?: () => void) {
+    const offset = galleryOffset();
+    const lenis = window.__lenis;
+    const currentScroll = lenis?.scroll ?? window.scrollY;
+    const top = Math.max(0, gallery!.getBoundingClientRect().top + currentScroll + offset);
+    const jump = immediate || reduceMotion || mobileGallery.matches;
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      onComplete?.();
+    };
+
+    if (lenis) {
+      lenis.scrollTo(top, {
+        immediate: jump,
+        duration: jump ? 0 : 0.95,
+        onComplete: done,
+      });
+      // Lenis may skip onComplete for immediate jumps — always finish.
+      if (jump) window.setTimeout(done, 0);
+      return;
+    }
+
+    window.scrollTo({ top, behavior: jump ? 'auto' : 'smooth' });
+    window.setTimeout(done, jump ? 0 : 520);
+  }
+
+  function resetSeriesView() {
     activeSeries = null;
     gallery!.classList.remove('has-series');
     clearBtns.forEach((btn) => {
@@ -213,8 +275,23 @@ if (gallery) {
       piece.style.transitionDelay = '';
     });
 
+    // Preview taps pause the cycle — clear that when returning to the portal.
+    portalPaused = false;
     startPortalCycle();
-    gallery!.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  function clearSeries() {
+    // Instant jump + soft portal fade. Animating scroll through a tall
+    // photo strip always feels laggy on phones — skip that entirely.
+    gallery!.classList.add('is-clearing');
+    resetSeriesView();
+    scrollToGalleryTop(true, () => {
+      requestAnimationFrame(() => {
+        gallery!.classList.remove('is-clearing');
+        gallery!.classList.add('is-portal-in');
+        window.setTimeout(() => gallery!.classList.remove('is-portal-in'), 480);
+      });
+    });
   }
 
   function selectSeries(slug: string) {
@@ -237,7 +314,8 @@ if (gallery) {
       piece.hidden = !match;
       piece.classList.remove('is-in');
       if (match) {
-        piece.style.transitionDelay = reduceMotion ? '0ms' : `${Math.min(shown, 6) * 90}ms`;
+        piece.style.transitionDelay =
+          reduceMotion || mobileGallery.matches ? '0ms' : `${Math.min(shown, 6) * 90}ms`;
         shown += 1;
       }
     });
@@ -248,6 +326,7 @@ if (gallery) {
           if (!piece.hidden) piece.classList.add('is-in');
         });
         refreshLoops();
+        if (!mobileGallery.matches) scrollToGalleryTop(false);
       })
     );
   }
@@ -261,14 +340,32 @@ if (gallery) {
   gallery.querySelectorAll<HTMLElement>('[data-series-open]').forEach((card) => {
     card.addEventListener('click', () => {
       const slug = card.dataset.seriesOpen;
-      if (slug) selectSeries(slug);
+      if (!slug) return;
+
+      // Mobile: first tap previews the collage; second tap on the same
+      // series opens it. Desktop: click always opens (hover already focuses).
+      if (mobileGallery.matches) {
+        if (slug === portalFocus) {
+          selectSeries(slug);
+        } else {
+          portalPaused = true;
+          stopPortalCycle();
+          focusPortal(slug);
+        }
+        return;
+      }
+
+      selectSeries(slug);
     });
   });
 
   portalItems.forEach((item) => {
     const slug = item.dataset.seriesFocus;
     if (!slug) return;
-    item.addEventListener('pointerenter', () => {
+    item.addEventListener('pointerenter', (event) => {
+      // Touch taps fire pointerenter then leave inconsistently — don't park
+      // the cycle forever after a single tap-hover on phones.
+      if (event.pointerType === 'touch') return;
       portalPaused = true;
       stopPortalCycle();
       focusPortal(slug);
@@ -281,9 +378,15 @@ if (gallery) {
   });
 
   portal?.addEventListener('pointerleave', () => {
+    // Desktop hover exit — resume auto-cycle. Mobile preview stays paused
+    // until the series opens or the user returns via Collections.
+    if (mobileGallery.matches) return;
     portalPaused = false;
     startPortalCycle();
   });
+
+  // Seed mobile aria-labels for the initial focused series.
+  syncPortalAria();
 
   if (portal && !reduceMotion) {
     const io = new IntersectionObserver(

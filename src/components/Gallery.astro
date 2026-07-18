@@ -13,7 +13,7 @@ import {
   {/* Shown once a series is open */}
   <div class="panel-inner">
     <div class="gallery__head">
-      <button type="button" class="gallery__collections" data-series-clear data-reveal hidden>
+      <button type="button" class="gallery__collections" data-series-clear hidden>
         ← Collections
       </button>
 
@@ -29,7 +29,7 @@ import {
 
   {/* Landing: stage + title + names in one composition */}
   <div class="panel-inner">
-    <div class="gallery__portal" data-gallery-portal data-reveal>
+    <div class="gallery__portal" data-gallery-portal>
       <div class="gallery__portal-stage" aria-hidden="true">
         <div class="gallery__portal-glow" />
         {
@@ -46,7 +46,8 @@ import {
                 {peeks.map((src, pi) => (
                   <div class={`gallery__portal-shard gallery__portal-shard--${pi + 1}`}>
                     <img
-                      src={src}
+                      src={i === 0 ? src : undefined}
+                      data-src={src}
                       alt=""
                       width={480}
                       height={600}
@@ -72,7 +73,7 @@ import {
         </div>
       </div>
 
-      <div class="gallery__portal-side">
+      <div class="gallery__portal-side" data-reveal>
         <p class="section-kicker">Collections</p>
         <h2 class="gallery__title gallery__title--portal">
           <span class="gallery__title-word">The</span>
@@ -140,6 +141,7 @@ import {
                         alt={photo.alt}
                         width={560}
                         height={700}
+                        sizes="(max-width: 767px) 72vw, min(420px, 38vw)"
                         loading="lazy"
                         decoding="async"
                         data-media-frame
@@ -204,7 +206,7 @@ import {
     scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
   }
 
-  /* Landing fills the viewport so the pink commissions band doesn’t peek in */
+  /* Landing fills the viewport so the next colour band doesn’t peek in */
   .gallery:not(.has-series) {
     min-height: calc(100svh - var(--scroll-anchor-offset));
     padding-top: clamp(3rem, 5.5vw, 5rem);
@@ -323,6 +325,7 @@ import {
     grid-template-columns: 1fr;
     gap: clamp(1.5rem, 3vw, 2.25rem);
     align-items: start;
+    background: none;
   }
 
   .gallery.has-series .gallery__portal {
@@ -401,18 +404,14 @@ import {
     position: relative;
     justify-self: center;
     width: min(100%, 420px);
-    min-height: 480px;
+    /* Tall enough for shards + meta — no opaque “card” fill behind them */
+    aspect-ratio: 3 / 4;
+    background: none;
+    overflow: visible;
   }
 
   .gallery__portal-glow {
-    position: absolute;
-    inset: -5% -18% 8%;
-    background:
-      radial-gradient(ellipse at 40% 35%, rgba(255, 127, 137, 0.28), transparent 55%),
-      radial-gradient(ellipse at 70% 70%, rgba(255, 255, 255, 0.06), transparent 50%);
-    filter: blur(22px);
-    pointer-events: none;
-    z-index: 0;
+    display: none;
   }
 
   .gallery__portal-stack {
@@ -422,6 +421,7 @@ import {
     pointer-events: none;
     transition: opacity 0.7s var(--ease-gentle);
     z-index: 1;
+    background: none;
   }
 
   .gallery__portal-stack.is-active {
@@ -432,24 +432,23 @@ import {
   .gallery__portal-shard {
     position: absolute;
     overflow: hidden;
-    background: rgba(8, 12, 20, 0.55);
-    box-shadow:
-      0 22px 50px rgba(0, 0, 0, 0.48),
-      0 0 0 1px rgba(255, 255, 255, 0.14);
-    transition:
-      transform 1s var(--ease-gentle),
-      filter 0.8s var(--ease-gentle);
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    transition: transform 1s var(--ease-gentle);
   }
 
   .gallery__portal-shard img {
     display: block;
     width: 100%;
     height: 100%;
+    border: 0;
+    outline: none;
     object-fit: cover;
-    /* Push past white studio edges — land on pigment / texture */
     object-position: center 42%;
     transform: scale(1.55);
-    filter: saturate(1.05) contrast(1.08);
     transition: transform 1.2s var(--ease-gentle);
   }
 
@@ -462,7 +461,7 @@ import {
     z-index: 1;
     border-radius: 8px;
     transform: rotate(-14deg) translate(-6%, 8%);
-    filter: brightness(0.82);
+    opacity: 1;
   }
 
   .gallery__portal-shard--1 img {
@@ -488,9 +487,9 @@ import {
   .gallery__portal-shard--3 {
     width: 40%;
     aspect-ratio: 4 / 5;
-    right: -6%;
+    right: -12%;
     top: auto;
-    bottom: 2%;
+    bottom: 22%;
     height: auto;
     z-index: 4;
     border-radius: 8px;
@@ -516,7 +515,7 @@ import {
 
   .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--1 {
     transform: rotate(-18deg) translate(-12%, 2%);
-    filter: brightness(0.9);
+    opacity: 0.95;
   }
 
   .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--2 {
@@ -528,7 +527,7 @@ import {
   }
 
   .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--3 {
-    transform: rotate(0deg) translate(3%, 0);
+    transform: rotate(0deg) translate(4%, -2%);
   }
 
   .gallery__portal:hover .gallery__portal-stack.is-active .gallery__portal-shard--3 img {
@@ -539,7 +538,7 @@ import {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 7rem;
     z-index: 3;
     text-align: center;
   }
@@ -609,6 +608,200 @@ import {
     .gallery__portal-meta {
       text-align: left;
       padding-left: 12%;
+      bottom: 7.5rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .gallery {
+      margin-top: var(--space-5);
+      padding-top: var(--space-3);
+      padding-bottom: var(--space-6);
+    }
+
+    .gallery:not(.has-series) {
+      min-height: auto;
+      padding-top: var(--space-2);
+      padding-bottom: var(--space-6);
+    }
+
+    .gallery.has-series .gallery__head {
+      align-items: flex-start;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .gallery__head-text {
+      width: 100%;
+      margin-left: 0;
+      text-align: left;
+    }
+
+    .gallery__title {
+      font-size: clamp(42px, 14vw, 64px);
+    }
+
+    .gallery__title--open {
+      align-items: flex-start;
+    }
+
+    .gallery__collections {
+      min-height: 42px;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      line-height: 1;
+    }
+
+    /*
+      Mobile layout: title + series list first (tappable), then a proper-sized
+      collage underneath — one readable stack without the tiny side-by-side.
+    */
+    .gallery__portal {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      align-items: stretch;
+    }
+
+    .gallery__portal-stage {
+      order: 2;
+      width: min(100%, 360px);
+      aspect-ratio: 4 / 5;
+      max-height: none;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+      margin-inline: auto;
+      background: none;
+      justify-self: center;
+    }
+
+    .gallery__portal-side {
+      order: 1;
+      padding-top: 0;
+      min-width: 0;
+      align-items: flex-start;
+    }
+
+    .gallery__portal-side .section-kicker {
+      margin-bottom: 0.35rem;
+    }
+
+    .gallery__title--portal {
+      margin-bottom: var(--space-2);
+      font-size: clamp(36px, 12vw, 52px);
+      line-height: 0.9;
+    }
+
+    .gallery__portal-list {
+      width: 100%;
+      gap: 0.05rem;
+    }
+
+    .gallery__portal-item {
+      width: 100%;
+      min-height: 40px;
+      padding: 0.15rem 0;
+      gap: 0.65em;
+      touch-action: manipulation;
+    }
+
+    .gallery__portal-num {
+      font-size: 10px;
+    }
+
+    .gallery__portal-name {
+      font-size: clamp(26px, 8.5vw, 36px);
+      color: rgba(251, 246, 234, 0.55);
+    }
+
+    .gallery__portal-item.is-focus .gallery__portal-name {
+      transform: translateX(4px);
+    }
+
+    .gallery__portal-meta {
+      display: none;
+    }
+
+    .gallery__portal-glow {
+      display: none;
+    }
+
+    .gallery__portal-stack {
+      inset: 0;
+      transition: opacity 0.75s var(--ease-gentle);
+    }
+
+    .gallery__portal-shard {
+      background: none;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      border: none;
+      outline: none;
+      border-radius: 6px;
+      -webkit-mask-image: none;
+      mask-image: none;
+      transition: transform 0.85s var(--ease-gentle);
+    }
+
+    .gallery__portal-shard img {
+      transform: scale(1.45);
+      filter: none;
+      object-fit: cover;
+      transition: transform 1s var(--ease-gentle);
+    }
+
+    .gallery__portal-shard--1 {
+      width: 42%;
+      left: 4%;
+      top: 14%;
+      transform: rotate(-9deg);
+      opacity: 1;
+    }
+
+    .gallery__portal-shard--1 img {
+      transform: scale(1.5);
+      object-position: 40% 46%;
+    }
+
+    .gallery__portal-shard--2 {
+      width: 62%;
+      left: 24%;
+      top: 2%;
+      transform: rotate(1.5deg);
+    }
+
+    .gallery__portal-shard--2 img {
+      transform: scale(1.45);
+      object-position: 50% 42%;
+    }
+
+    .gallery__portal-shard--3 {
+      width: 36%;
+      right: 0%;
+      bottom: 12%;
+      transform: rotate(2deg);
+    }
+
+    .gallery__portal-shard--3 img {
+      transform: scale(1.48);
+    }
+
+    .gallery__portal-stack.is-active .gallery__portal-shard--1 {
+      transform: rotate(-10deg) translate(-2%, 2%);
+    }
+
+    .gallery__portal-stack.is-active .gallery__portal-shard--2 {
+      transform: rotate(1deg) translate(0, -2%);
+    }
+
+    .gallery__portal-stack.is-active .gallery__portal-shard--3 {
+      transform: rotate(2deg) translate(0, 0);
+    }
+
+    .gallery__portal-name {
+      transition: color 0.45s var(--ease-gentle), transform 0.45s var(--ease-gentle);
     }
   }
 
@@ -650,6 +843,35 @@ import {
   .gallery__piece.is-in {
     opacity: 1;
     transform: none;
+  }
+
+  /* Instant back-to-collections: no mid-scroll work, soft portal entrance. */
+  .gallery.is-clearing .gallery__piece,
+  .gallery.is-clearing .gallery__works,
+  .gallery.is-clearing .gallery__series-intro,
+  .gallery.is-clearing .gallery__photo-img {
+    transition: none !important;
+  }
+
+  .gallery.is-portal-in .gallery__portal {
+    animation: gallery-portal-in 0.42s var(--ease-gentle) both;
+  }
+
+  @keyframes gallery-portal-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery.is-portal-in .gallery__portal {
+      animation: none;
+    }
   }
 
   /* ——— Full-bleed photo strip ——— */
@@ -709,12 +931,12 @@ import {
     padding: 0;
     margin: 0;
     border: none;
-    background: rgba(255, 255, 255, 0.03);
+    background: transparent;
     border-radius: 8px;
     overflow: hidden;
     cursor: zoom-in;
     scroll-snap-align: center;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   }
 
   .gallery__photo-img {
@@ -803,6 +1025,89 @@ import {
 
   .gallery__caption-inquire:hover {
     opacity: 0.7;
+  }
+
+  @media (max-width: 767px) {
+    .gallery__works {
+      margin-top: var(--space-4);
+    }
+
+    .gallery__piece {
+      margin-bottom: var(--space-8);
+      transform: none;
+      transition: opacity 0.55s var(--ease-gentle);
+    }
+
+    .gallery__piece.is-in {
+      transform: none;
+    }
+
+    .gallery__strip {
+      --fade: 1.25rem;
+      --band: clamp(240px, 62vw, 300px);
+      padding: var(--space-2) 0;
+      scroll-padding-inline: var(--space-3);
+      /* proximity — mandatory snap can fight vertical flings on iOS */
+      scroll-snap-type: x proximity;
+      /* Allow vertical page flings that start on a strip to keep going */
+      touch-action: pan-x pan-y;
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+    }
+
+    .gallery__track {
+      gap: 0.75rem;
+      justify-content: flex-start;
+      min-width: auto;
+      padding-inline: var(--space-3);
+    }
+
+    .gallery__photo {
+      scroll-snap-align: center;
+      scroll-snap-stop: normal;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .gallery__photo-img {
+      transform: none;
+      transition: opacity 0.55s var(--ease-gentle);
+    }
+
+    .gallery__photo-img.is-loaded,
+    .gallery__photo:hover .gallery__photo-img.is-loaded {
+      transform: none;
+    }
+
+    .gallery__series-intro {
+      margin-bottom: var(--space-5);
+      text-align: left;
+    }
+
+    .gallery__series-desc {
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .gallery__caption {
+      justify-content: flex-start;
+      margin-top: var(--space-3);
+      padding: 0 var(--space-3);
+      gap: 0.45em 0.65em;
+      font-size: 11px;
+      line-height: 1.55;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
