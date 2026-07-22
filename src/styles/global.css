@@ -75,6 +75,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Nested-safe overlay lock — used by lightbox, method film, mobile nav */
+html.is-scroll-locked,
+html.is-scroll-locked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+html.is-scroll-locked body {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+
 @media (max-width: 767px) {
   html,
   body {

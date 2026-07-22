@@ -125,6 +125,8 @@ import MediaFrame from './MediaFrame.astro';
 </section>
 
 <script>
+  import { lockPageScroll, unlockPageScroll } from '../scripts/scroll-lock';
+
   const root = document.querySelector<HTMLElement>('.mediums');
   if (root) {
     const cluster = root.querySelector<HTMLElement>('.mediums__cluster');
@@ -400,6 +402,7 @@ import MediaFrame from './MediaFrame.astro';
     forceMute(fullVideo);
     lightbox.hidden = false;
     document.documentElement.classList.add('is-method-open');
+    lockPageScroll();
     requestAnimationFrame(() => {
       lightbox.classList.add('is-open');
       lightbox.classList.remove('is-closing');
@@ -416,6 +419,7 @@ import MediaFrame from './MediaFrame.astro';
     lightbox.classList.add('is-closing');
     lightbox.classList.remove('is-open');
     document.documentElement.classList.remove('is-method-open');
+    unlockPageScroll();
     const finish = () => {
       lightbox.hidden = true;
       lightbox.classList.remove('is-closing');

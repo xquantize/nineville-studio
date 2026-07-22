@@ -47,6 +47,8 @@
 </nav>
 
 <script>
+  import { lockPageScroll, unlockPageScroll } from '../scripts/scroll-lock';
+
   const nav = document.querySelector('.nav');
   const toggle = document.querySelector('.nav__toggle');
   const panel = document.querySelector('.nav__panel');
@@ -54,6 +56,7 @@
   const links = document.querySelectorAll('.nav__link');
   const brand = document.querySelector<HTMLAnchorElement>('.nav__brand');
   const mobileQuery = window.matchMedia('(max-width: 767px)');
+  let menuScrollLocked = false;
 
   function syncPanelA11y() {
     if (!panel) return;
@@ -64,11 +67,27 @@
     }
   }
 
-  function setScrollLock(isOpen: boolean) {
-    const lenis = window.__lenis;
-    if (!lenis) return;
-    if (isOpen) lenis.stop();
-    else lenis.start();
+  function setMenuScrollLock(isOpen: boolean) {
+    if (!mobileQuery.matches) {
+      if (menuScrollLocked) {
+        menuScrollLocked = false;
+        unlockPageScroll();
+      }
+      const lenis = window.__lenis;
+      if (lenis) {
+        if (isOpen) lenis.stop();
+        else lenis.start();
+      }
+      return;
+    }
+
+    if (isOpen && !menuScrollLocked) {
+      menuScrollLocked = true;
+      lockPageScroll();
+    } else if (!isOpen && menuScrollLocked) {
+      menuScrollLocked = false;
+      unlockPageScroll();
+    }
   }
 
   function closeMenu() {
@@ -76,7 +95,7 @@
     nav?.classList.remove('nav--open');
     toggle?.setAttribute('aria-expanded', 'false');
     toggle?.setAttribute('aria-label', 'Open menu');
-    if (wasOpen) setScrollLock(false);
+    if (wasOpen) setMenuScrollLock(false);
     syncPanelA11y();
   }
 
@@ -84,7 +103,7 @@
     nav?.classList.add('nav--open');
     toggle?.setAttribute('aria-expanded', 'true');
     toggle?.setAttribute('aria-label', 'Close menu');
-    setScrollLock(true);
+    setMenuScrollLock(true);
     syncPanelA11y();
   }
 

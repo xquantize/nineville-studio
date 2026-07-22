@@ -1,4 +1,5 @@
 import type PhotoSwipe from 'photoswipe';
+import { lockPageScroll, unlockPageScroll } from './scroll-lock';
 
 type LightboxImage = { src: string; alt: string; caption?: string };
 type LightboxWork = {
@@ -21,7 +22,7 @@ function readLightboxPayload(): { works: LightboxWork[]; email: string } {
   }
 }
 
-const { works: worksForLightbox, email: contactEmail } = readLightboxPayload();
+const { works: worksForLightbox } = readLightboxPayload();
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 const defaultImageSize = { width: 1200, height: 1500 };
 
@@ -56,8 +57,8 @@ let pswpInstance: PhotoSwipe | null = null;
 let pswpChangeHandler: (() => void) | null = null;
 let pswpZoomHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
-let savedScrollY = 0;
 let isLightboxOpen = false;
+let scrollLocked = false;
 let PhotoSwipeCtor: typeof PhotoSwipe | null = null;
 let photoSwipeLoading: Promise<typeof PhotoSwipe> | null = null;
 
@@ -74,26 +75,16 @@ async function loadPhotoSwipe() {
   return photoSwipeLoading;
 }
 
-function getScrollY() {
-  return window.__lenis?.scroll ?? window.scrollY;
-}
-
 function pausePageScroll() {
-  savedScrollY = getScrollY();
-  const lenis = window.__lenis;
-  if (lenis) lenis.stop();
-  document.body.style.overflow = 'hidden';
+  if (scrollLocked) return;
+  scrollLocked = true;
+  lockPageScroll();
 }
 
 function resumePageScroll() {
-  document.body.style.overflow = '';
-  const lenis = window.__lenis;
-  if (lenis) {
-    lenis.start();
-    lenis.scrollTo(savedScrollY, { immediate: true });
-    return;
-  }
-  window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' });
+  if (!scrollLocked) return;
+  scrollLocked = false;
+  unlockPageScroll();
 }
 
 function currentWork() {
@@ -128,12 +119,22 @@ function syncOpenHistory(slug: string) {
   history.pushState({ lightbox: true, work: slug }, '', url);
 }
 
+function clearWorkParam() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('work')) return;
+  url.searchParams.delete('work');
+  history.replaceState({ lightbox: false }, '', url);
+}
+
 function updateEnquireLink(work: (typeof worksForLightbox)[number]) {
   if (!enquireEl) return;
 
   if (work?.status === 'available' || !work?.status) {
-    const subject = encodeURIComponent(`Enquiry: ${work.title}`);
-    enquireEl.href = `mailto:${contactEmail}?subject=${subject}`;
+    enquireEl.href = '#get-in-touch';
+    enquireEl.dataset.contactTopic = 'artwork';
+    enquireEl.dataset.contactArtwork = work.title;
+    enquireEl.dataset.contactSubject = `Artwork inquiry: ${work.title}`;
+    enquireEl.dataset.contactMessage = `Anything you’d like to know about “${work.title}”...`;
     enquireEl.hidden = false;
   } else {
     enquireEl.hidden = true;
@@ -181,7 +182,10 @@ function applyWorkMeta() {
   if (!work) return;
 
   if (titleEl) titleEl.textContent = work.title;
-  if (descEl) descEl.textContent = work.description;
+  if (descEl) {
+    descEl.textContent = work.description;
+    descEl.hidden = !work.description || work.description.startsWith('[PLACEHOLDER');
+  }
   if (metaEl) metaEl.textContent = work.meta;
 
   if (statusEl) {
@@ -376,6 +380,20 @@ function open(index: number, trigger: HTMLElement | null, fromHistory = false, s
   document.addEventListener('keydown', trapFocus);
 }
 
+function finishClose() {
+  if (!lightbox) return;
+  teardownPhotoSwipe();
+  lightbox.hidden = true;
+  lightbox.classList.remove('is-closing');
+  resumePageScroll();
+
+  requestAnimationFrame(() => {
+    if (lastTrigger instanceof HTMLElement) {
+      lastTrigger.focus({ preventScroll: true });
+    }
+  });
+}
+
 function close(fromPopstate = false) {
   if (!lightbox || lightbox.classList.contains('is-closing') || !isLightboxOpen) return;
 
@@ -390,19 +408,21 @@ function close(fromPopstate = false) {
   document.removeEventListener('keydown', onKeydown);
   document.removeEventListener('keydown', trapFocus);
 
-  window.setTimeout(() => {
-    if (!lightbox) return;
-    teardownPhotoSwipe();
-    lightbox.hidden = true;
-    lightbox.classList.remove('is-closing');
-    resumePageScroll();
+  window.setTimeout(finishClose, 380);
+}
 
-    requestAnimationFrame(() => {
-      if (lastTrigger instanceof HTMLElement) {
-        lastTrigger.focus({ preventScroll: true });
-      }
-    });
-  }, 380);
+/** Close without history.back — used when jumping to the contact form. */
+function closeForNavigate() {
+  if (!lightbox || !isLightboxOpen) return;
+
+  isLightboxOpen = false;
+  clearWorkParam();
+  lightbox.classList.remove('is-open');
+  lightbox.classList.add('is-closing');
+  document.removeEventListener('keydown', onKeydown);
+  document.removeEventListener('keydown', trapFocus);
+  finishClose();
+  lightbox.classList.remove('is-closing');
 }
 
 function showRelative(delta: number) {
@@ -456,6 +476,10 @@ document.addEventListener('click', (event) => {
 prevBtn?.addEventListener('click', () => showRelative(-1));
 nextBtn?.addEventListener('click', () => showRelative(1));
 closeTargets?.forEach((el) => el.addEventListener('click', () => close()));
+
+enquireEl?.addEventListener('click', () => {
+  closeForNavigate();
+});
 
 window.addEventListener('popstate', () => {
   const slug = new URLSearchParams(window.location.search).get('work');

@@ -57,7 +57,16 @@ const lightboxPayload = {
       <p id="art-lightbox-desc" class="art-lightbox__desc"></p>
       <p class="art-lightbox__meta"></p>
       <p class="art-lightbox__status" hidden></p>
-      <a class="art-lightbox__enquire" data-lightbox-enquire hidden>Enquire about this piece</a>
+      <a
+        class="art-lightbox__enquire"
+        href="#get-in-touch"
+        data-lightbox-enquire
+        data-contact-trigger
+        data-contact-topic="artwork"
+        hidden
+      >
+        Enquire about this piece
+      </a>
     </div>
   </div>
 </div>
@@ -241,6 +250,10 @@ const lightboxPayload = {
     font-size: 15px;
     line-height: 1.6;
     color: var(--text-on-veil);
+  }
+
+  .art-lightbox__desc[hidden] {
+    display: none;
   }
 
   .art-lightbox__meta {
