@@ -61,31 +61,31 @@
       panel.setAttribute('aria-hidden', String(!nav?.classList.contains('nav--open')));
     } else {
       panel.removeAttribute('aria-hidden');
-      closeMenu();
     }
   }
 
-  function setMenuOpen(isOpen: boolean) {
+  function setScrollLock(isOpen: boolean) {
     const lenis = window.__lenis;
-    if (lenis) {
-      if (isOpen) lenis.stop();
-      else lenis.start();
-    }
-    syncPanelA11y();
+    if (!lenis) return;
+    if (isOpen) lenis.stop();
+    else lenis.start();
   }
 
   function closeMenu() {
+    const wasOpen = nav?.classList.contains('nav--open');
     nav?.classList.remove('nav--open');
     toggle?.setAttribute('aria-expanded', 'false');
     toggle?.setAttribute('aria-label', 'Open menu');
-    setMenuOpen(false);
+    if (wasOpen) setScrollLock(false);
+    syncPanelA11y();
   }
 
   function openMenu() {
     nav?.classList.add('nav--open');
     toggle?.setAttribute('aria-expanded', 'true');
     toggle?.setAttribute('aria-label', 'Close menu');
-    setMenuOpen(true);
+    setScrollLock(true);
+    syncPanelA11y();
   }
 
   toggle?.addEventListener('click', () => {
@@ -198,7 +198,11 @@
   }
 
   syncPanelA11y();
-  mobileQuery.addEventListener('change', syncPanelA11y);
+  mobileQuery.addEventListener('change', () => {
+    // Desktop has no hamburger — force-close if the viewport crossed up.
+    if (!mobileQuery.matches) closeMenu();
+    else syncPanelA11y();
+  });
 </script>
 
 <style>

@@ -21,7 +21,8 @@ const lightboxPayload = {
   class="art-lightbox"
   role="dialog"
   aria-modal="true"
-  aria-label="Artwork viewer"
+  aria-labelledby="art-lightbox-title"
+  aria-describedby="art-lightbox-desc"
   hidden
 >
   <div class="art-lightbox__backdrop" data-lightbox-close tabindex="-1"></div>
@@ -48,6 +49,16 @@ const lightboxPayload = {
   <div class="art-lightbox__stage-wrap">
     <div class="art-lightbox__zoom-stage" data-lightbox-zoom-stage></div>
     <p class="art-lightbox__zoom-hint" data-zoom-hint hidden>Pinch or double-tap to zoom</p>
+    <p class="art-lightbox__caption" hidden></p>
+
+    <div class="art-lightbox__details">
+      <p class="art-lightbox__counter" aria-live="polite" hidden></p>
+      <h3 id="art-lightbox-title" class="art-lightbox__title"></h3>
+      <p id="art-lightbox-desc" class="art-lightbox__desc"></p>
+      <p class="art-lightbox__meta"></p>
+      <p class="art-lightbox__status" hidden></p>
+      <a class="art-lightbox__enquire" data-lightbox-enquire hidden>Enquire about this piece</a>
+    </div>
   </div>
 </div>
 
@@ -132,8 +143,12 @@ const lightboxPayload = {
     position: relative;
     z-index: 1;
     display: grid;
-    justify-items: center;
+    grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: stretch;
+    align-content: center;
     gap: var(--space-2);
+    width: min(92vw, 1200px);
+    max-height: min(94dvh, 960px);
     pointer-events: none;
     opacity: 0;
     transform: translateY(12px) scale(0.985);
@@ -154,8 +169,9 @@ const lightboxPayload = {
 
   .art-lightbox__zoom-stage {
     position: relative;
-    width: min(92vw, 1200px);
-    height: min(86dvh, 900px);
+    width: 100%;
+    height: min(68dvh, 720px);
+    min-height: 240px;
     pointer-events: auto;
   }
 
@@ -163,8 +179,10 @@ const lightboxPayload = {
     touch-action: none;
   }
 
-  .art-lightbox__zoom-hint {
+  .art-lightbox__zoom-hint,
+  .art-lightbox__caption {
     margin: 0;
+    justify-self: center;
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.1em;
@@ -172,9 +190,115 @@ const lightboxPayload = {
     color: var(--text-on-veil-kicker);
     opacity: 0.75;
     pointer-events: none;
+    text-align: center;
   }
 
-  .art-lightbox__zoom-hint[hidden] {
+  .art-lightbox__zoom-hint[hidden],
+  .art-lightbox__caption[hidden] {
+    display: none;
+  }
+
+  .art-lightbox__details {
+    pointer-events: auto;
+    justify-self: center;
+    width: min(100%, 42rem);
+    padding: var(--space-2) var(--space-1) 0;
+    color: var(--text-on-veil);
+    text-align: center;
+    transition: opacity 0.35s var(--ease-gentle);
+  }
+
+  .art-lightbox--zoomed .art-lightbox__details {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .art-lightbox__counter {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+  }
+
+  .art-lightbox__counter[hidden] {
+    display: none;
+  }
+
+  .art-lightbox__title {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(22px, 3.2vw, 32px);
+    letter-spacing: 0.01em;
+    color: var(--sand-50);
+  }
+
+  .art-lightbox__desc {
+    margin: 0 auto var(--space-2);
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-on-veil);
+  }
+
+  .art-lightbox__meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+  }
+
+  .art-lightbox__status {
+    margin: var(--space-1) 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sand-300);
+  }
+
+  .art-lightbox__status[data-status='sold'],
+  .art-lightbox__status[data-status='private collection'] {
+    color: var(--text-on-veil-muted);
+  }
+
+  .art-lightbox__status[hidden] {
+    display: none;
+  }
+
+  .art-lightbox__enquire {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--space-3);
+    padding: 12px 22px;
+    min-height: 44px;
+    border-radius: 8px;
+    background: #244a63;
+    border: 0.5px solid rgba(251, 246, 234, 0.16);
+    color: var(--sand-50);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .art-lightbox__enquire:hover {
+    background: #2d5a78;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+  }
+
+  .art-lightbox__enquire[hidden] {
     display: none;
   }
 
@@ -245,9 +369,42 @@ const lightboxPayload = {
   }
 
   @media (max-width: 767px) {
+    .art-lightbox {
+      padding:
+        calc(env(safe-area-inset-top, 0px) + var(--space-2))
+        var(--space-2)
+        calc(env(safe-area-inset-bottom, 0px) + var(--space-2));
+      align-items: end;
+    }
+
+    .art-lightbox__stage-wrap {
+      width: 100%;
+      max-height: calc(
+        100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--space-4)
+      );
+      gap: var(--space-1);
+    }
+
     .art-lightbox__zoom-stage {
-      width: 100vw;
-      height: 82dvh;
+      width: 100%;
+      height: min(58dvh, 520px);
+    }
+
+    .art-lightbox__details {
+      width: 100%;
+      padding: var(--space-1) var(--space-1) 0;
+      text-align: left;
+    }
+
+    .art-lightbox__desc {
+      margin-left: 0;
+      margin-right: 0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .art-lightbox__enquire {
+      width: 100%;
     }
 
     .art-lightbox__close {
@@ -258,6 +415,7 @@ const lightboxPayload = {
     .art-lightbox__nav {
       width: 40px;
       height: 40px;
+      top: calc(env(safe-area-inset-top, 0px) + 32dvh);
     }
 
     .art-lightbox__nav--prev {
@@ -272,7 +430,8 @@ const lightboxPayload = {
   @media (prefers-reduced-motion: reduce) {
     .art-lightbox,
     .art-lightbox__backdrop,
-    .art-lightbox__stage-wrap {
+    .art-lightbox__stage-wrap,
+    .art-lightbox__details {
       transition: none;
     }
   }

@@ -368,8 +368,7 @@ img {
 
 /* Touch feedback — coarse pointers only (phones/tablets) */
 @media (hover: none) and (pointer: coarse) {
-  .gallery__slide,
-  .gallery__portal-item,
+  .gallery__strip-nav,
   .gallery__photo,
   .gallery__caption-inquire,
   .commission__button,

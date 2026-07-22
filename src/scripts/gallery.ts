@@ -55,6 +55,113 @@ if (gallery) {
     return clone;
   }
 
+  function stripStep(strip: HTMLElement) {
+    const photo = strip.querySelector<HTMLElement>('.gallery__photo');
+    const track = strip.querySelector<HTMLElement>('.gallery__track');
+    const gap = track ? parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 16 : 16;
+    return (photo?.offsetWidth ?? 320) + gap;
+  }
+
+  function syncStripNav(strip: HTMLElement) {
+    const rail = strip.closest<HTMLElement>('.gallery__rail');
+    if (!rail) return;
+
+    const prev = rail.querySelector<HTMLButtonElement>('[data-strip-prev]');
+    const next = rail.querySelector<HTMLButtonElement>('[data-strip-next]');
+    const overflowing = !mobileGallery.matches && strip.scrollWidth > strip.clientWidth + 2;
+    rail.classList.toggle('has-overflow', overflowing);
+
+    if (!prev || !next) return;
+
+    if (!overflowing) {
+      prev.hidden = true;
+      next.hidden = true;
+      prev.tabIndex = -1;
+      next.tabIndex = -1;
+      return;
+    }
+
+    prev.hidden = false;
+    next.hidden = false;
+    prev.tabIndex = 0;
+    next.tabIndex = 0;
+
+    // Looping strips can always go either way; finite strips disable at the ends.
+    if (strip.dataset.loop === 'on') {
+      prev.disabled = false;
+      next.disabled = false;
+      return;
+    }
+
+    const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+    prev.disabled = strip.scrollLeft <= 2;
+    next.disabled = strip.scrollLeft >= maxScroll - 2;
+  }
+
+  // Custom eased scroll — native `behavior: smooth` is short and uneven across browsers.
+  const stripScrollRaf = new WeakMap<HTMLElement, number>();
+  const stripScrollTarget = new WeakMap<HTMLElement, number>();
+
+  function easeStrip(t: number) {
+    // Approximates --ease-gentle (0.22, 1, 0.36, 1)
+    return 1 - Math.pow(1 - t, 3.6);
+  }
+
+  function animateStripTo(strip: HTMLElement, target: number) {
+    stripScrollTarget.set(strip, target);
+
+    if (stripScrollRaf.has(strip)) return;
+
+    const duration = 620;
+    let from = strip.scrollLeft;
+    let to = target;
+    let start = performance.now();
+
+    const tick = (now: number) => {
+      const nextTarget = stripScrollTarget.get(strip);
+      if (nextTarget === undefined) {
+        stripScrollRaf.delete(strip);
+        return;
+      }
+
+      // Retarget mid-flight when the user clicks again.
+      if (nextTarget !== to) {
+        from = strip.scrollLeft;
+        to = nextTarget;
+        start = now;
+      }
+
+      const t = Math.min(1, (now - start) / duration);
+      const eased = easeStrip(t);
+      strip.scrollLeft = from + (to - from) * eased;
+      syncStripNav(strip);
+
+      if (t < 1) {
+        stripScrollRaf.set(strip, requestAnimationFrame(tick));
+        return;
+      }
+
+      strip.scrollLeft = to;
+      stripScrollRaf.delete(strip);
+      stripScrollTarget.delete(strip);
+      syncStripNav(strip);
+    };
+
+    stripScrollRaf.set(strip, requestAnimationFrame(tick));
+  }
+
+  function scrollStripBy(strip: HTMLElement, dir: -1 | 1) {
+    const step = stripStep(strip) * dir;
+    if (reduceMotion) {
+      strip.scrollLeft += step;
+      syncStripNav(strip);
+      return;
+    }
+
+    const base = stripScrollTarget.get(strip) ?? strip.scrollLeft;
+    animateStripTo(strip, base + step);
+  }
+
   function setupLoop(strip: HTMLElement) {
     const track = strip.querySelector<HTMLElement>('.gallery__track');
     if (!track) return;
@@ -70,16 +177,23 @@ if (gallery) {
     strip.scrollLeft = 0;
 
     const originals = Array.from(track.children) as HTMLElement[];
-    if (!originals.length) return;
+    if (!originals.length) {
+      syncStripNav(strip);
+      return;
+    }
 
     // On touch, native snap scroll feels smoother than clone-and-jump looping.
     if (mobileGallery.matches) {
       strip.scrollLeft = 0;
+      syncStripNav(strip);
       return;
     }
 
     // Only loop when the row actually overflows the viewport.
-    if (track.scrollWidth <= strip.clientWidth + 2) return;
+    if (track.scrollWidth <= strip.clientWidth + 2) {
+      syncStripNav(strip);
+      return;
+    }
 
     const count = originals.length;
     const firstOriginal = originals[0];
@@ -99,6 +213,7 @@ if (gallery) {
       period = firstOrig.offsetLeft;
       start = Math.max(firstOrig.offsetLeft - fadeWidth(strip) - 8, 0);
       if (!userInteracted) strip.scrollLeft = start;
+      syncStripNav(strip);
     };
     measure();
 
@@ -114,11 +229,20 @@ if (gallery) {
     const onScroll: EventListener = () => {
       if (period <= 0) return;
       // Keep the viewport within the middle set; jump by exactly one set (seamless).
-      if (strip.scrollLeft < period * 0.5) strip.scrollLeft += period;
-      else if (strip.scrollLeft > period * 1.5) strip.scrollLeft -= period;
+      let wrap = 0;
+      if (strip.scrollLeft < period * 0.5) wrap = period;
+      else if (strip.scrollLeft > period * 1.5) wrap = -period;
+
+      if (wrap !== 0) {
+        strip.scrollLeft += wrap;
+        const target = stripScrollTarget.get(strip);
+        if (target !== undefined) stripScrollTarget.set(strip, target + wrap);
+      }
+      syncStripNav(strip);
     };
     strip.addEventListener('scroll', onScroll, { passive: true });
     loopHandlers.set(strip, onScroll);
+    syncStripNav(strip);
   }
 
   function refreshLoops() {
@@ -128,6 +252,22 @@ if (gallery) {
       if (strip) setupLoop(strip);
     });
   }
+
+  // Desktop strip arrows — one step per click (works with looping strips).
+  gallery.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const prev = target?.closest<HTMLButtonElement>('[data-strip-prev]');
+    const next = target?.closest<HTMLButtonElement>('[data-strip-next]');
+    const btn = prev ?? next;
+    if (!btn || btn.disabled || btn.hidden) return;
+
+    const rail = btn.closest<HTMLElement>('.gallery__rail');
+    const strip = rail?.querySelector<HTMLElement>('.gallery__strip');
+    if (!strip) return;
+
+    event.preventDefault();
+    scrollStripBy(strip, prev ? -1 : 1);
+  });
 
   // ——— Landing portal: one mood stage, names drive the plate ———
   function shufflePick(pool: string[], count: number): string[] {
