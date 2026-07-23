@@ -22,17 +22,22 @@ export function unlockPageScroll() {
   lockCount -= 1;
   if (lockCount > 0) return;
 
-  const y = Number(document.body.dataset.lockScrollY || 0);
+  const raw = document.body.dataset.lockScrollY;
+  const parsed = raw != null && raw !== '' ? Number(raw) : NaN;
+  const target = Number.isFinite(parsed) ? parsed : 0;
+
   document.documentElement.classList.remove('is-scroll-locked');
   document.body.style.top = '';
   delete document.body.dataset.lockScrollY;
 
+  // Restore native scroll first. If Lenis starts while the unlocked page
+  // still reads as 0 (body was position:fixed), it jumps to the hero.
+  window.scrollTo(0, target);
+
   const lenis = window.__lenis;
   if (lenis) {
+    lenis.scrollTo(target, { immediate: true });
+    lenis.resize();
     lenis.start();
-    lenis.scrollTo(y, { immediate: true });
-    return;
   }
-
-  window.scrollTo(0, y);
 }
