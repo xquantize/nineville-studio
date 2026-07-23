@@ -555,6 +555,51 @@ import MediaFrame from './MediaFrame.astro';
       rgba(7, 41, 74, 0) 100%
     );
     box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Sand particles — sparse grit in the solid navy; fades with the blue edges */
+  .mediums__process::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.28;
+    background-image: url('/images/sand-particles.svg');
+    background-size: 420px 420px;
+    background-repeat: repeat;
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 12%,
+      rgba(0, 0, 0, 0.35) 18%,
+      #000 26%,
+      #000 74%,
+      rgba(0, 0, 0, 0.35) 82%,
+      transparent 90%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 12%,
+      rgba(0, 0, 0, 0.35) 18%,
+      #000 26%,
+      #000 74%,
+      rgba(0, 0, 0, 0.35) 82%,
+      transparent 90%,
+      transparent 100%
+    );
+  }
+
+  .mediums__process > .panel-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .mediums__process .section-kicker {
+    color: var(--sea-glass-soft);
   }
 
   /*
@@ -617,7 +662,7 @@ import MediaFrame from './MediaFrame.astro';
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--sea-glass-soft);
   }
 
   .mediums__copy p {
@@ -675,12 +720,14 @@ import MediaFrame from './MediaFrame.astro';
     background: linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 127, 137, 0.92) 42%,
-      rgba(255, 255, 255, 0.78) 72%,
+      rgba(255, 127, 137, 0.7) 32%,
+      var(--sea-glass-soft) 58%,
+      rgba(122, 154, 166, 0.95) 78%,
       rgba(255, 127, 137, 0.85) 100%
     );
     box-shadow:
-      0 10px 28px rgba(0, 0, 0, 0.3);
+      0 10px 28px rgba(0, 0, 0, 0.3),
+      0 0 0 1px var(--sea-glass-glow);
     transition: box-shadow 0.35s var(--ease-gentle);
   }
 

@@ -22,7 +22,7 @@
           </defs>
           <path
             class="hero__understroke-ghost"
-            d="M18 22 C96 10 168 30 248 18 C318 8 392 12 502 16"
+            d="M16 22 C64 4, 108 34, 156 14 C204 -2, 248 32, 300 12 C352 -4, 400 30, 456 10 C484 2, 502 16, 512 20"
             fill="none"
             stroke="#ff7f89"
             stroke-width="7"
@@ -31,7 +31,7 @@
           />
           <path
             class="hero__understroke-path"
-            d="M18 22 C96 10 168 30 248 18 C318 8 392 12 502 16"
+            d="M16 22 C64 4, 108 34, 156 14 C204 -2, 248 32, 300 12 C352 -4, 400 30, 456 10 C484 2, 502 16, 512 20"
             fill="none"
             stroke="url(#hero-stroke-fade)"
             stroke-width="2.75"
@@ -139,17 +139,29 @@
     filter: blur(3px);
   }
 
-  :global(html.js-hero.hero-ready) .hero__understroke-ghost,
+  :global(html.js-hero.hero-ready) .hero__understroke-ghost {
+    animation:
+      hero-draw-understroke 1.45s var(--ease-gentle) 0.55s forwards,
+      hero-tide-glow 4.2s var(--ease-in-out) 2.1s infinite;
+  }
+
   :global(html.js-hero.hero-ready) .hero__understroke-path {
-    animation: hero-draw-understroke 1.45s var(--ease-gentle) 0.55s forwards;
+    animation:
+      hero-draw-understroke 1.45s var(--ease-gentle) 0.55s forwards,
+      hero-tide-pulse 4.2s var(--ease-in-out) 2.1s infinite;
   }
 
   /* No-JS / already-ready fallback so the stroke is never stuck invisible */
   :global(html:not(.js-hero)) .hero__understroke-ghost,
+  :global(html.skip-intro) .hero__understroke-ghost {
+    stroke-dashoffset: 0;
+    animation: hero-tide-glow 4.2s var(--ease-in-out) infinite;
+  }
+
   :global(html:not(.js-hero)) .hero__understroke-path,
-  :global(html.skip-intro) .hero__understroke-ghost,
   :global(html.skip-intro) .hero__understroke-path {
     stroke-dashoffset: 0;
+    animation: hero-tide-pulse 4.2s var(--ease-in-out) infinite;
   }
 
   .hero__subtitle {
@@ -233,6 +245,28 @@
   @keyframes hero-draw-understroke {
     to {
       stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes hero-tide-pulse {
+    0%,
+    100% {
+      opacity: 0.82;
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 1;
+      filter: brightness(1.15);
+    }
+  }
+
+  @keyframes hero-tide-glow {
+    0%,
+    100% {
+      opacity: 0.14;
+    }
+    50% {
+      opacity: 0.28;
     }
   }
 

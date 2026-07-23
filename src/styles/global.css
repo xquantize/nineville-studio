@@ -8,6 +8,11 @@
   --sand-700: #6B5638;
   --sand-900: #2A2419;
 
+  /* Quiet coastal accent — Method + Tides kickers/borders only */
+  --sea-glass: #7a9aa6;
+  --sea-glass-soft: #9bb4bc;
+  --sea-glass-glow: rgba(122, 154, 166, 0.45);
+
   /* Panel — dark frosted tint (matches blue/gold painting, not white cream) */
   --veil-dark: 22, 26, 36;
   --panel-bg: rgba(var(--veil-dark), 0.48);

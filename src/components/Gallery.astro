@@ -461,12 +461,30 @@ import {
     transform: translateX(6px);
   }
 
+  /* Tides — sea-glass accent (look only) */
+  .gallery__portal-item[data-series-focus='tides'] .gallery__portal-num {
+    color: var(--sea-glass-soft);
+  }
+
+  .gallery__portal-item[data-series-focus='tides'].is-focus .gallery__portal-num {
+    color: var(--sea-glass-soft);
+    text-shadow: 0 0 18px var(--sea-glass-glow);
+  }
+
+  .gallery__portal-item[data-series-focus='tides'].is-focus .gallery__portal-name {
+    color: #e2eef1;
+  }
+
   .gallery__portal-item:hover .gallery__portal-name {
     color: rgba(251, 246, 234, 0.72);
   }
 
   .gallery__portal-item.is-focus:hover .gallery__portal-name {
     color: #ff7f89;
+  }
+
+  .gallery__portal-item[data-series-focus='tides'].is-focus:hover .gallery__portal-name {
+    color: var(--sea-glass-soft);
   }
 
   .gallery__portal-stage {
@@ -629,6 +647,12 @@ import {
   .gallery__portal-count {
     margin-top: 0.35rem;
     color: #ff7f89;
+  }
+
+  .gallery__portal-stack[data-series-plate='tides'].is-active
+    ~ .gallery__portal-meta
+    .gallery__portal-count {
+    color: var(--sea-glass-soft);
   }
 
   .gallery__portal-hint {
@@ -1243,6 +1267,10 @@ import {
   .gallery__series-intro .section-kicker {
     margin-bottom: var(--space-2);
     color: #ff7f89;
+  }
+
+  .gallery__series-intro[data-series-intro='tides'] .section-kicker {
+    color: var(--sea-glass-soft);
   }
 
   .gallery__series-desc {
