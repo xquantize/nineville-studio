@@ -304,7 +304,10 @@ import { site } from '../data/site';
       });
 
       if (shouldScroll) {
-        scrollContactIntoView();
+        // Let overlay unlock / Lenis restart settle before scrolling.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => scrollContactIntoView());
+        });
       }
     }
 

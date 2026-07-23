@@ -110,6 +110,11 @@ import MediaFrame from './MediaFrame.astro';
           }
         </div>
 
+        <p class="mediums__hint" data-medium-hint>
+          <span class="mediums__hint--touch">Tap a medium for details</span>
+          <span class="mediums__hint--desk">Click a medium for details</span>
+        </p>
+
         <div id="mediums-detail" class="mediums__detail" hidden>
           {
             mediums.map((medium) => (
@@ -137,33 +142,40 @@ import MediaFrame from './MediaFrame.astro';
     const copies = Array.from(root.querySelectorAll<HTMLElement>('[data-medium-copy]'));
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    // Auto-rotate on touch feels glitchy — chips move under the finger mid-tap.
+    const allowCycle = !reduceMotion && finePointer;
     let active: string | null = null;
     let front = 1;
     let timer: number | null = null;
     let inView = true;
     let paused = false;
     let peekSlug: string | null = null;
+    let peekClearTimer = 0;
 
     function applyDeck() {
       const n = chips.length;
       chips.forEach((chip, i) => {
         // Keep the front index in the center slot (pos 1)
         const pos = (i - front + 1 + n) % n;
-        chip.classList.remove('is-pos-0', 'is-pos-1', 'is-pos-2');
-        chip.classList.add(`is-pos-${pos}`);
+        const nextPos = `is-pos-${pos}`;
+        if (!chip.classList.contains(nextPos)) {
+          chip.classList.remove('is-pos-0', 'is-pos-1', 'is-pos-2');
+          chip.classList.add(nextPos);
+        }
         chip.classList.toggle('is-front', pos === 1 && !active && !peekSlug);
-        chip.classList.toggle('is-peek', chip.dataset.mediumTab === peekSlug);
+        chip.classList.toggle('is-peek', !active && chip.dataset.mediumTab === peekSlug);
+        chip.classList.toggle('is-active', chip.dataset.mediumTab === active);
+        chip.setAttribute('aria-selected', String(chip.dataset.mediumTab === active));
       });
 
       // Soft label pulse on the front / peeked card (not the click-open state)
-      if (!active) {
-        const highlight =
-          peekSlug ?? chips.find((c) => c.classList.contains('is-front'))?.dataset.mediumTab;
-        triggers.forEach((btn) => {
-          if (btn.getAttribute('role') === 'tab') return;
-          btn.classList.toggle('is-front', btn.dataset.mediumTab === highlight);
-        });
-      }
+      const highlight = active ?? peekSlug ?? chips.find((c) => c.classList.contains('is-front'))?.dataset.mediumTab;
+      triggers.forEach((btn) => {
+        if (btn.hasAttribute('data-medium-chip')) return;
+        const slug = btn.dataset.mediumTab;
+        btn.classList.toggle('is-front', !active && slug === highlight);
+        btn.classList.toggle('is-active', Boolean(active) && slug === active);
+      });
     }
 
     function stopCycle() {
@@ -174,11 +186,11 @@ import MediaFrame from './MediaFrame.astro';
     }
 
     function startCycle() {
-      if (reduceMotion || active || paused || !inView || timer !== null) return;
+      if (!allowCycle || active || paused || !inView || timer !== null) return;
       timer = window.setInterval(() => {
         front = (front + 1) % chips.length;
         applyDeck();
-      }, 2800);
+      }, 3200);
     }
 
     function pause() {
@@ -199,33 +211,30 @@ import MediaFrame from './MediaFrame.astro';
       if (!finePointer || active) return;
       if (peekSlug === slug) return;
       peekSlug = slug;
-      if (slug) {
-        const idx = chips.findIndex((c) => c.dataset.mediumTab === slug);
-        // Lift in place — don't reshuffle slots on peek (avoids hover loss mid-move)
-        if (idx >= 0) applyDeck();
-      } else {
-        applyDeck();
+      applyDeck();
+    }
+
+    function chipFromPoint(x: number, y: number) {
+      const els = document.elementsFromPoint(x, y);
+      for (const el of els) {
+        const chip = (el as Element).closest?.('[data-medium-chip]');
+        if (chip instanceof HTMLElement && stack?.contains(chip)) return chip;
       }
+      return null;
     }
 
     function select(slug: string) {
       const next = active === slug ? null : slug;
       active = next;
       peekSlug = null;
+      window.clearTimeout(peekClearTimer);
 
       cluster?.classList.toggle('has-detail', Boolean(next));
 
-      triggers.forEach((btn) => {
-        const on = btn.dataset.mediumTab === next;
-        btn.classList.toggle('is-active', on);
-        btn.classList.remove('is-front');
-        btn.classList.remove('is-peek');
-        if (btn.getAttribute('role') === 'tab') {
-          btn.setAttribute('aria-selected', String(on));
-        }
-      });
-
-      if (!detail) return;
+      if (!detail) {
+        applyDeck();
+        return;
+      }
 
       if (!next) {
         detail.hidden = true;
@@ -236,12 +245,10 @@ import MediaFrame from './MediaFrame.astro';
       }
 
       // Bring the opened medium to the front and hold the deck
-      stopCycle();
+      pause();
       const idx = chips.findIndex((c) => c.dataset.mediumTab === next);
-      if (idx >= 0) {
-        front = idx;
-        applyDeck();
-      }
+      if (idx >= 0) front = idx;
+      applyDeck();
 
       detail.hidden = false;
       copies.forEach((copy) => {
@@ -257,23 +264,49 @@ import MediaFrame from './MediaFrame.astro';
       });
     });
 
-    // Pause while hovering the cluster — desktop only.
-    // On touch, pointerleave is unreliable and can leave the deck stuck paused.
-    if (finePointer) {
-      cluster?.addEventListener('pointerenter', pause);
-      cluster?.addEventListener('pointerleave', resume);
+    // Desktop: hit-test peeks (stable while chips transform under the cursor).
+    if (finePointer && stack) {
+      stack.addEventListener('pointerenter', () => {
+        window.clearTimeout(peekClearTimer);
+        pause();
+      });
 
-      chips.forEach((chip) => {
-        chip.addEventListener('pointerenter', () => {
-          setPeek(chip.dataset.mediumTab ?? null);
+      stack.addEventListener('pointermove', (event) => {
+        if (active || event.pointerType !== 'mouse') return;
+        const chip = chipFromPoint(event.clientX, event.clientY);
+        setPeek(chip?.dataset.mediumTab ?? null);
+      });
+
+      stack.addEventListener('pointerleave', () => {
+        window.clearTimeout(peekClearTimer);
+        peekClearTimer = window.setTimeout(() => {
+          setPeek(null);
+          if (!active) resume();
+        }, 120);
+      });
+
+      // Labels also preview their chip
+      triggers.forEach((btn) => {
+        if (btn.hasAttribute('data-medium-chip')) return;
+        btn.addEventListener('pointerenter', () => {
+          pause();
+          setPeek(btn.dataset.mediumTab ?? null);
         });
-        chip.addEventListener('pointerleave', () => {
-          if (peekSlug === chip.dataset.mediumTab) setPeek(null);
+        btn.addEventListener('pointerleave', () => {
+          if (peekSlug === btn.dataset.mediumTab) setPeek(null);
         });
+      });
+
+      cluster?.addEventListener('pointerleave', () => {
+        window.clearTimeout(peekClearTimer);
+        peekClearTimer = window.setTimeout(() => {
+          setPeek(null);
+          if (!active) resume();
+        }, 140);
       });
     }
 
-    if (!reduceMotion && stack) {
+    if (allowCycle && stack) {
       const io = new IntersectionObserver(
         ([entry]) => {
           inView = entry?.isIntersecting ?? false;
@@ -740,8 +773,8 @@ import MediaFrame from './MediaFrame.astro';
     cursor: pointer;
     transform-origin: center bottom;
     transition:
-      transform 0.85s var(--ease-gentle),
-      filter 0.85s var(--ease-gentle);
+      transform 0.7s var(--ease-gentle),
+      filter 0.7s var(--ease-gentle);
     /* Isolate hit-testing from sibling paints during z-index flips */
     touch-action: manipulation;
   }
@@ -765,12 +798,11 @@ import MediaFrame from './MediaFrame.astro';
     filter: brightness(0.82);
   }
 
-  /* Peek / active lift — driven by JS (.is-peek), not CSS :hover,
-     so auto-rotate + overlap don't steal the hovered card. */
+  /* Peek / active — lift gently so the card stays under the cursor */
   .mediums__chip.is-pos-0.is-peek,
   .mediums__chip.is-pos-0.is-active {
     z-index: 6;
-    transform: translate(-102%, -54%) rotate(-15deg) scale(0.98);
+    transform: translate(-100%, -51%) rotate(-13deg) scale(0.97);
     filter: brightness(1);
   }
 
@@ -778,13 +810,13 @@ import MediaFrame from './MediaFrame.astro';
   .mediums__chip.is-pos-1.is-active,
   .mediums__chip.is-pos-1.is-front {
     z-index: 5;
-    transform: translate(-50%, -62%) rotate(0deg) scale(1.05);
+    transform: translate(-50%, -59%) rotate(0.5deg) scale(1.035);
   }
 
   .mediums__chip.is-pos-2.is-peek,
   .mediums__chip.is-pos-2.is-active {
     z-index: 6;
-    transform: translate(2%, -54%) rotate(14deg) scale(0.98);
+    transform: translate(0%, -51%) rotate(12deg) scale(0.97);
     filter: brightness(1);
   }
 
@@ -864,6 +896,40 @@ import MediaFrame from './MediaFrame.astro';
 
   .mediums__label.is-active {
     color: #ff7f89;
+  }
+
+  .mediums__hint {
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+    text-align: center;
+    opacity: 0.85;
+    transition:
+      opacity var(--duration-normal) var(--ease-gentle),
+      visibility var(--duration-normal) var(--ease-gentle);
+  }
+
+  .mediums__hint--touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .mediums__hint--touch {
+      display: inline;
+    }
+
+    .mediums__hint--desk {
+      display: none;
+    }
+  }
+
+  .mediums__cluster.has-detail .mediums__hint {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .mediums__detail {

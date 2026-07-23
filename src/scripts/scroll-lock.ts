@@ -2,9 +2,13 @@
 
 let lockCount = 0;
 
+function currentScrollY() {
+  return window.__lenis?.scroll ?? window.scrollY ?? document.documentElement.scrollTop ?? 0;
+}
+
 export function lockPageScroll() {
   if (lockCount === 0) {
-    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    const y = currentScrollY();
     document.body.dataset.lockScrollY = String(y);
     document.documentElement.classList.add('is-scroll-locked');
     document.body.style.top = `-${y}px`;
@@ -22,6 +26,13 @@ export function unlockPageScroll() {
   document.documentElement.classList.remove('is-scroll-locked');
   document.body.style.top = '';
   delete document.body.dataset.lockScrollY;
-  window.__lenis?.start();
+
+  const lenis = window.__lenis;
+  if (lenis) {
+    lenis.start();
+    lenis.scrollTo(y, { immediate: true });
+    return;
+  }
+
   window.scrollTo(0, y);
 }

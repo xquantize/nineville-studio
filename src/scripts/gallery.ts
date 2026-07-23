@@ -518,8 +518,7 @@ if (gallery) {
   });
 
   portal?.addEventListener('pointerleave', () => {
-    // Desktop hover exit — resume auto-cycle. Mobile preview stays paused
-    // until the series opens or the user returns via Collections.
+    // Desktop hover exit — resume auto-cycle.
     if (mobileGallery.matches) return;
     portalPaused = false;
     startPortalCycle();
@@ -532,8 +531,15 @@ if (gallery) {
     const io = new IntersectionObserver(
       ([entry]) => {
         portalInView = entry?.isIntersecting ?? false;
-        if (portalInView && !activeSeries) startPortalCycle();
-        else stopPortalCycle();
+        if (portalInView && !activeSeries) {
+          // Mobile preview pause is only while the portal stays on screen.
+          // Leaving and returning should resume the cycle.
+          if (mobileGallery.matches) portalPaused = false;
+          startPortalCycle();
+        } else {
+          stopPortalCycle();
+          if (!portalInView && mobileGallery.matches) portalPaused = false;
+        }
       },
       { threshold: 0.25 }
     );

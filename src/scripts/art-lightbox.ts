@@ -59,6 +59,7 @@ let pswpZoomHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let isLightboxOpen = false;
 let scrollLocked = false;
+let skipFocusRestore = false;
 let PhotoSwipeCtor: typeof PhotoSwipe | null = null;
 let photoSwipeLoading: Promise<typeof PhotoSwipe> | null = null;
 
@@ -387,6 +388,11 @@ function finishClose() {
   lightbox.classList.remove('is-closing');
   resumePageScroll();
 
+  if (skipFocusRestore) {
+    skipFocusRestore = false;
+    return;
+  }
+
   requestAnimationFrame(() => {
     if (lastTrigger instanceof HTMLElement) {
       lastTrigger.focus({ preventScroll: true });
@@ -416,6 +422,7 @@ function closeForNavigate() {
   if (!lightbox || !isLightboxOpen) return;
 
   isLightboxOpen = false;
+  skipFocusRestore = true;
   clearWorkParam();
   lightbox.classList.remove('is-open');
   lightbox.classList.add('is-closing');
