@@ -59,6 +59,29 @@ const tilts = [-2.4, 1.5, -1.2, 2.1, -1.7, 1.1, -2, 1.8];
 </script>
 
 <style is:global>
+  .pswp--sip {
+    --pswp-bg: #0e1016;
+  }
+
+  /* Same pink–cream mat frame as the method film lightbox */
+  .pswp--sip .pswp__img {
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background:
+      linear-gradient(transparent, transparent) padding-box,
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 127, 137, 0.92) 42%,
+        rgba(255, 255, 255, 0.78) 72%,
+        rgba(255, 127, 137, 0.85) 100%
+      )
+      border-box;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 127, 137, 0.25);
+  }
+
   .sip-pswp-caption {
     position: absolute;
     left: 50%;
@@ -72,12 +95,8 @@ const tilts = [-2.4, 1.5, -1.2, 2.1, -1.7, 1.1, -2, 1.8];
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(251, 246, 234, 0.78);
+    color: #ff7f89;
     pointer-events: none;
-  }
-
-  .pswp {
-    --pswp-bg: #0e1016;
   }
 </style>
 
