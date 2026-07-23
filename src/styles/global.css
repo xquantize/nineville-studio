@@ -37,6 +37,7 @@
   --media-stage: clamp(28rem, 30vw, 48rem);
   --media-video: clamp(28rem, 30vw, 46rem);
   --media-deck: clamp(36rem, 46vw, 60rem);
+  --media-chip: clamp(15rem, 18vw, 24rem);
   --media-piece: clamp(18rem, 22vw, 28rem);
   --media-film: clamp(9.5rem, 12vw, 17rem);
   --media-portrait: clamp(10rem, 8vw + 4rem, 14rem);
