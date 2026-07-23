@@ -55,13 +55,13 @@
     --bio-gap: clamp(3.5rem, 7vw, 6.5rem);
     --bio-portrait: clamp(11.5rem, 20vw, 17rem);
     --bio-tilt: -1.6deg;
-    scroll-margin-top: var(--scroll-anchor-offset);
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-2));
   }
 
   /* Soft edge fades, solid navy holds most of the band. */
   .bio__band {
     position: relative;
-    margin: 0 0 clamp(3.5rem, 7vw, 6rem);
+    margin: 0 0 clamp(4rem, 8vw, 7rem);
     padding: clamp(4.75rem, 7.5vw, 7rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
@@ -218,6 +218,34 @@
     }
   }
 
+  /*
+    Desktop: give Bio its own viewport beat (like Gallery), so #bio doesn’t
+    land with the gallery portal already peeking under the copy.
+  */
+  @media (min-width: 768px) {
+    .bio {
+      min-height: calc(100svh - var(--scroll-anchor-offset));
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .bio__band {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: clamp(5rem, 10vw, 9rem);
+      padding-top: clamp(5rem, 9vh, 8rem);
+      padding-bottom: clamp(5rem, 9vh, 8rem);
+      box-sizing: border-box;
+    }
+
+    .bio__band .panel-inner {
+      width: 100%;
+    }
+  }
+
   /* Mid tablets: keep two columns, slightly tighter portrait */
   @media (min-width: 768px) and (max-width: 999px) {
     .bio {
@@ -308,6 +336,14 @@
     .bio {
       --bio-portrait: clamp(7.5rem, 28vh, 10rem);
       --bio-gap: var(--space-3);
+      min-height: 0;
+    }
+
+    .bio__band {
+      justify-content: flex-start;
+      margin-bottom: var(--space-4);
+      padding-top: var(--space-4);
+      padding-bottom: var(--space-4);
     }
 
     .bio__wrap {
@@ -326,12 +362,6 @@
     .bio__title {
       justify-content: flex-start;
       font-size: clamp(2rem, 8vh, 3rem);
-    }
-
-    .bio__band {
-      padding-top: var(--space-4);
-      padding-bottom: var(--space-4);
-      margin-bottom: var(--space-4);
     }
   }
 

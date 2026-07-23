@@ -3,8 +3,8 @@ import { mediums } from '../data/mediums';
 import MediaFrame from './MediaFrame.astro';
 ---
 
-<section class="mediums">
-  <div id="mediums" class="mediums__process">
+<section id="mediums" class="mediums">
+  <div class="mediums__process">
     <div class="panel-inner">
       <div class="mediums__process-grid">
         <div class="mediums__intro-col">
@@ -534,6 +534,7 @@ import MediaFrame from './MediaFrame.astro';
 <style>
   .mediums {
     --process-blue: #07294a;
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-2));
   }
 
   /* Soft edge fades, solid navy holds most of the band */
@@ -550,7 +551,27 @@ import MediaFrame from './MediaFrame.astro';
       rgba(7, 41, 74, 0.65) 90%,
       rgba(7, 41, 74, 0) 100%
     );
-    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
+    box-sizing: border-box;
+  }
+
+  /*
+    Desktop: Method band gets its own viewport beat so #mediums doesn’t
+    land with the mediums deck / commission already peeking underneath.
+  */
+  @media (min-width: 768px) {
+    .mediums__process {
+      min-height: calc(100svh - var(--scroll-anchor-offset));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: clamp(3rem, 6vw, 5rem) 0 clamp(5rem, 10vw, 9rem);
+      padding-top: clamp(4rem, 8vh, 7rem);
+      padding-bottom: clamp(4rem, 8vh, 7rem);
+    }
+
+    .mediums__process .panel-inner {
+      width: 100%;
+    }
   }
 
   .mediums__process-grid {
@@ -744,6 +765,13 @@ import MediaFrame from './MediaFrame.astro';
   /* ——— Overlapping cluster ——— */
   .mediums__cards {
     padding: clamp(6rem, 12vw, 9rem) 0 clamp(5rem, 10vw, 8rem);
+  }
+
+  @media (min-width: 768px) {
+    .mediums__cards {
+      padding-top: clamp(4rem, 8vw, 7rem);
+      padding-bottom: clamp(6rem, 11vw, 9rem);
+    }
   }
 
   .mediums__cluster {
