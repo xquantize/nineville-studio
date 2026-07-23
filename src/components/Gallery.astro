@@ -189,7 +189,7 @@ import {
                           alt={photo.alt}
                           width={560}
                           height={700}
-                          sizes="(max-width: 767px) 72vw, min(420px, 38vw)"
+                          sizes="(max-width: 767px) 72vw, min(28vw, 448px)"
                           loading="lazy"
                           decoding="async"
                           data-media-frame
@@ -247,8 +247,8 @@ import {
 
 <style>
   .gallery {
-    --gallery-col: 1040px;
-    --section-gap: clamp(3.5rem, 7vw, 6rem);
+    --gallery-col: var(--content-rail);
+    --section-gap: clamp(3.5rem, 6vw, 7rem);
     position: relative;
     margin-top: var(--section-gap);
     padding: clamp(3rem, 5.5vw, 5rem) 0;
@@ -264,7 +264,7 @@ import {
   }
 
   .gallery__head {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: none;
     flex-wrap: wrap;
@@ -292,7 +292,7 @@ import {
     line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: clamp(48px, 10vw, 104px);
+    font-size: var(--text-display);
   }
 
   .gallery__title--open {
@@ -302,7 +302,7 @@ import {
   .gallery__title--portal {
     align-items: flex-start;
     margin-bottom: var(--space-4);
-    font-size: clamp(40px, 7vw, 80px);
+    font-size: var(--text-display-sm);
   }
 
   .gallery__portal-side .section-kicker {
@@ -368,7 +368,7 @@ import {
 
   /* ——— Landing portal: stage + title + names ——— */
   .gallery__portal {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr;
@@ -422,7 +422,7 @@ import {
   .gallery__portal-name {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(32px, 5.5vw, 56px);
+    font-size: var(--text-title);
     line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
@@ -452,7 +452,7 @@ import {
   .gallery__portal-stage {
     position: relative;
     justify-self: center;
-    width: min(100%, 420px);
+    width: min(100%, var(--media-piece));
     /* Tall enough for shards + meta — no opaque “card” fill behind them */
     aspect-ratio: 3 / 4;
     background: none;
@@ -647,8 +647,8 @@ import {
     }
 
     .gallery__portal-stage {
-      width: min(100%, 520px);
-      min-height: 580px;
+      width: min(100%, var(--media-stage));
+      min-height: clamp(36rem, 58vh, 50rem);
       justify-self: center;
       padding-left: clamp(1rem, 3vw, 2.5rem);
     }
@@ -1219,13 +1219,13 @@ import {
 
   .gallery__series-desc {
     margin: 0;
-    font-size: clamp(16px, 1.8vw, 19px);
+    font-size: var(--text-lead);
     line-height: 1.7;
     color: var(--text-on-veil);
   }
 
   .gallery__caption {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: var(--space-4) auto 0;
     display: flex;
     flex-wrap: wrap;

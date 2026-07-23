@@ -23,6 +23,24 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
+  /*
+    Fluid scales — same idea as most modern sites:
+    clamp(min, preferred, max). Preferred tracks the viewport so laptop
+    stays familiar; large monitors grow type + media without a hard cliff.
+  */
+  --text-hero: clamp(2.75rem, 5vw + 1rem, 7.25rem);
+  --text-display: clamp(3rem, 5.5vw + 1.5rem, 8.25rem);
+  --text-display-sm: clamp(2.25rem, 3.5vw + 1rem, 5.75rem);
+  --text-title: clamp(1.75rem, 2vw + 1rem, 3.75rem);
+  --text-lead: clamp(1rem, 0.3vw + 0.9rem, 1.25rem);
+
+  --media-stage: clamp(28rem, 30vw, 48rem);
+  --media-video: clamp(28rem, 30vw, 46rem);
+  --media-deck: clamp(36rem, 46vw, 60rem);
+  --media-piece: clamp(18rem, 22vw, 28rem);
+  --media-film: clamp(9.5rem, 12vw, 17rem);
+  --media-portrait: clamp(10rem, 8vw + 4rem, 14rem);
+
   /* Spacing scale */
   --space-1: 0.5rem;
   --space-2: 1rem;
@@ -33,13 +51,15 @@
   --space-12: 6rem;
   --space-16: 8rem;
 
-  /* Layout */
-  --content-max: 1440px;
-  --content-padding: clamp(1.5rem, 4vw, 4rem);
+  /* Layout — ~72% of viewport on large screens, capped before absurd */
+  --content-max: clamp(90rem, 92vw, 140rem);
+  --content-rail: clamp(65rem, 72vw, 120rem);
+  --content-rail-narrow: clamp(56.25rem, 62vw, 90rem);
+  --content-padding: clamp(1.5rem, 2.5vw + 1rem, 6rem);
   --nav-height: 56px;
   --scroll-anchor-offset: calc(var(--nav-height) + env(safe-area-inset-top, 0px));
   --scroll-anchor-gap: var(--space-8);
-  --hero-fade: clamp(7rem, 18vh, 14rem);
+  --hero-fade: clamp(7rem, 14vh, 11rem);
 
   /* Easing & motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -59,6 +79,14 @@ html {
   scroll-padding-top: 0;
   background: #1a1e28;
   overflow-x: clip;
+}
+
+/* Big desktops: nudge the rem scale so type + spacing grow with the screen
+   (16px at ~1440, ~18–19px on 2K/ultrawide). Mobile untouched. */
+@media (min-width: 1500px) {
+  html {
+    font-size: clamp(16px, 0.35vw + 11px, 19px);
+  }
 }
 
 @media (min-width: 768px) {
@@ -172,7 +200,7 @@ img {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  padding: clamp(5.5rem, 9vw, 8rem) 0;
+  padding: clamp(5.5rem, 7.5vw, 9.5rem) 0;
   border: none;
 }
 
@@ -192,7 +220,7 @@ img {
 }
 
 .section-heading {
-  font-size: clamp(30px, 3.4vw, 50px);
+  font-size: var(--text-title);
   margin: 0 0 var(--space-6);
 }
 

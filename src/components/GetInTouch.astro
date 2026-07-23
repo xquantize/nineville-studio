@@ -448,12 +448,12 @@ import { site } from '../data/site';
 
 <style>
   .contact {
-    padding: clamp(2.5rem, 5vw, 4rem) 0 max(clamp(5rem, 18vh, 10rem), 36vh);
+    padding: clamp(2.5rem, 5vw, 4rem) 0 max(clamp(5rem, 14vh, 9rem), 28vh);
     scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
   }
 
   .contact__wrap {
-    max-width: 900px;
+    max-width: var(--content-rail-narrow);
     margin: 0 auto;
     padding: clamp(1.15rem, 2.8vw, 1.85rem) clamp(1.15rem, 3vw, 2rem);
     border: none;
@@ -469,7 +469,7 @@ import { site } from '../data/site';
     margin: 0;
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(36px, 6vw, 56px);
+    font-size: var(--text-title);
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;

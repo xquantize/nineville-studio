@@ -558,7 +558,7 @@ import MediaFrame from './MediaFrame.astro';
     grid-template-columns: 1fr;
     gap: var(--space-6);
     align-items: center;
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
   }
 
@@ -571,7 +571,7 @@ import MediaFrame from './MediaFrame.astro';
     line-height: 0.86;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: clamp(52px, 8vw, 104px);
+    font-size: var(--text-display);
   }
 
   .mediums__method-word {
@@ -607,7 +607,7 @@ import MediaFrame from './MediaFrame.astro';
     --video-tilt: -1.4deg;
     position: relative;
     width: 100%;
-    max-width: 520px;
+    max-width: var(--media-video);
     margin-inline: auto;
     aspect-ratio: 16 / 10;
     padding: 0;
@@ -747,7 +747,7 @@ import MediaFrame from './MediaFrame.astro';
   }
 
   .mediums__cluster {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -756,7 +756,7 @@ import MediaFrame from './MediaFrame.astro';
 
   .mediums__stack {
     position: relative;
-    width: min(100%, 680px);
+    width: min(100%, var(--media-deck));
     height: 400px;
     margin-bottom: var(--space-4);
   }
