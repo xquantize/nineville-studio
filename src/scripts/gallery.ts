@@ -317,21 +317,11 @@ if (gallery) {
   }
   preloadPortalPlates();
 
-  function syncPortalAria() {
-    if (!mobileGallery.matches) return;
-    portalItems.forEach((item) => {
-      const on = item.dataset.seriesFocus === portalFocus;
-      const name = item.querySelector('.gallery__portal-name')?.textContent?.trim() ?? 'series';
-      item.setAttribute('aria-label', on ? `Open ${name} series` : `Preview ${name}`);
-    });
-  }
-
   function focusPortal(slug: string) {
     portalFocus = slug;
     portalItems.forEach((item) => {
       item.classList.toggle('is-focus', item.dataset.seriesFocus === slug);
     });
-    syncPortalAria();
     portalPlates.forEach((plate) => {
       const on = plate.dataset.seriesPlate === slug;
       plate.classList.toggle('is-active', on);
@@ -466,7 +456,13 @@ if (gallery) {
           if (!piece.hidden) piece.classList.add('is-in');
         });
         refreshLoops();
-        if (!mobileGallery.matches) scrollToGalleryTop(false);
+        // Only nudge if the gallery header isn’t already near its resting place.
+        if (!mobileGallery.matches) {
+          const desired = -galleryOffset();
+          if (Math.abs(gallery!.getBoundingClientRect().top - desired) > 100) {
+            scrollToGalleryTop(false);
+          }
+        }
       })
     );
   }
@@ -481,20 +477,7 @@ if (gallery) {
     card.addEventListener('click', () => {
       const slug = card.dataset.seriesOpen;
       if (!slug) return;
-
-      // Mobile: first tap previews the collage; second tap on the same
-      // series opens it. Desktop: click always opens (hover already focuses).
-      if (mobileGallery.matches) {
-        if (slug === portalFocus) {
-          selectSeries(slug);
-        } else {
-          portalPaused = true;
-          stopPortalCycle();
-          focusPortal(slug);
-        }
-        return;
-      }
-
+      // One tap opens on every device — auto-cycle already previews on mobile.
       selectSeries(slug);
     });
   });
@@ -524,15 +507,11 @@ if (gallery) {
     startPortalCycle();
   });
 
-  // Seed mobile aria-labels for the initial focused series.
-  syncPortalAria();
-
   if (portal && !reduceMotion) {
     const io = new IntersectionObserver(
       ([entry]) => {
         portalInView = entry?.isIntersecting ?? false;
         if (portalInView && !activeSeries) {
-          // Mobile preview pause is only while the portal stays on screen.
           // Leaving and returning should resume the cycle.
           if (mobileGallery.matches) portalPaused = false;
           startPortalCycle();

@@ -102,6 +102,11 @@ import {
             })
           }
         </div>
+
+        <p class="gallery__portal-hint">
+          <span class="gallery__portal-hint--touch">Tap a series to open</span>
+          <span class="gallery__portal-hint--desk">Click a series to open</span>
+        </p>
       </div>
     </div>
   </div>
@@ -606,6 +611,34 @@ import {
     color: #ff7f89;
   }
 
+  .gallery__portal-hint {
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+    opacity: 0.85;
+  }
+
+  .gallery__portal-hint--touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .gallery__portal-hint--touch {
+      display: inline;
+    }
+
+    .gallery__portal-hint--desk {
+      display: none;
+    }
+  }
+
+  .gallery.has-series .gallery__portal-hint {
+    display: none;
+  }
+
   @media (min-width: 800px) {
     .gallery__portal {
       grid-template-columns: 1.2fr 0.8fr;
@@ -638,6 +671,11 @@ import {
 
     .gallery__portal-list {
       align-items: flex-end;
+    }
+
+    .gallery__portal-hint {
+      align-self: flex-end;
+      text-align: right;
     }
 
     .gallery__portal-item {
@@ -742,6 +780,11 @@ import {
     .gallery__portal-list {
       width: 100%;
       gap: 0.05rem;
+    }
+
+    .gallery__portal-hint {
+      margin-top: var(--space-2);
+      align-self: flex-start;
     }
 
     .gallery__portal-item {

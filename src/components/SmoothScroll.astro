@@ -134,6 +134,51 @@
 
   start();
 
+  function scrollToHash(immediate = false) {
+    const raw = window.location.hash;
+    if (!raw || raw === '#') return;
+    // Shared artwork links use ?work= — lightbox handles those.
+    if (new URLSearchParams(window.location.search).has('work')) return;
+
+    const el = document.querySelector(raw);
+    if (!(el instanceof HTMLElement)) return;
+
+    const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+    const scrollY = window.__lenis?.scroll ?? window.scrollY;
+    const top = Math.max(0, el.getBoundingClientRect().top + scrollY - margin);
+    const jump = immediate || reducedMotion;
+
+    const lenis = window.__lenis;
+    if (lenis) {
+      lenis.scrollTo(top, { immediate: jump, duration: jump ? 0 : 1.2 });
+      return;
+    }
+
+    window.scrollTo({ top, behavior: jump ? 'auto' : 'smooth' });
+  }
+
+  function scheduleHashScroll() {
+    if (!window.location.hash || window.location.hash === '#') return;
+
+    const skipIntro = document.documentElement.classList.contains('skip-intro');
+    if (skipIntro) {
+      requestAnimationFrame(() => requestAnimationFrame(() => scrollToHash(true)));
+      return;
+    }
+
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = true;
+      scrollToHash(true);
+    };
+
+    window.addEventListener('intro-done', run, { once: true });
+    window.setTimeout(run, 2800);
+  }
+
+  scheduleHashScroll();
+
   if (img && !img.complete) {
     img.addEventListener(
       'load',
