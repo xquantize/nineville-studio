@@ -543,7 +543,7 @@ import MediaFrame from './MediaFrame.astro';
   /* Soft edge fades, solid navy holds most of the band */
   .mediums__process {
     position: relative;
-    margin: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(3.5rem, 7vw, 6rem);
+    margin: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(4rem, 8vw, 7rem);
     padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
@@ -567,7 +567,8 @@ import MediaFrame from './MediaFrame.astro';
       display: flex;
       flex-direction: column;
       justify-content: center;
-      margin: clamp(3rem, 6vw, 5rem) 0 clamp(5rem, 10vw, 9rem);
+      /* Match Bio → Gallery spacing above/below the method beat */
+      margin: clamp(4rem, 8vw, 7rem) 0 clamp(5rem, 10vw, 9rem);
       padding-top: clamp(4rem, 8vh, 7rem);
       padding-bottom: clamp(4rem, 8vh, 7rem);
     }
@@ -588,11 +589,15 @@ import MediaFrame from './MediaFrame.astro';
 
   .mediums__method {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: clamp(0.45rem, 1.4vw, 1rem);
     margin: 0 0 var(--space-3);
     font-family: var(--font-display);
     font-weight: 400;
-    line-height: 0.86;
+    line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
     font-size: var(--text-display);
@@ -767,13 +772,16 @@ import MediaFrame from './MediaFrame.astro';
 
   /* ——— Overlapping cluster ——— */
   .mediums__cards {
-    padding: clamp(6rem, 12vw, 9rem) 0 clamp(5rem, 10vw, 8rem);
+    /* Clear beat after Her Method — same rhythm as Gallery → next section */
+    padding: clamp(5rem, 10vw, 8rem) 0 clamp(5rem, 10vw, 8rem);
+    margin-top: clamp(1rem, 3vw, 2.5rem);
   }
 
   @media (min-width: 768px) {
     .mediums__cards {
-      padding-top: clamp(4rem, 8vw, 7rem);
+      padding-top: clamp(5rem, 9vw, 8rem);
       padding-bottom: clamp(6rem, 11vw, 9rem);
+      margin-top: clamp(2rem, 4vw, 3.5rem);
     }
   }
 
@@ -1011,6 +1019,13 @@ import MediaFrame from './MediaFrame.astro';
     .mediums__process {
       margin-left: calc(-1 * var(--space-2));
       margin-right: calc(-1 * var(--space-2));
+      margin-bottom: clamp(2.5rem, 6vw, 4rem);
+    }
+
+    .mediums__cards {
+      margin-top: var(--space-2);
+      padding-top: clamp(3.5rem, 8vw, 5rem);
+      padding-bottom: clamp(4rem, 9vw, 6rem);
     }
 
     /* Restore a side gutter inside the full-bleed band (global mobile rule

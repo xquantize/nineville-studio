@@ -362,8 +362,6 @@ if (gallery) {
   function scrollToGalleryTop(immediate = false, onComplete?: () => void) {
     const offset = galleryOffset();
     const lenis = window.__lenis;
-    const currentScroll = lenis?.scroll ?? window.scrollY;
-    const top = Math.max(0, gallery!.getBoundingClientRect().top + currentScroll + offset);
     const jump = immediate || reduceMotion || mobileGallery.matches;
     let finished = false;
     const done = () => {
@@ -372,17 +370,21 @@ if (gallery) {
       onComplete?.();
     };
 
+    // After series strips collapse, Lenis’ content height / scroll can be stale.
+    lenis?.resize();
+
     if (lenis) {
-      lenis.scrollTo(top, {
+      lenis.scrollTo(gallery!, {
+        offset,
         immediate: jump,
         duration: jump ? 0 : 0.95,
         onComplete: done,
       });
-      // Lenis may skip onComplete for immediate jumps — always finish.
       if (jump) window.setTimeout(done, 0);
       return;
     }
 
+    const top = Math.max(0, gallery!.getBoundingClientRect().top + window.scrollY + offset);
     window.scrollTo({ top, behavior: jump ? 'auto' : 'smooth' });
     window.setTimeout(done, jump ? 0 : 520);
   }
@@ -415,11 +417,15 @@ if (gallery) {
     // photo strip always feels laggy on phones — skip that entirely.
     gallery!.classList.add('is-clearing');
     resetSeriesView();
-    scrollToGalleryTop(true, () => {
+
+    // Wait for the strip collapse to reflow, then land on the portal.
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        gallery!.classList.remove('is-clearing');
-        gallery!.classList.add('is-portal-in');
-        window.setTimeout(() => gallery!.classList.remove('is-portal-in'), 480);
+        scrollToGalleryTop(true, () => {
+          gallery!.classList.remove('is-clearing');
+          gallery!.classList.add('is-portal-in');
+          window.setTimeout(() => gallery!.classList.remove('is-portal-in'), 480);
+        });
       });
     });
   }
