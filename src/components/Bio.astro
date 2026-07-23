@@ -11,20 +11,20 @@
         </header>
 
         <figure class="bio__portrait" data-reveal>
-          <span class="bio__portrait-glow" aria-hidden="true"></span>
-          <span class="bio__portrait-clip">
-            {/* Painting shows through the circle — synced to the fixed background */}
-            <span class="bio__portrait-window" aria-hidden="true"></span>
-            <img
-              class="bio__portrait-cutout"
-              src="/images/bio-portrait-cutout.webp"
-              alt="Laura Neundörfer"
-              width={700}
-              height={700}
-              loading="eager"
-              decoding="async"
-              fetchpriority="low"
-            />
+          <span class="bio__portrait-plate" aria-hidden="true"></span>
+          <span class="bio__portrait-mat">
+            <span class="bio__portrait-clip">
+              <img
+                class="bio__portrait-img"
+                src="/images/bio-profile.webp"
+                alt="Laura Neundörfer"
+                width={1000}
+                height={993}
+                loading="eager"
+                decoding="async"
+                fetchpriority="low"
+              />
+            </span>
           </span>
         </figure>
 
@@ -53,7 +53,8 @@
   .bio {
     --bio-blue: #07294a;
     --bio-gap: clamp(3.5rem, 7vw, 6.5rem);
-    --bio-portrait: clamp(12.5rem, 22vw, 19rem);
+    --bio-portrait: clamp(11.5rem, 20vw, 17rem);
+    --bio-tilt: -1.6deg;
     scroll-margin-top: var(--scroll-anchor-offset);
   }
 
@@ -123,68 +124,69 @@
   }
 
   .bio__portrait {
+    --bio-radius: 10px;
     grid-area: portrait;
     position: relative;
     width: 100%;
     max-width: var(--bio-portrait);
-    aspect-ratio: 1;
+    aspect-ratio: 1000 / 993;
     margin: 0;
-    border-radius: 50%;
+    padding: 0;
+    border: none;
+    background: none;
     box-sizing: border-box;
     justify-self: stretch;
     align-self: center;
+    isolation: isolate;
     z-index: 1;
+    transform: rotate(var(--bio-tilt));
   }
 
-  .bio__portrait-glow {
+  .bio__portrait-plate {
     position: absolute;
-    inset: -22%;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle at 50% 48%,
-      rgba(255, 127, 137, 0.5) 0%,
-      rgba(255, 127, 137, 0.2) 40%,
-      rgba(255, 127, 137, 0.06) 58%,
-      transparent 72%
+    inset: -0.45rem -0.5rem -0.55rem -0.4rem;
+    z-index: -1;
+    border-radius: calc(var(--bio-radius) + 2px);
+    background: linear-gradient(145deg, #0b3a66 0%, #07294a 100%);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+    transform: rotate(2.4deg) translate(0.12rem, 0.18rem);
+  }
+
+  .bio__portrait-mat {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2px;
+    border-radius: var(--bio-radius);
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 127, 137, 0.92) 42%,
+      rgba(255, 255, 255, 0.78) 72%,
+      rgba(255, 127, 137, 0.85) 100%
     );
-    pointer-events: none;
-    z-index: 0;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
   }
 
   .bio__portrait-clip {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--bio-radius) - 2px);
     overflow: hidden;
-    clip-path: circle(50%);
-    -webkit-clip-path: circle(50%);
-    border: 1px solid rgba(255, 127, 137, 0.5);
-    box-shadow:
-      0 0 0 4px rgba(255, 127, 137, 0.12),
-      0 10px 32px rgba(14, 16, 22, 0.35);
-    z-index: 1;
-    isolation: isolate;
+    background: #0a1018;
   }
 
-  /* Window into the scrolling painting — image URL from .scroll-bg__img */
-  .bio__portrait-window {
-    position: absolute;
-    inset: 0;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center top;
-    will-change: background-position;
-  }
-
-  .bio__portrait-cutout {
-    position: absolute;
-    inset: 0;
+  .bio__portrait-img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-    transform: scale(1.5) translate(-12%, -14%);
-    transform-origin: center;
+    object-position: center center;
   }
 
   .bio__text {
@@ -286,22 +288,6 @@
       justify-self: center;
     }
 
-    .bio__portrait-glow {
-      inset: -18%;
-      background: radial-gradient(
-        circle at 50% 48%,
-        rgba(255, 127, 137, 0.5) 0%,
-        rgba(255, 127, 137, 0.18) 42%,
-        transparent 70%
-      );
-    }
-
-    .bio__portrait-window {
-      background-position: center 22%;
-      background-size: 140% auto;
-      will-change: auto;
-    }
-
     .bio__text {
       justify-self: stretch;
       text-align: left;
@@ -342,101 +328,20 @@
       font-size: clamp(2rem, 8vh, 3rem);
     }
 
-    .bio__portrait-glow {
-      inset: -14%;
-    }
-
     .bio__band {
       padding-top: var(--space-4);
       padding-bottom: var(--space-4);
       margin-bottom: var(--space-4);
     }
   }
-</style>
 
-<script>
-  const portrait = document.querySelector<HTMLElement>('.bio__portrait');
-  const windowEl = document.querySelector<HTMLElement>('.bio__portrait-window');
-  const bgImg = document.querySelector<HTMLImageElement>('.scroll-bg__img');
-
-  if (portrait && windowEl) {
-    const mobileQuery = window.matchMedia('(max-width: 767px)');
-    let imgW = Number(bgImg?.getAttribute('width')) || 1638;
-    let imgH = Number(bgImg?.getAttribute('height')) || 2048;
-    let rafId = 0;
-    let inView = true;
-
-    // Reuse the already-loaded fixed background (cache hit) — keep the circle as a window into it.
-    function syncFromScrollBg() {
-      if (!bgImg) return;
-      const src = bgImg.currentSrc || bgImg.src;
-      if (!src) return;
-      windowEl!.style.backgroundImage = `url("${src}")`;
-      if (bgImg.naturalWidth && bgImg.naturalHeight) {
-        imgW = bgImg.naturalWidth;
-        imgH = bgImg.naturalHeight;
-      }
+  @media (prefers-reduced-motion: reduce) {
+    .bio__portrait {
+      transform: none;
     }
 
-    // Mirror a viewport-fixed "cover" background so the circle is a window into it.
-    function update() {
-      if (mobileQuery.matches || !inView) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const scale = Math.max(vw / imgW, vh / imgH);
-      const bw = imgW * scale;
-      const bh = imgH * scale;
-      const ox = (vw - bw) / 2;
-      const oy = (vh - bh) / 2;
-      const rect = portrait!.getBoundingClientRect();
-
-      windowEl!.style.backgroundSize = `${bw.toFixed(0)}px ${bh.toFixed(0)}px`;
-      windowEl!.style.backgroundPosition = `${(ox - rect.left).toFixed(0)}px ${(oy - rect.top).toFixed(0)}px`;
+    .bio__portrait-plate {
+      transform: none;
     }
-
-    function schedule() {
-      if (mobileQuery.matches || !inView || rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        update();
-      });
-    }
-
-    function applyMode() {
-      syncFromScrollBg();
-      if (mobileQuery.matches) {
-        windowEl!.style.backgroundSize = '';
-        windowEl!.style.backgroundPosition = '';
-        return;
-      }
-      schedule();
-    }
-
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(
-        ([entry]) => {
-          inView = entry?.isIntersecting ?? false;
-          if (inView) schedule();
-        },
-        { rootMargin: '20% 0px' }
-      );
-      io.observe(portrait);
-    }
-
-    window.addEventListener('app-scroll', schedule);
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', () => {
-      syncFromScrollBg();
-      schedule();
-    });
-    window.addEventListener('load', applyMode);
-    mobileQuery.addEventListener('change', applyMode);
-
-    if (bgImg && !bgImg.complete) {
-      bgImg.addEventListener('load', applyMode, { once: true });
-    }
-
-    applyMode();
-    update();
   }
-</script>
+</style>
