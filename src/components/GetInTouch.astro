@@ -447,9 +447,23 @@ import { site } from '../data/site';
 </script>
 
 <style>
+  /* Continues the Workshops navy wash, then fades into the footer */
   .contact {
+    position: relative;
     padding: clamp(2.5rem, 5vw, 4rem) 0 max(clamp(5rem, 14vh, 9rem), 28vh);
     scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
+    background: linear-gradient(
+      180deg,
+      rgba(7, 41, 74, 0.55) 0%,
+      rgba(7, 41, 74, 0.55) 62%,
+      rgba(7, 41, 74, 0.32) 82%,
+      rgba(7, 41, 74, 0) 100%
+    );
+  }
+
+  .contact > .panel-inner {
+    position: relative;
+    z-index: 1;
   }
 
   .contact__wrap {

@@ -565,32 +565,32 @@ import MediaFrame from './MediaFrame.astro';
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.28;
+    opacity: 0.55;
     background-image: url('/images/sand-particles.svg');
-    background-size: 420px 420px;
+    background-size: 320px 320px;
     background-repeat: repeat;
     -webkit-mask-image: linear-gradient(
-      180deg,
+      to bottom,
       transparent 0%,
-      transparent 12%,
-      rgba(0, 0, 0, 0.35) 18%,
-      #000 26%,
-      #000 74%,
-      rgba(0, 0, 0, 0.35) 82%,
-      transparent 90%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
       transparent 100%
     );
     mask-image: linear-gradient(
-      180deg,
+      to bottom,
       transparent 0%,
-      transparent 12%,
-      rgba(0, 0, 0, 0.35) 18%,
-      #000 26%,
-      #000 74%,
-      rgba(0, 0, 0, 0.35) 82%,
-      transparent 90%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
       transparent 100%
     );
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 
   .mediums__process > .panel-inner {
