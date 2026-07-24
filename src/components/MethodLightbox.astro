@@ -53,12 +53,6 @@
   </div>
 </div>
 
-<style is:global>
-  html.is-method-open {
-    overflow: hidden;
-  }
-</style>
-
 <style>
   .method-lightbox {
     position: fixed;
@@ -137,7 +131,7 @@
   .method-lightbox__stage {
     position: relative;
     z-index: 1;
-    width: min(92vw, 960px);
+    width: min(92vw, var(--media-deck));
     display: grid;
     justify-items: center;
     gap: var(--space-2);
@@ -194,7 +188,7 @@
 
   @media (max-width: 767px) {
     .method-lightbox__stage {
-      width: min(100vw - 1rem, 960px);
+      width: min(100vw - 1rem, var(--media-deck));
     }
   }
 

@@ -269,8 +269,26 @@ import SipPaintFilm from './SipPaintFilm.astro';
 </script>
 
 <style>
+  /* Soft navy wash — lifts events off the painting veil */
+  .workshops {
+    --wash-blue: #07294a;
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      rgba(7, 41, 74, 0) 0%,
+      rgba(7, 41, 74, 0.38) 10%,
+      rgba(7, 41, 74, 0.55) 22%,
+      rgba(7, 41, 74, 0.55) 100%
+    );
+  }
+
+  .workshops > .panel-inner {
+    position: relative;
+    z-index: 1;
+  }
+
   .workshops__wrap {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--scroll-anchor-gap) + var(--space-4));
   }
@@ -291,7 +309,7 @@ import SipPaintFilm from './SipPaintFilm.astro';
     line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: clamp(48px, 10vw, 104px);
+    font-size: var(--text-display);
   }
 
   .workshops__title-word {
@@ -357,7 +375,7 @@ import SipPaintFilm from './SipPaintFilm.astro';
 
   .workshops__trigger-title {
     font-family: var(--font-display);
-    font-size: clamp(26px, 4vw, 40px);
+    font-size: var(--text-title);
     line-height: 1;
     letter-spacing: 0.01em;
     text-transform: uppercase;

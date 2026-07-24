@@ -46,7 +46,7 @@
   }
 
   .commission__wrap {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -72,7 +72,7 @@
     margin: 0 0 var(--space-4);
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(40px, 8vw, 80px);
+    font-size: var(--text-display-sm);
     line-height: 0.95;
     letter-spacing: 0.01em;
     text-transform: uppercase;
@@ -93,7 +93,7 @@
 
   .commission__body p {
     margin: 0;
-    font-size: clamp(16px, 1.9vw, 19px);
+    font-size: var(--text-lead);
     line-height: 1.65;
     color: #ffffff;
   }

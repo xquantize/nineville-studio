@@ -21,6 +21,7 @@ if (root) {
   const lightbox = new PhotoSwipeLightbox({
     dataSource,
     pswpModule: PhotoSwipe,
+    mainClass: 'pswp--sip',
     showHideAnimationType: 'fade',
     showAnimationDuration: 400,
     hideAnimationDuration: 280,

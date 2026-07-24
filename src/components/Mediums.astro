@@ -3,8 +3,8 @@ import { mediums } from '../data/mediums';
 import MediaFrame from './MediaFrame.astro';
 ---
 
-<section class="mediums">
-  <div id="mediums" class="mediums__process">
+<section id="mediums" class="mediums">
+  <div class="mediums__process">
     <div class="panel-inner">
       <div class="mediums__process-grid">
         <div class="mediums__intro-col">
@@ -110,6 +110,11 @@ import MediaFrame from './MediaFrame.astro';
           }
         </div>
 
+        <p class="mediums__hint" data-medium-hint>
+          <span class="mediums__hint--touch">Tap a medium for details</span>
+          <span class="mediums__hint--desk">Click a medium for details</span>
+        </p>
+
         <div id="mediums-detail" class="mediums__detail" hidden>
           {
             mediums.map((medium) => (
@@ -125,6 +130,8 @@ import MediaFrame from './MediaFrame.astro';
 </section>
 
 <script>
+  import { lockPageScroll, unlockPageScroll } from '../scripts/scroll-lock';
+
   const root = document.querySelector<HTMLElement>('.mediums');
   if (root) {
     const cluster = root.querySelector<HTMLElement>('.mediums__cluster');
@@ -135,33 +142,40 @@ import MediaFrame from './MediaFrame.astro';
     const copies = Array.from(root.querySelectorAll<HTMLElement>('[data-medium-copy]'));
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    // Auto-rotate on touch feels glitchy — chips move under the finger mid-tap.
+    const allowCycle = !reduceMotion && finePointer;
     let active: string | null = null;
     let front = 1;
     let timer: number | null = null;
     let inView = true;
     let paused = false;
     let peekSlug: string | null = null;
+    let peekClearTimer = 0;
 
     function applyDeck() {
       const n = chips.length;
       chips.forEach((chip, i) => {
         // Keep the front index in the center slot (pos 1)
         const pos = (i - front + 1 + n) % n;
-        chip.classList.remove('is-pos-0', 'is-pos-1', 'is-pos-2');
-        chip.classList.add(`is-pos-${pos}`);
+        const nextPos = `is-pos-${pos}`;
+        if (!chip.classList.contains(nextPos)) {
+          chip.classList.remove('is-pos-0', 'is-pos-1', 'is-pos-2');
+          chip.classList.add(nextPos);
+        }
         chip.classList.toggle('is-front', pos === 1 && !active && !peekSlug);
-        chip.classList.toggle('is-peek', chip.dataset.mediumTab === peekSlug);
+        chip.classList.toggle('is-peek', !active && chip.dataset.mediumTab === peekSlug);
+        chip.classList.toggle('is-active', chip.dataset.mediumTab === active);
+        chip.setAttribute('aria-selected', String(chip.dataset.mediumTab === active));
       });
 
       // Soft label pulse on the front / peeked card (not the click-open state)
-      if (!active) {
-        const highlight =
-          peekSlug ?? chips.find((c) => c.classList.contains('is-front'))?.dataset.mediumTab;
-        triggers.forEach((btn) => {
-          if (btn.getAttribute('role') === 'tab') return;
-          btn.classList.toggle('is-front', btn.dataset.mediumTab === highlight);
-        });
-      }
+      const highlight = active ?? peekSlug ?? chips.find((c) => c.classList.contains('is-front'))?.dataset.mediumTab;
+      triggers.forEach((btn) => {
+        if (btn.hasAttribute('data-medium-chip')) return;
+        const slug = btn.dataset.mediumTab;
+        btn.classList.toggle('is-front', !active && slug === highlight);
+        btn.classList.toggle('is-active', Boolean(active) && slug === active);
+      });
     }
 
     function stopCycle() {
@@ -172,11 +186,11 @@ import MediaFrame from './MediaFrame.astro';
     }
 
     function startCycle() {
-      if (reduceMotion || active || paused || !inView || timer !== null) return;
+      if (!allowCycle || active || paused || !inView || timer !== null) return;
       timer = window.setInterval(() => {
         front = (front + 1) % chips.length;
         applyDeck();
-      }, 2800);
+      }, 3200);
     }
 
     function pause() {
@@ -197,33 +211,30 @@ import MediaFrame from './MediaFrame.astro';
       if (!finePointer || active) return;
       if (peekSlug === slug) return;
       peekSlug = slug;
-      if (slug) {
-        const idx = chips.findIndex((c) => c.dataset.mediumTab === slug);
-        // Lift in place — don't reshuffle slots on peek (avoids hover loss mid-move)
-        if (idx >= 0) applyDeck();
-      } else {
-        applyDeck();
+      applyDeck();
+    }
+
+    function chipFromPoint(x: number, y: number) {
+      const els = document.elementsFromPoint(x, y);
+      for (const el of els) {
+        const chip = (el as Element).closest?.('[data-medium-chip]');
+        if (chip instanceof HTMLElement && stack?.contains(chip)) return chip;
       }
+      return null;
     }
 
     function select(slug: string) {
       const next = active === slug ? null : slug;
       active = next;
       peekSlug = null;
+      window.clearTimeout(peekClearTimer);
 
       cluster?.classList.toggle('has-detail', Boolean(next));
 
-      triggers.forEach((btn) => {
-        const on = btn.dataset.mediumTab === next;
-        btn.classList.toggle('is-active', on);
-        btn.classList.remove('is-front');
-        btn.classList.remove('is-peek');
-        if (btn.getAttribute('role') === 'tab') {
-          btn.setAttribute('aria-selected', String(on));
-        }
-      });
-
-      if (!detail) return;
+      if (!detail) {
+        applyDeck();
+        return;
+      }
 
       if (!next) {
         detail.hidden = true;
@@ -234,12 +245,10 @@ import MediaFrame from './MediaFrame.astro';
       }
 
       // Bring the opened medium to the front and hold the deck
-      stopCycle();
+      pause();
       const idx = chips.findIndex((c) => c.dataset.mediumTab === next);
-      if (idx >= 0) {
-        front = idx;
-        applyDeck();
-      }
+      if (idx >= 0) front = idx;
+      applyDeck();
 
       detail.hidden = false;
       copies.forEach((copy) => {
@@ -255,23 +264,49 @@ import MediaFrame from './MediaFrame.astro';
       });
     });
 
-    // Pause while hovering the cluster — desktop only.
-    // On touch, pointerleave is unreliable and can leave the deck stuck paused.
-    if (finePointer) {
-      cluster?.addEventListener('pointerenter', pause);
-      cluster?.addEventListener('pointerleave', resume);
+    // Desktop: hit-test peeks (stable while chips transform under the cursor).
+    if (finePointer && stack) {
+      stack.addEventListener('pointerenter', () => {
+        window.clearTimeout(peekClearTimer);
+        pause();
+      });
 
-      chips.forEach((chip) => {
-        chip.addEventListener('pointerenter', () => {
-          setPeek(chip.dataset.mediumTab ?? null);
+      stack.addEventListener('pointermove', (event) => {
+        if (active || event.pointerType !== 'mouse') return;
+        const chip = chipFromPoint(event.clientX, event.clientY);
+        setPeek(chip?.dataset.mediumTab ?? null);
+      });
+
+      stack.addEventListener('pointerleave', () => {
+        window.clearTimeout(peekClearTimer);
+        peekClearTimer = window.setTimeout(() => {
+          setPeek(null);
+          if (!active) resume();
+        }, 120);
+      });
+
+      // Labels also preview their chip
+      triggers.forEach((btn) => {
+        if (btn.hasAttribute('data-medium-chip')) return;
+        btn.addEventListener('pointerenter', () => {
+          pause();
+          setPeek(btn.dataset.mediumTab ?? null);
         });
-        chip.addEventListener('pointerleave', () => {
-          if (peekSlug === chip.dataset.mediumTab) setPeek(null);
+        btn.addEventListener('pointerleave', () => {
+          if (peekSlug === btn.dataset.mediumTab) setPeek(null);
         });
+      });
+
+      cluster?.addEventListener('pointerleave', () => {
+        window.clearTimeout(peekClearTimer);
+        peekClearTimer = window.setTimeout(() => {
+          setPeek(null);
+          if (!active) resume();
+        }, 140);
       });
     }
 
-    if (!reduceMotion && stack) {
+    if (allowCycle && stack) {
       const io = new IntersectionObserver(
         ([entry]) => {
           inView = entry?.isIntersecting ?? false;
@@ -400,6 +435,7 @@ import MediaFrame from './MediaFrame.astro';
     forceMute(fullVideo);
     lightbox.hidden = false;
     document.documentElement.classList.add('is-method-open');
+    lockPageScroll();
     requestAnimationFrame(() => {
       lightbox.classList.add('is-open');
       lightbox.classList.remove('is-closing');
@@ -416,6 +452,7 @@ import MediaFrame from './MediaFrame.astro';
     lightbox.classList.add('is-closing');
     lightbox.classList.remove('is-open');
     document.documentElement.classList.remove('is-method-open');
+    unlockPageScroll();
     const finish = () => {
       lightbox.hidden = true;
       lightbox.classList.remove('is-closing');
@@ -497,12 +534,16 @@ import MediaFrame from './MediaFrame.astro';
 <style>
   .mediums {
     --process-blue: #07294a;
+    --medium-chip: var(--media-chip);
+    --medium-stack-w: min(100%, calc(var(--medium-chip) * 2.55));
+    --medium-stack-h: calc(var(--medium-chip) * 1.54);
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-2));
   }
 
   /* Soft edge fades, solid navy holds most of the band */
   .mediums__process {
     position: relative;
-    margin: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(3.5rem, 7vw, 6rem);
+    margin: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(4rem, 8vw, 7rem);
     padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
@@ -513,7 +554,73 @@ import MediaFrame from './MediaFrame.astro';
       rgba(7, 41, 74, 0.65) 90%,
       rgba(7, 41, 74, 0) 100%
     );
-    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Sand particles — sparse grit in the solid navy; fades with the blue edges */
+  .mediums__process::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    background-image: url('/images/sand-particles.svg');
+    background-size: 320px 320px;
+    background-repeat: repeat;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
+      transparent 100%
+    );
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .mediums__process > .panel-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .mediums__process .section-kicker {
+    color: var(--sea-glass-soft);
+  }
+
+  /*
+    Desktop: Method band gets its own viewport beat so #mediums doesn’t
+    land with the mediums deck / commission already peeking underneath.
+  */
+  @media (min-width: 768px) {
+    .mediums__process {
+      min-height: calc(100svh - var(--scroll-anchor-offset));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* Match Bio → Gallery spacing above/below the method beat */
+      margin: clamp(4rem, 8vw, 7rem) 0 clamp(5rem, 10vw, 9rem);
+      padding-top: clamp(4rem, 8vh, 7rem);
+      padding-bottom: clamp(4rem, 8vh, 7rem);
+    }
+
+    .mediums__process .panel-inner {
+      width: 100%;
+    }
   }
 
   .mediums__process-grid {
@@ -521,20 +628,24 @@ import MediaFrame from './MediaFrame.astro';
     grid-template-columns: 1fr;
     gap: var(--space-6);
     align-items: center;
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
   }
 
   .mediums__method {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: clamp(0.45rem, 1.4vw, 1rem);
     margin: 0 0 var(--space-3);
     font-family: var(--font-display);
     font-weight: 400;
-    line-height: 0.86;
+    line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: clamp(52px, 8vw, 104px);
+    font-size: var(--text-display);
   }
 
   .mediums__method-word {
@@ -551,12 +662,12 @@ import MediaFrame from './MediaFrame.astro';
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--sea-glass-soft);
   }
 
   .mediums__copy p {
     margin: 0 0 var(--space-3);
-    max-width: 42ch;
+    max-width: min(72ch, 100%);
     font-size: 16px;
     line-height: 1.7;
     color: rgba(251, 246, 234, 0.9);
@@ -570,7 +681,7 @@ import MediaFrame from './MediaFrame.astro';
     --video-tilt: -1.4deg;
     position: relative;
     width: 100%;
-    max-width: 520px;
+    max-width: var(--media-video);
     margin-inline: auto;
     aspect-ratio: 16 / 10;
     padding: 0;
@@ -609,12 +720,14 @@ import MediaFrame from './MediaFrame.astro';
     background: linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 127, 137, 0.92) 42%,
-      rgba(255, 255, 255, 0.78) 72%,
+      rgba(255, 127, 137, 0.7) 32%,
+      var(--sea-glass-soft) 58%,
+      rgba(122, 154, 166, 0.95) 78%,
       rgba(255, 127, 137, 0.85) 100%
     );
     box-shadow:
-      0 10px 28px rgba(0, 0, 0, 0.3);
+      0 10px 28px rgba(0, 0, 0, 0.3),
+      0 0 0 1px var(--sea-glass-glow);
     transition: box-shadow 0.35s var(--ease-gentle);
   }
 
@@ -706,11 +819,21 @@ import MediaFrame from './MediaFrame.astro';
 
   /* ——— Overlapping cluster ——— */
   .mediums__cards {
-    padding: clamp(6rem, 12vw, 9rem) 0 clamp(5rem, 10vw, 8rem);
+    /* Clear beat after Her Method — same rhythm as Gallery → next section */
+    padding: clamp(5rem, 10vw, 8rem) 0 clamp(5rem, 10vw, 8rem);
+    margin-top: clamp(1rem, 3vw, 2.5rem);
+  }
+
+  @media (min-width: 768px) {
+    .mediums__cards {
+      padding-top: clamp(5rem, 9vw, 8rem);
+      padding-bottom: clamp(6rem, 11vw, 9rem);
+      margin-top: clamp(2rem, 4vw, 3.5rem);
+    }
   }
 
   .mediums__cluster {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -719,8 +842,8 @@ import MediaFrame from './MediaFrame.astro';
 
   .mediums__stack {
     position: relative;
-    width: min(100%, 680px);
-    height: 400px;
+    width: var(--medium-stack-w);
+    height: var(--medium-stack-h);
     margin-bottom: var(--space-4);
   }
 
@@ -728,7 +851,7 @@ import MediaFrame from './MediaFrame.astro';
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 260px;
+    width: var(--medium-chip);
     aspect-ratio: 3 / 4;
     padding: 0;
     border: none;
@@ -736,8 +859,8 @@ import MediaFrame from './MediaFrame.astro';
     cursor: pointer;
     transform-origin: center bottom;
     transition:
-      transform 0.85s var(--ease-gentle),
-      filter 0.85s var(--ease-gentle);
+      transform 0.7s var(--ease-gentle),
+      filter 0.7s var(--ease-gentle);
     /* Isolate hit-testing from sibling paints during z-index flips */
     touch-action: manipulation;
   }
@@ -761,12 +884,11 @@ import MediaFrame from './MediaFrame.astro';
     filter: brightness(0.82);
   }
 
-  /* Peek / active lift — driven by JS (.is-peek), not CSS :hover,
-     so auto-rotate + overlap don't steal the hovered card. */
+  /* Peek / active — lift gently so the card stays under the cursor */
   .mediums__chip.is-pos-0.is-peek,
   .mediums__chip.is-pos-0.is-active {
     z-index: 6;
-    transform: translate(-102%, -54%) rotate(-15deg) scale(0.98);
+    transform: translate(-100%, -51%) rotate(-13deg) scale(0.97);
     filter: brightness(1);
   }
 
@@ -774,13 +896,13 @@ import MediaFrame from './MediaFrame.astro';
   .mediums__chip.is-pos-1.is-active,
   .mediums__chip.is-pos-1.is-front {
     z-index: 5;
-    transform: translate(-50%, -62%) rotate(0deg) scale(1.05);
+    transform: translate(-50%, -59%) rotate(0.5deg) scale(1.035);
   }
 
   .mediums__chip.is-pos-2.is-peek,
   .mediums__chip.is-pos-2.is-active {
     z-index: 6;
-    transform: translate(2%, -54%) rotate(14deg) scale(0.98);
+    transform: translate(0%, -51%) rotate(12deg) scale(0.97);
     filter: brightness(1);
   }
 
@@ -794,12 +916,19 @@ import MediaFrame from './MediaFrame.astro';
     width: 100%;
     height: 100%;
     overflow: hidden;
-    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 2px;
+    border-radius: 7px;
     border: none;
-    background: transparent;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 127, 137, 0.78) 42%,
+      rgba(255, 255, 255, 0.72) 72%,
+      rgba(255, 127, 137, 0.82) 100%
+    );
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.36);
-    transition:
-      box-shadow 0.85s var(--ease-gentle);
+    transition: box-shadow 0.85s var(--ease-gentle);
     pointer-events: none;
   }
 
@@ -810,7 +939,9 @@ import MediaFrame from './MediaFrame.astro';
   }
 
   .mediums__chip-frame .media-frame {
-    background: transparent;
+    background: #0a1018;
+    border-radius: 5px;
+    overflow: hidden;
   }
 
   .mediums__chip-frame .media-frame__img {
@@ -862,6 +993,40 @@ import MediaFrame from './MediaFrame.astro';
     color: #ff7f89;
   }
 
+  .mediums__hint {
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+    text-align: center;
+    opacity: 0.85;
+    transition:
+      opacity var(--duration-normal) var(--ease-gentle),
+      visibility var(--duration-normal) var(--ease-gentle);
+  }
+
+  .mediums__hint--touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .mediums__hint--touch {
+      display: inline;
+    }
+
+    .mediums__hint--desk {
+      display: none;
+    }
+  }
+
+  .mediums__cluster.has-detail .mediums__hint {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   .mediums__detail {
     width: 100%;
     max-width: 42ch;
@@ -889,15 +1054,34 @@ import MediaFrame from './MediaFrame.astro';
 
   @media (min-width: 900px) {
     .mediums__process-grid {
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: var(--space-8);
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+      column-gap: clamp(2rem, 3.5vw, 3rem);
+      align-items: center;
+    }
+
+    .mediums__video {
+      margin-inline: 0 0;
+      justify-self: end;
+      width: min(100%, var(--media-video));
     }
   }
 
   @media (max-width: 767px) {
+    .mediums {
+      /* Phone: keep the fan readable without dominating the scroll */
+      --medium-chip: clamp(10.75rem, 44vw, 13.5rem);
+    }
+
     .mediums__process {
       margin-left: calc(-1 * var(--space-2));
       margin-right: calc(-1 * var(--space-2));
+      margin-bottom: clamp(2.5rem, 6vw, 4rem);
+    }
+
+    .mediums__cards {
+      margin-top: var(--space-2);
+      padding-top: clamp(3.5rem, 8vw, 5rem);
+      padding-bottom: clamp(4rem, 9vw, 6rem);
     }
 
     /* Restore a side gutter inside the full-bleed band (global mobile rule
@@ -915,15 +1099,6 @@ import MediaFrame from './MediaFrame.astro';
        clip horizontally so they can't create a sideways scroll. */
     .mediums__cards {
       overflow-x: clip;
-    }
-
-    .mediums__stack {
-      width: min(100%, 480px);
-      height: 300px;
-    }
-
-    .mediums__chip {
-      width: 180px;
     }
 
     .mediums__video {

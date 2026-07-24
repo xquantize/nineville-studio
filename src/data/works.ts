@@ -115,23 +115,95 @@ const SERIES_META: Record<string, SeriesMeta> = {
 
 /** Optional per-artwork overrides. Key = artwork folder slug, or `series/artwork`. */
 const WORK_META: Record<string, WorkMeta> = {
-  'beautiful-coral': { title: 'Beautiful Coral' },
-  surfboard: { title: 'Surfboard' },
-  'coral-coast': { title: 'Coral Coast' },
-  'beige-coral': { title: 'Beige Coral' },
-  'blue-coral': { title: 'Blue Coral' },
-  'blue-flower': { title: 'Blue Flower' },
-  'brown-coral': { title: 'Brown Coral' },
-  'neon-1-coral': { title: 'Neon I Coral' },
-  'neon-2-coral': { title: 'Neon II Coral' },
-  'white-coral': { title: 'White Coral' },
-  'white-flower': { title: 'White Flower' },
-  'white-purp-flower': { title: 'White & Purple Flower' },
-  obsidian_flower: { title: 'Obsidian Flower' },
-  round_resin: { title: 'Round Resin' },
-  chaos: { title: 'Chaos' },
-  poppyseed: { title: 'Poppyseed' },
-  unknown_obs: { title: 'Unknown Obsidian' },
+  // Tides
+  'beautiful-coral': {
+    title: 'Atoll',
+    description: 'Pink blooms on teal',
+    medium: 'resin',
+  },
+  surfboard: {
+    title: 'Roses',
+    description: 'Plaster roses on a board',
+    medium: 'plaster',
+  },
+  'coral-coast': {
+    title: 'Lagoon',
+    description: 'Gold lace over blue',
+    medium: 'resin',
+  },
+  // Fossilia
+  'beige-coral': {
+    title: 'Spiral',
+    description: 'Shell form on earth',
+    medium: 'plaster',
+  },
+  'blue-coral': {
+    title: 'Fan',
+    description: 'Coral relief on teal',
+    medium: 'plaster',
+  },
+  'blue-flower': {
+    title: 'Bloom',
+    description: 'White swirl on blue',
+    medium: 'plaster',
+  },
+  'brown-coral': {
+    title: 'Clay',
+    description: 'Warm terracotta coral',
+    medium: 'plaster',
+  },
+  'white-coral': {
+    title: 'Ivory',
+    description: 'All-white coral bloom',
+    medium: 'plaster',
+  },
+  'white-flower': {
+    title: 'Coil',
+    description: 'Soft plaster swirls',
+    medium: 'plaster',
+  },
+  'white-purp-flower': {
+    title: 'Mist',
+    description: 'White petals, soft colour',
+    medium: 'plaster',
+  },
+  // Lumina
+  'neon-1-coral': {
+    title: 'Heat',
+    description: 'Reef on neon yellow',
+    medium: 'mixed',
+  },
+  'neon-2-coral': {
+    title: 'Glow',
+    description: 'Neon reef on black',
+    medium: 'mixed',
+  },
+  // Obsidian
+  obsidian_flower: {
+    title: 'Ember',
+    description: 'Gold rose in black',
+    medium: 'resin',
+  },
+  round_resin: {
+    title: 'Disc',
+    description: 'White, gold, navy swirl',
+    medium: 'resin',
+  },
+  chaos: {
+    title: 'Map',
+    description: 'Gold lines over pour',
+    medium: 'mixed',
+  },
+  poppyseed: {
+    title: 'Seed',
+    description: 'Speckled black and gold',
+    medium: 'mixed',
+  },
+  unknown_obs: {
+    title: 'Leaf',
+    description: 'Gold ginkgo on black',
+    medium: 'mixed',
+  },
 };
 
 const SERIES_ROOT = path.join(process.cwd(), 'public/images/series');

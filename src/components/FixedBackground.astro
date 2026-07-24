@@ -22,17 +22,8 @@
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
+    /* Solid fill until the single <img> paints — no second CSS background fetch */
     background: #1a1e28;
-  }
-
-  .scroll-bg::before {
-    content: '';
-    position: absolute;
-    inset: -2%;
-    background-image: url('/images/background.webp');
-    background-size: cover;
-    background-position: center;
-    transform: scale(1.03);
   }
 
   .scroll-bg__img {
@@ -85,10 +76,6 @@
   /* On phones the background is static (no JS pan). Drop the GPU layer hint,
      scale transform and backface hack, and pause the blend-mode animation. */
   @media (max-width: 767px) {
-    .scroll-bg::before {
-      background-image: url('/images/background-mobile.webp');
-    }
-
     .scroll-bg__img {
       transform: none;
       backface-visibility: visible;

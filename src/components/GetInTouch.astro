@@ -304,7 +304,10 @@ import { site } from '../data/site';
       });
 
       if (shouldScroll) {
-        scrollContactIntoView();
+        // Let overlay unlock / Lenis restart settle before scrolling.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => scrollContactIntoView());
+        });
       }
     }
 
@@ -444,13 +447,27 @@ import { site } from '../data/site';
 </script>
 
 <style>
+  /* Continues the Workshops navy wash, then fades into the footer */
   .contact {
-    padding: clamp(2.5rem, 5vw, 4rem) 0 max(clamp(5rem, 18vh, 10rem), 36vh);
+    position: relative;
+    padding: clamp(2.5rem, 5vw, 4rem) 0 max(clamp(5rem, 14vh, 9rem), 28vh);
     scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
+    background: linear-gradient(
+      180deg,
+      rgba(7, 41, 74, 0.55) 0%,
+      rgba(7, 41, 74, 0.55) 62%,
+      rgba(7, 41, 74, 0.32) 82%,
+      rgba(7, 41, 74, 0) 100%
+    );
+  }
+
+  .contact > .panel-inner {
+    position: relative;
+    z-index: 1;
   }
 
   .contact__wrap {
-    max-width: 900px;
+    max-width: var(--content-rail-narrow);
     margin: 0 auto;
     padding: clamp(1.15rem, 2.8vw, 1.85rem) clamp(1.15rem, 3vw, 2rem);
     border: none;
@@ -466,7 +483,7 @@ import { site } from '../data/site';
     margin: 0;
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(36px, 6vw, 56px);
+    font-size: var(--text-title);
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;

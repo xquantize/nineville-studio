@@ -10,41 +10,39 @@
           </h2>
         </header>
 
-        <div class="bio__content">
-          <figure class="bio__portrait" data-reveal>
-            <span class="bio__portrait-glow" aria-hidden="true"></span>
+        <figure class="bio__portrait" data-reveal>
+          <span class="bio__portrait-plate" aria-hidden="true"></span>
+          <span class="bio__portrait-mat">
             <span class="bio__portrait-clip">
-              {/* Painting shows through the circle — synced to the fixed background */}
-              <span class="bio__portrait-window" aria-hidden="true"></span>
               <img
-                class="bio__portrait-cutout"
-                src="/images/bio-portrait-cutout.webp"
+                class="bio__portrait-img"
+                src="/images/bio-profile.webp"
                 alt="Laura Neundörfer"
-                width={700}
-                height={700}
+                width={1000}
+                height={993}
                 loading="eager"
                 decoding="async"
                 fetchpriority="low"
               />
             </span>
-          </figure>
+          </span>
+        </figure>
 
-          <div class="bio__text" data-reveal>
-            <p class="bio__lead">
-              Laura is a mixed-media artist creating textured artworks that bridge the gap between
-              structure and fluid mediums.
-            </p>
-            <p>
-              For the first part of her life, her world was defined by systems and structures in
-              Germany. It was a predictable rhythm that kept her safe, but left little space for
-              creativity.
-            </p>
-            <p>
-              What began as a passion for surfing evolved into a whole new way of living: She left the
-              landlocked lifestyle behind, moved abroad to the coast and allowed herself to be guided
-              by creativity, freedom and flow.
-            </p>
-          </div>
+        <div class="bio__text" data-reveal>
+          <p class="bio__lead">
+            Laura is a mixed-media artist creating textured artworks that bridge the gap between
+            structure and fluid mediums.
+          </p>
+          <p>
+            For the first part of her life, her world was defined by systems and structures in
+            Germany. It was a predictable rhythm that kept her safe, but left little space for
+            creativity.
+          </p>
+          <p>
+            What began as a passion for surfing evolved into a whole new way of living: She left the
+            landlocked lifestyle behind, moved abroad to the coast and allowed herself to be guided
+            by creativity, freedom and flow.
+          </p>
         </div>
       </div>
     </div>
@@ -54,13 +52,16 @@
 <style>
   .bio {
     --bio-blue: #07294a;
-    scroll-margin-top: var(--scroll-anchor-offset);
+    --bio-gap: clamp(3.5rem, 7vw, 6.5rem);
+    --bio-portrait: clamp(11.5rem, 20vw, 17rem);
+    --bio-tilt: -1.6deg;
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-2));
   }
 
   /* Soft edge fades, solid navy holds most of the band. */
   .bio__band {
     position: relative;
-    margin: 0 0 clamp(3.5rem, 7vw, 6rem);
+    margin: 0 0 clamp(4rem, 8vw, 7rem);
     padding: clamp(4.75rem, 7.5vw, 7rem) 0 clamp(5.5rem, 10vw, 9rem);
     background: linear-gradient(
       180deg,
@@ -71,15 +72,67 @@
       rgba(7, 41, 74, 0.65) 90%,
       rgba(7, 41, 74, 0) 100%
     );
+    overflow: hidden;
+  }
+
+  /* Sand particles — sparse grit in the solid navy; fades with the blue edges */
+  .bio__band::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    background-image: url('/images/sand-particles.svg');
+    background-size: 320px 320px;
+    background-repeat: repeat;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 14%,
+      black 28%,
+      black 72%,
+      transparent 88%,
+      transparent 100%
+    );
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .bio__band > .panel-inner {
+    position: relative;
+    z-index: 1;
   }
 
   .bio__wrap {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: var(--bio-portrait) minmax(0, 1fr);
+    grid-template-areas:
+      'portrait header'
+      'portrait text';
+    column-gap: var(--bio-gap);
+    row-gap: var(--space-3);
+    align-items: start;
   }
 
   .bio__header {
+    grid-area: header;
     text-align: left;
+    min-width: 0;
+    padding-left: clamp(0.5rem, 2vw, 1.75rem);
   }
 
   .bio__band .section-kicker {
@@ -93,9 +146,9 @@
     justify-content: flex-start;
     gap: clamp(0.45rem, 1.4vw, 1rem);
     line-height: 0.9;
-    font-size: clamp(48px, 10vw, 104px);
+    font-size: var(--text-display);
     text-transform: uppercase;
-    margin: 0 0 var(--space-3);
+    margin: 0;
   }
 
   .bio__title-about {
@@ -106,123 +159,157 @@
     color: #ff7f89;
   }
 
-  .bio__content {
-    max-width: none;
-  }
-
   .bio__lead {
     color: #ffffff;
     font-weight: 700;
   }
 
-  .bio__content::after {
-    content: '';
-    display: table;
-    clear: both;
-  }
-
   .bio__portrait {
+    --bio-radius: 10px;
+    grid-area: portrait;
     position: relative;
-    float: left;
-    width: 11rem;
-    aspect-ratio: 1;
-    margin: 0.35rem var(--space-3) var(--space-2) 0;
-    border-radius: 50%;
+    width: 100%;
+    max-width: var(--bio-portrait);
+    aspect-ratio: 1000 / 993;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
     box-sizing: border-box;
+    justify-self: stretch;
+    align-self: center;
+    isolation: isolate;
     z-index: 1;
+    transform: rotate(var(--bio-tilt));
   }
 
-  .bio__portrait-glow {
+  .bio__portrait-plate {
     position: absolute;
-    inset: -26%;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle at 50% 48%,
-      rgba(255, 127, 137, 0.62) 0%,
-      rgba(255, 127, 137, 0.28) 38%,
-      rgba(255, 127, 137, 0.1) 56%,
-      transparent 72%
+    inset: -0.45rem -0.5rem -0.55rem -0.4rem;
+    z-index: -1;
+    border-radius: calc(var(--bio-radius) + 2px);
+    background: linear-gradient(145deg, #0b3a66 0%, #07294a 100%);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+    transform: rotate(2.4deg) translate(0.12rem, 0.18rem);
+  }
+
+  .bio__portrait-mat {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2px;
+    border-radius: var(--bio-radius);
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 127, 137, 0.92) 42%,
+      rgba(255, 255, 255, 0.78) 72%,
+      rgba(255, 127, 137, 0.85) 100%
     );
-    /* Soft halo without live filter:blur (costly while scrolling) */
-    pointer-events: none;
-    z-index: 0;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
   }
 
   .bio__portrait-clip {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--bio-radius) - 2px);
     overflow: hidden;
-    /* clip-path is reliable on Safari; border-radius alone can fail when
-       a child uses filter / transform and paints outside the circle. */
-    clip-path: circle(50%);
-    -webkit-clip-path: circle(50%);
-    border: 1px solid rgba(255, 127, 137, 0.55);
-    box-shadow:
-      0 0 0 5px rgba(255, 127, 137, 0.14),
-      0 8px 28px rgba(14, 16, 22, 0.35);
-    z-index: 1;
-    isolation: isolate;
+    background: #0a1018;
   }
 
-  /* Window into the scrolling painting — not the blue band */
-  .bio__portrait-window {
-    position: absolute;
-    inset: 0;
-    background-image: url('/images/background.webp');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center top;
-    will-change: background-position;
-  }
-
-  .bio__portrait-cutout {
-    position: absolute;
-    inset: 0;
+  .bio__portrait-img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-    transform: scale(1.55) translate(-14%, -16%);
-    transform-origin: center;
+    object-position: center center;
   }
 
   .bio__text {
+    grid-area: text;
+    min-width: 0;
     text-align: left;
+    padding-top: 0.15rem;
+    /* Extra breath from the portrait beyond the column gap */
+    padding-left: clamp(0.5rem, 2vw, 1.75rem);
   }
 
   .bio__text p {
     margin: 0 0 var(--space-3);
-    font-size: 17px;
+    font-size: clamp(16px, 0.35vw + 15px, 18px);
     line-height: 1.7;
     color: rgba(251, 246, 234, 0.9);
+    max-width: none;
   }
 
   .bio__text p:last-child {
     margin-bottom: 0;
   }
 
+  /* Comfortable reading measure on wide desktops — avoid ultra-long lines */
+  @media (min-width: 1100px) {
+    .bio__text {
+      text-align: left;
+      text-wrap: pretty;
+    }
+  }
+
+  /*
+    Desktop: give Bio its own viewport beat (like Gallery), so #bio doesn’t
+    land with the gallery portal already peeking under the copy.
+  */
   @media (min-width: 768px) {
-    .bio__header {
-      margin-left: calc(16rem + var(--space-4));
+    .bio {
+      min-height: calc(100svh - var(--scroll-anchor-offset));
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
-    .bio__portrait {
-      width: 16rem;
-      margin: 0.4rem var(--space-4) var(--space-3) 0;
+    .bio__band {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: clamp(5rem, 10vw, 9rem);
+      padding-top: clamp(5rem, 9vh, 8rem);
+      padding-bottom: clamp(5rem, 9vh, 8rem);
+      box-sizing: border-box;
+    }
+
+    .bio__band .panel-inner {
+      width: 100%;
+    }
+  }
+
+  /* Mid tablets: keep two columns, slightly tighter portrait */
+  @media (min-width: 768px) and (max-width: 999px) {
+    .bio {
+      --bio-portrait: clamp(12rem, 28vw, 15rem);
+      --bio-gap: clamp(2.75rem, 5vw, 4rem);
     }
 
     .bio__text {
-      padding-top: var(--space-2);
-      text-align: justify;
-      text-justify: inter-word;
-      hyphens: none;
+      padding-left: clamp(0.35rem, 1.5vw, 1rem);
+    }
+
+    .bio__text p {
+      max-width: none;
     }
   }
 
   @media (max-width: 767px) {
+    .bio {
+      --bio-portrait: clamp(10.5rem, 42vw, 13rem);
+      --bio-gap: var(--space-4);
+    }
+
     .bio__band {
-      /* Match veil gutter — no 100vw (overflow fights iOS scroll). */
       margin-left: calc(-1 * var(--space-2));
       margin-right: calc(-1 * var(--space-2));
       margin-top: 0;
@@ -239,137 +326,93 @@
       );
     }
 
-    /* Full-bleed band, but keep the copy off the screen edges. The global
-       mobile rule zeroes .panel-inner padding for .panel cards; restore a
-       gutter here since the band isn't a card. */
     .bio__band .panel-inner {
       padding-left: var(--space-3);
       padding-right: var(--space-3);
     }
 
-    .bio__portrait {
-      float: none;
-      width: 12rem;
-      margin: 0 0 var(--space-3);
+    .bio__wrap {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'header'
+        'portrait'
+        'text';
+      justify-items: center;
+      row-gap: var(--bio-gap);
     }
 
     .bio__header {
+      justify-self: stretch;
       text-align: center;
+      padding-left: 0;
     }
 
     .bio__title {
       justify-content: center;
       flex-wrap: wrap;
       row-gap: 0.1rem;
-      margin-bottom: var(--space-4);
     }
 
-    /* Soft pink halo — gradient only (no filter:blur). */
-    .bio__portrait-glow {
-      inset: -18%;
-      background: radial-gradient(
-        circle at 50% 48%,
-        rgba(255, 127, 137, 0.55) 0%,
-        rgba(255, 127, 137, 0.22) 42%,
-        transparent 70%
-      );
+    .bio__portrait {
+      justify-self: center;
     }
 
-    .bio__portrait-window {
-      /* Soft painting fill — no filter blur (Safari turns that into a square). */
-      background-image: url('/images/background-mobile.webp');
-      background-position: center 22%;
-      background-size: 140% auto;
-      will-change: auto;
+    .bio__text {
+      justify-self: stretch;
+      text-align: left;
+      padding-top: 0;
+      padding-left: 0;
     }
 
     .bio__text p {
+      max-width: none;
       font-size: 16px;
       line-height: 1.65;
       margin-bottom: var(--space-2);
     }
   }
-</style>
 
-<script>
-  const portrait = document.querySelector<HTMLElement>('.bio__portrait');
-  const windowEl = document.querySelector<HTMLElement>('.bio__portrait-window');
-
-  if (portrait && windowEl) {
-    const mobileQuery = window.matchMedia('(max-width: 767px)');
-    if (!mobileQuery.matches) {
-    let imgW = 1638;
-    let imgH = 2048;
-    let rafId = 0;
-    let inView = true;
-
-    const bgImage = new Image();
-    function loadNatural() {
-      bgImage.src = '/images/background.webp';
-    }
-    bgImage.addEventListener('load', () => {
-      if (bgImage.naturalWidth && bgImage.naturalHeight) {
-        imgW = bgImage.naturalWidth;
-        imgH = bgImage.naturalHeight;
-      }
-      windowEl!.style.backgroundImage = `url('${bgImage.src}')`;
-      update();
-    });
-
-    // Mirror a viewport-fixed "cover" background so the circle is a window into it.
-    function update() {
-      if (!inView) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const scale = Math.max(vw / imgW, vh / imgH);
-      const bw = imgW * scale;
-      const bh = imgH * scale;
-      const ox = (vw - bw) / 2;
-      const oy = (vh - bh) / 2;
-      const rect = portrait!.getBoundingClientRect();
-
-      windowEl!.style.backgroundSize = `${bw.toFixed(0)}px ${bh.toFixed(0)}px`;
-      windowEl!.style.backgroundPosition = `${(ox - rect.left).toFixed(0)}px ${(oy - rect.top).toFixed(0)}px`;
+  /* Short landscape phones: side-by-side without huge portrait */
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+    .bio {
+      --bio-portrait: clamp(7.5rem, 28vh, 10rem);
+      --bio-gap: var(--space-3);
+      min-height: 0;
     }
 
-    function schedule() {
-      if (!inView || rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        update();
-      });
+    .bio__band {
+      justify-content: flex-start;
+      margin-bottom: var(--space-4);
+      padding-top: var(--space-4);
+      padding-bottom: var(--space-4);
     }
 
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(
-        ([entry]) => {
-          inView = entry?.isIntersecting ?? false;
-          if (inView) schedule();
-        },
-        { rootMargin: '20% 0px' }
-      );
-      io.observe(portrait);
+    .bio__wrap {
+      grid-template-columns: var(--bio-portrait) minmax(0, 1fr);
+      grid-template-areas:
+        'portrait header'
+        'portrait text';
+      justify-items: stretch;
+      row-gap: var(--space-1);
     }
 
-    window.addEventListener('app-scroll', schedule);
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', () => {
-      loadNatural();
-      schedule();
-    });
-    window.addEventListener('load', schedule);
-    mobileQuery.addEventListener('change', () => {
-      if (mobileQuery.matches) {
-        windowEl!.style.backgroundSize = '';
-        windowEl!.style.backgroundPosition = '';
-      } else {
-        loadNatural();
-        schedule();
-      }
-    });
+    .bio__header {
+      text-align: left;
+    }
 
-    loadNatural();
-    update();
+    .bio__title {
+      justify-content: flex-start;
+      font-size: clamp(2rem, 8vh, 3rem);
     }
   }
-</script>
+
+  @media (prefers-reduced-motion: reduce) {
+    .bio__portrait {
+      transform: none;
+    }
+
+    .bio__portrait-plate {
+      transform: none;
+    }
+  }
+</style>

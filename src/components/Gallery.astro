@@ -45,15 +45,17 @@ import {
               >
                 {peeks.map((src, pi) => (
                   <div class={`gallery__portal-shard gallery__portal-shard--${pi + 1}`}>
-                    <img
-                      src={i === 0 ? src : undefined}
-                      data-src={src}
-                      alt=""
-                      width={480}
-                      height={600}
-                      loading={i === 0 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
+                    <div class="gallery__portal-shard-clip">
+                      <img
+                        src={i === 0 ? src : undefined}
+                        data-src={src}
+                        alt=""
+                        width={480}
+                        height={600}
+                        loading={i === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -102,6 +104,11 @@ import {
             })
           }
         </div>
+
+        <p class="gallery__portal-hint">
+          <span class="gallery__portal-hint--touch">Tap a series to open</span>
+          <span class="gallery__portal-hint--desk">Click a series to open</span>
+        </p>
       </div>
     </div>
   </div>
@@ -125,29 +132,73 @@ import {
           const available = !work.status || work.status === 'available';
           return (
             <article class="gallery__piece" data-series={s.slug} hidden>
-              <div class="gallery__strip">
-                <div class="gallery__track" data-count={work.images.length}>
-                  {work.images.map((photo, ii) => (
-                    <button
-                      type="button"
-                      class="gallery__photo"
-                      data-work-open={index}
-                      data-photo-index={ii}
-                      aria-label={`View ${work.title}, photo ${ii + 1}`}
-                    >
-                      <img
-                        class="gallery__photo-img"
-                        src={photo.src}
-                        alt={photo.alt}
-                        width={560}
-                        height={700}
-                        sizes="(max-width: 767px) 72vw, min(420px, 38vw)"
-                        loading="lazy"
-                        decoding="async"
-                        data-media-frame
+              <div class="gallery__rail">
+                <button
+                  type="button"
+                  class="gallery__strip-nav gallery__strip-nav--prev"
+                  data-strip-prev
+                  aria-label={`Previous photos of ${work.title}`}
+                  tabindex="-1"
+                  hidden
+                >
+                  <span class="gallery__strip-nav-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24">
+                      <path
+                        d="M14.5 5.5 L8 12 L14.5 18.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
                       />
-                    </button>
-                  ))}
+                    </svg>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="gallery__strip-nav gallery__strip-nav--next"
+                  data-strip-next
+                  aria-label={`Next photos of ${work.title}`}
+                  tabindex="-1"
+                  hidden
+                >
+                  <span class="gallery__strip-nav-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24">
+                      <path
+                        d="M9.5 5.5 L16 12 L9.5 18.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <div class="gallery__strip">
+                  <div class="gallery__track" data-count={work.images.length}>
+                    {work.images.map((photo, ii) => (
+                      <button
+                        type="button"
+                        class="gallery__photo"
+                        data-work-open={index}
+                        data-photo-index={ii}
+                        aria-label={`View ${work.title}, photo ${ii + 1}`}
+                      >
+                        <img
+                          class="gallery__photo-img"
+                          src={photo.src}
+                          alt={photo.alt}
+                          width={560}
+                          height={700}
+                          sizes="(max-width: 767px) 72vw, min(28vw, 448px)"
+                          loading="lazy"
+                          decoding="async"
+                          data-media-frame
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -198,24 +249,44 @@ import {
 
 <style>
   .gallery {
-    --gallery-col: 1040px;
-    --section-gap: clamp(3.5rem, 7vw, 6rem);
+    --gallery-col: var(--content-rail);
+    --section-gap: clamp(4.5rem, 8vw, 8rem);
     position: relative;
     margin-top: var(--section-gap);
     padding: clamp(3rem, 5.5vw, 5rem) 0;
-    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-3));
-  }
-
-  /* Landing fills the viewport so the next colour band doesn’t peek in */
-  .gallery:not(.has-series) {
-    min-height: calc(100svh - var(--scroll-anchor-offset));
-    padding-top: clamp(3rem, 5.5vw, 5rem);
-    padding-bottom: clamp(4.5rem, 10vh, 8rem);
+    scroll-margin-top: calc(var(--scroll-anchor-offset) + var(--space-2));
     box-sizing: border-box;
   }
 
+  /*
+    Desktop only: landing fills one viewport beat (portal centered) so #gallery
+    doesn’t show Mediums underneath. Mobile keeps natural height below.
+  */
+  @media (min-width: 768px) {
+    .gallery:not(.has-series) {
+      min-height: calc(100svh - var(--scroll-anchor-offset));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: clamp(4rem, 8vw, 7rem);
+      padding-top: clamp(2.5rem, 6vh, 5rem);
+      padding-bottom: clamp(2.5rem, 6vh, 5rem);
+    }
+
+    .gallery:not(.has-series) > .panel-inner {
+      width: 100%;
+    }
+
+    /* Open series: grow with content, don’t force a tall empty stage */
+    .gallery.has-series {
+      min-height: 0;
+      display: block;
+      margin-bottom: clamp(3rem, 6vw, 5rem);
+    }
+  }
+
   .gallery__head {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: none;
     flex-wrap: wrap;
@@ -243,7 +314,7 @@ import {
     line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: clamp(48px, 10vw, 104px);
+    font-size: var(--text-display);
   }
 
   .gallery__title--open {
@@ -253,7 +324,7 @@ import {
   .gallery__title--portal {
     align-items: flex-start;
     margin-bottom: var(--space-4);
-    font-size: clamp(40px, 7vw, 80px);
+    font-size: var(--text-display-sm);
   }
 
   .gallery__portal-side .section-kicker {
@@ -319,7 +390,7 @@ import {
 
   /* ——— Landing portal: stage + title + names ——— */
   .gallery__portal {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr;
@@ -373,7 +444,7 @@ import {
   .gallery__portal-name {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(32px, 5.5vw, 56px);
+    font-size: var(--text-title);
     line-height: 0.9;
     letter-spacing: 0.01em;
     text-transform: uppercase;
@@ -392,6 +463,20 @@ import {
     transform: translateX(6px);
   }
 
+  /* Tides — sea-glass accent (look only) */
+  .gallery__portal-item[data-series-focus='tides'] .gallery__portal-num {
+    color: var(--sea-glass-soft);
+  }
+
+  .gallery__portal-item[data-series-focus='tides'].is-focus .gallery__portal-num {
+    color: var(--sea-glass-soft);
+    text-shadow: 0 0 18px var(--sea-glass-glow);
+  }
+
+  .gallery__portal-item[data-series-focus='tides'].is-focus .gallery__portal-name {
+    color: #e2eef1;
+  }
+
   .gallery__portal-item:hover .gallery__portal-name {
     color: rgba(251, 246, 234, 0.72);
   }
@@ -400,10 +485,14 @@ import {
     color: #ff7f89;
   }
 
+  .gallery__portal-item[data-series-focus='tides'].is-focus:hover .gallery__portal-name {
+    color: var(--sea-glass-soft);
+  }
+
   .gallery__portal-stage {
     position: relative;
     justify-self: center;
-    width: min(100%, 420px);
+    width: min(100%, var(--media-piece));
     /* Tall enough for shards + meta — no opaque “card” fill behind them */
     aspect-ratio: 3 / 4;
     background: none;
@@ -431,13 +520,30 @@ import {
 
   .gallery__portal-shard {
     position: absolute;
-    overflow: hidden;
-    background: transparent;
+    box-sizing: border-box;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 127, 137, 0.78) 42%,
+      rgba(255, 255, 255, 0.72) 72%,
+      rgba(255, 127, 137, 0.82) 100%
+    );
     border: none;
     outline: none;
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
     border-radius: 8px;
     transition: transform 1s var(--ease-gentle);
+  }
+
+  /* Clip the zoomed crop so it can’t cover the pink–cream mat */
+  .gallery__portal-shard-clip {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #0a1018;
   }
 
   .gallery__portal-shard img {
@@ -562,6 +668,40 @@ import {
     color: #ff7f89;
   }
 
+  .gallery__portal-stack[data-series-plate='tides'].is-active
+    ~ .gallery__portal-meta
+    .gallery__portal-count {
+    color: var(--sea-glass-soft);
+  }
+
+  .gallery__portal-hint {
+    margin: var(--space-3) 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-on-veil-kicker);
+    opacity: 0.85;
+  }
+
+  .gallery__portal-hint--touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .gallery__portal-hint--touch {
+      display: inline;
+    }
+
+    .gallery__portal-hint--desk {
+      display: none;
+    }
+  }
+
+  .gallery.has-series .gallery__portal-hint {
+    display: none;
+  }
+
   @media (min-width: 800px) {
     .gallery__portal {
       grid-template-columns: 1.2fr 0.8fr;
@@ -570,8 +710,8 @@ import {
     }
 
     .gallery__portal-stage {
-      width: min(100%, 520px);
-      min-height: 580px;
+      width: min(100%, var(--media-stage));
+      min-height: clamp(36rem, 58vh, 50rem);
       justify-self: center;
       padding-left: clamp(1rem, 3vw, 2.5rem);
     }
@@ -596,6 +736,11 @@ import {
       align-items: flex-end;
     }
 
+    .gallery__portal-hint {
+      align-self: flex-end;
+      text-align: right;
+    }
+
     .gallery__portal-item {
       flex-direction: row-reverse;
       text-align: right;
@@ -615,14 +760,22 @@ import {
   @media (max-width: 767px) {
     .gallery {
       margin-top: var(--space-5);
+      margin-bottom: var(--space-4);
       padding-top: var(--space-3);
       padding-bottom: var(--space-6);
+      display: block;
+      min-height: 0;
     }
 
     .gallery:not(.has-series) {
-      min-height: auto;
+      min-height: 0;
+      justify-content: flex-start;
       padding-top: var(--space-2);
       padding-bottom: var(--space-6);
+    }
+
+    .gallery.has-series {
+      margin-bottom: var(--space-4);
     }
 
     .gallery.has-series .gallery__head {
@@ -700,6 +853,11 @@ import {
       gap: 0.05rem;
     }
 
+    .gallery__portal-hint {
+      margin-top: var(--space-2);
+      align-self: flex-start;
+    }
+
     .gallery__portal-item {
       width: 100%;
       min-height: 40px;
@@ -735,7 +893,15 @@ import {
     }
 
     .gallery__portal-shard {
-      background: none;
+      box-sizing: border-box;
+      padding: 2px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(255, 127, 137, 0.78) 42%,
+        rgba(255, 255, 255, 0.72) 72%,
+        rgba(255, 127, 137, 0.82) 100%
+      );
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
       border: none;
       outline: none;
@@ -743,6 +909,10 @@ import {
       -webkit-mask-image: none;
       mask-image: none;
       transition: transform 0.85s var(--ease-gentle);
+    }
+
+    .gallery__portal-shard-clip {
+      border-radius: 4px;
     }
 
     .gallery__portal-shard img {
@@ -875,11 +1045,21 @@ import {
   }
 
   /* ——— Full-bleed photo strip ——— */
+  .gallery__rail {
+    position: relative;
+    --fade: max(7rem, calc((100% - var(--gallery-col)) / 2));
+    --band: clamp(300px, 52vh, 560px);
+  }
+
+  .gallery__strip-nav {
+    display: none;
+  }
+
   .gallery__strip {
     /* Crisp inside the text column; fades to nothing past its left/right edge line.
        NOTE: keep the 7rem / 1040 values in sync with setupLoop() in gallery.ts */
-    --fade: max(7rem, calc((100% - var(--gallery-col)) / 2));
-    --band: clamp(300px, 52vh, 560px);
+    --fade: inherit;
+    --band: inherit;
     overflow-x: auto;
     overflow-y: hidden;
     padding: clamp(1.25rem, 2vw, 2rem) 0;
@@ -901,6 +1081,146 @@ import {
       #000 calc(100% - var(--fade)),
       transparent 100%
     );
+  }
+
+  /* Desktop click-through — soft pink edge controls */
+  @media (min-width: 768px) {
+    .gallery__rail.has-overflow .gallery__strip-nav {
+      display: flex;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 3;
+      align-items: center;
+      justify-content: center;
+      width: clamp(3.5rem, 6vw, 5.25rem);
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      color: #ff7f89;
+      cursor: pointer;
+      background: transparent;
+      box-shadow: none;
+      transition: opacity var(--duration-normal) var(--ease-gentle);
+    }
+
+    .gallery__rail.has-overflow .gallery__strip-nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.9;
+      transition: opacity var(--duration-normal) var(--ease-gentle);
+    }
+
+    .gallery__strip-nav--prev::before {
+      background: linear-gradient(
+        90deg,
+        rgba(14, 16, 22, 0.78) 0%,
+        rgba(255, 127, 137, 0.12) 42%,
+        transparent 100%
+      );
+    }
+
+    .gallery__strip-nav--next::before {
+      background: linear-gradient(
+        270deg,
+        rgba(14, 16, 22, 0.78) 0%,
+        rgba(255, 127, 137, 0.12) 42%,
+        transparent 100%
+      );
+    }
+
+    .gallery__rail.has-overflow .gallery__strip-nav[hidden] {
+      display: none;
+    }
+
+    .gallery__strip-nav-icon {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 2.85rem;
+      height: 2.85rem;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 127, 137, 0.55);
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255, 150, 158, 0.22), transparent 60%),
+        rgba(20, 24, 32, 0.58);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow:
+        0 0 0 1px rgba(255, 127, 137, 0.08),
+        0 8px 22px rgba(0, 0, 0, 0.28);
+      transition:
+        background var(--duration-normal) var(--ease-gentle),
+        border-color var(--duration-normal) var(--ease-gentle),
+        color var(--duration-normal) var(--ease-gentle),
+        transform var(--duration-normal) var(--ease-gentle),
+        box-shadow var(--duration-normal) var(--ease-gentle);
+    }
+
+    .gallery__strip-nav-icon svg {
+      display: block;
+      transition: transform var(--duration-normal) var(--ease-gentle);
+    }
+
+    .gallery__strip-nav:hover::before {
+      opacity: 1;
+    }
+
+    .gallery__strip-nav:hover .gallery__strip-nav-icon {
+      color: var(--sand-50);
+      background:
+        radial-gradient(circle at 40% 30%, rgba(255, 180, 186, 0.55), transparent 62%),
+        #ff7f89;
+      border-color: rgba(251, 246, 234, 0.45);
+      box-shadow:
+        0 0 0 1px rgba(255, 127, 137, 0.35),
+        0 10px 28px rgba(255, 127, 137, 0.28),
+        0 8px 20px rgba(0, 0, 0, 0.22);
+      transform: scale(1.06);
+    }
+
+    .gallery__strip-nav--prev:hover .gallery__strip-nav-icon svg {
+      transform: translateX(-2px);
+    }
+
+    .gallery__strip-nav--next:hover .gallery__strip-nav-icon svg {
+      transform: translateX(2px);
+    }
+
+    .gallery__strip-nav:disabled {
+      opacity: 0.28;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .gallery__strip-nav:active:not(:disabled) .gallery__strip-nav-icon {
+      transform: scale(0.94);
+      transition-duration: 120ms;
+    }
+
+    .gallery__strip-nav:focus-visible {
+      outline: none;
+    }
+
+    .gallery__strip-nav:focus-visible .gallery__strip-nav-icon {
+      outline: 2px solid #ff7f89;
+      outline-offset: 3px;
+    }
+
+    .gallery__strip-nav--prev {
+      left: 0;
+      padding-left: 0.45rem;
+      justify-content: flex-start;
+    }
+
+    .gallery__strip-nav--next {
+      right: 0;
+      padding-right: 0.45rem;
+      justify-content: flex-end;
+    }
   }
 
   .gallery__strip::-webkit-scrollbar {
@@ -980,15 +1300,19 @@ import {
     color: #ff7f89;
   }
 
+  .gallery__series-intro[data-series-intro='tides'] .section-kicker {
+    color: var(--sea-glass-soft);
+  }
+
   .gallery__series-desc {
     margin: 0;
-    font-size: clamp(16px, 1.8vw, 19px);
+    font-size: var(--text-lead);
     line-height: 1.7;
     color: var(--text-on-veil);
   }
 
   .gallery__caption {
-    max-width: 1040px;
+    max-width: var(--content-rail);
     margin: var(--space-4) auto 0;
     display: flex;
     flex-wrap: wrap;
@@ -1065,6 +1389,11 @@ import {
         #000 calc(100% - var(--fade)),
         transparent 100%
       );
+    }
+
+    .gallery__rail {
+      --fade: 1.25rem;
+      --band: clamp(240px, 62vw, 300px);
     }
 
     .gallery__track {
